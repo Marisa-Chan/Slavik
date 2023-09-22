@@ -10,6 +10,7 @@
       </logicalFolder>
       <itemPath>fsmgr.cpp</itemPath>
       <itemPath>game.cpp</itemPath>
+      <itemPath>game_state.cpp</itemPath>
       <itemPath>gfx.cpp</itemPath>
       <itemPath>glfuncs.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
@@ -41,6 +42,7 @@
       <itemPath>gfx.h</itemPath>
       <itemPath>glfuncs.h</itemPath>
       <itemPath>matrix.h</itemPath>
+      <itemPath>common/plane.h</itemPath>
       <itemPath>resources.h</itemPath>
       <itemPath>common/strutils.h</itemPath>
       <itemPath>system.h</itemPath>
@@ -91,6 +93,8 @@
       </compileType>
       <item path="common/common.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="common/plane.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="common/strutils.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="common/strutils.h" ex="false" tool="3" flavor2="0">
@@ -132,6 +136,8 @@
       <item path="game.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="game_state.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="gfx.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -178,6 +184,8 @@
       </compileType>
       <item path="common/common.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="common/plane.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="common/strutils.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="common/strutils.h" ex="false" tool="3" flavor2="0">
@@ -219,6 +227,8 @@
       <item path="game.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="game_state.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="gfx.cpp" ex="false" tool="1" flavor2="0">
       </item>

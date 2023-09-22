@@ -17,6 +17,7 @@
 #include "common/common.h"
 #include "vectors.h"
 #include "matrix.h"
+#include "common/plane.h"
 
 
 namespace GFX
@@ -25,6 +26,18 @@ namespace GFX
 struct Image
 {
     SDL_Surface *SW = nullptr;
+    uint32_t HW = 0;
+};
+
+struct PalImage
+{
+    Common::PlaneVector<uint16_t> SW;;
+    uint32_t HW = 0;
+};
+
+struct Light
+{
+    Common::PlaneVector<uint8_t> SW;
     uint32_t HW = 0;
 };
 
@@ -40,7 +53,8 @@ class CDrawer
 public:
     struct States
     {
-        const Image *Tex = nullptr;
+        uint32_t Tex = 0;
+        uint32_t Tex2 = 0;
         uint32_t SrcBlend = GL_ONE;
         uint32_t DstBlend = GL_ZERO;
         int8_t TexBlend = 2;
@@ -50,6 +64,8 @@ public:
         
         bool BBlend = false;
         vec3f CBlend; 
+        
+        int32_t Pal = -1;
 
         uint32_t Prog = 0;
     };
@@ -106,17 +122,30 @@ public:
     void SetProjectionMatrix(const mat4x4f &mat);
     void SetModelViewMatrix(const mat4x4f &mat);
     
+    void Begin();
+    
+    void SetPalettes(const Common::PlaneArray<SDL_Color, 256, 256> &pals);
+    
     void Clear(SDL_Color clr = {0, 0, 0});
     void Draw(const Image *img, Common::Point out);
+    void Draw(const PalImage *img, int32_t pal, Common::Point out);
     void Flip();
     
     void SetFade(bool on, const vec3f &blend = vec3f());
+    
+    void SetLightMask(Light *l);
     
     void SetMode(Common::Point res, int windowed = 1);
     
     Image *CreateImage(Common::Point sz);
     int LockImage(Image *img);
     void UnlockImage(Image *img);
+    
+    PalImage *CreatePalImage(Common::Point sz);
+    void UpdatePalImage(PalImage *img);
+    
+    Light *CreateLight(Common::Point sz);
+    void UpdateLight(Light *l);
     
     void ApplyStates(int setAll = 0);
     
@@ -140,7 +169,16 @@ public:
     uint32_t _stdProgID = 0;
     int32_t _stdBBLendLoc = -1;
     int32_t _stdCBLendLoc = -1;
+    int32_t _stdBLightLoc = -1;
+    int32_t _stdPalLoc = -1;
+    int32_t _stdTex1Loc = -1;
+    int32_t _stdTex2Loc = -1;
+    int32_t _stdTex3Loc = -1;
     
+    uint32_t _psPalettes = 0;
+    
+    Common::Point _resolution;
+    Common::Point _winSize;
     
 public:
     static CDrawer Instance;

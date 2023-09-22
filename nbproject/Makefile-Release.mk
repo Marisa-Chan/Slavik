@@ -40,6 +40,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/fmt/os.o \
 	${OBJECTDIR}/fsmgr.o \
 	${OBJECTDIR}/game.o \
+	${OBJECTDIR}/game_state.o \
 	${OBJECTDIR}/gfx.o \
 	${OBJECTDIR}/glfuncs.o \
 	${OBJECTDIR}/main.o \
@@ -95,6 +96,11 @@ ${OBJECTDIR}/game.o: game.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game.o game.cpp
+
+${OBJECTDIR}/game_state.o: game_state.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_state.o game_state.cpp
 
 ${OBJECTDIR}/gfx.o: gfx.cpp
 	${MKDIR} -p ${OBJECTDIR}

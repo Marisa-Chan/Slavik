@@ -1,4 +1,5 @@
 #include <SDL2/SDL_video.h>
+#include <GL/gl.h>
 
 #include "gfx.h"
 #include "system.h"
@@ -13,44 +14,57 @@ namespace System{
 
 namespace GFX
 {
+    //clr = vec4(texture2D(tex2, vec2(clr.r, pl / 256.0)).rgb, clr.g);\n\
     
-const std::string StdPShaderText =
-"\
-#version 120\n\
-uniform sampler2D texture;\
-uniform vec3 cBlend;\
-uniform bool bBlend;\
-void main()\
-{\
-    vec4 clr = texture2D(texture, gl_TexCoord[0].xy);\
-    if (bBlend)\
-    {\
-        if (cBlend.x < 0.0)\
-           clr.x *= 1.0 + cBlend.x;\
-        else\
-           clr.x += (1.0 - clr.x) * cBlend.x;\
-        if (cBlend.y < 0.0)\
-           clr.y *= 1.0 + cBlend.y;\
-        else\
-           clr.y += (1.0 - clr.y) * cBlend.y;\
-        if (cBlend.z < 0.0)\
-           clr.z *= 1.0 + cBlend.z;\
-        else\
-           clr.z += (1.0 - clr.z) * cBlend.z;\
-    }\
-    gl_FragColor = clr;\
-}";
-
+const std::string StdPShaderText = 
+R"(
+#version 120
+uniform sampler2D tex;
+uniform sampler2D tex2;
+uniform sampler2D tex3;
+uniform vec3 cBlend;
+uniform bool bBlend;
+uniform bool bLight;
+uniform int pal;
+void main()
+{
+    vec4 clr = texture2D(tex, gl_TexCoord[0].xy);
+    if (pal != -1)
+    {
+        clr = vec4(texture2D(tex2, vec2(clr.r, pal / 256.0)).rgb, clr.g);
+    } 
+    float lightning = 0.0; 
+    if (bLight)
+    {
+        lightning = texture2D(tex3, gl_TexCoord[0].xy).r;
+    }
+    if (bBlend)
+    {
+        if (cBlend.r < 0.0)
+           clr.r *= 1.0 + clamp(cBlend.r + lightning, -1.0, 0.0);
+        else
+           clr.r += (1.0 - clr.r) * cBlend.r;
+        if (cBlend.g < 0.0)
+           clr.g *= 1.0 + clamp(cBlend.g + lightning, -1.0, 0.0);
+        else
+           clr.g += (1.0 - clr.g) * cBlend.g;
+        if (cBlend.b < 0.0)
+           clr.b *= 1.0 + cBlend.b;
+        else
+           clr.b += (1.0 - clr.b) * cBlend.b;
+    }
+    gl_FragColor = clr;
+})";
 
 const std::string StdVShaderText =
-"\
-#version 120\n\
-void main()\
-{\
-    gl_Position=ftransform();\
-    gl_FrontColor = gl_Color;\
-    gl_TexCoord[0] = gl_MultiTexCoord0;\
-}";
+R"(
+#version 120
+void main()
+{
+    gl_Position=ftransform();
+    gl_FrontColor = gl_Color;
+    gl_TexCoord[0] = gl_MultiTexCoord0;
+})";
  
     
     
@@ -83,6 +97,20 @@ void CDrawer::Init(int mode)
             break;
     }
     
+    
+    switch (_mode)
+    {
+        case MODE_HW:
+        case MODE_PS:
+        {
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        }
+            break;
+        
+        default:
+            break;
+    }
+    
     if (_mode == MODE_PS)
     {
         _stdPsShader = CompileShader(GL_FRAGMENT_SHADER, StdPShaderText);
@@ -95,6 +123,18 @@ void CDrawer::Init(int mode)
         
         _stdBBLendLoc = Glext::GLGetUniformLocation(_stdProgID, "bBlend");
         _stdCBLendLoc = Glext::GLGetUniformLocation(_stdProgID, "cBlend");
+        
+        _stdTex1Loc = Glext::GLGetUniformLocation(_stdProgID, "tex");
+        _stdTex2Loc = Glext::GLGetUniformLocation(_stdProgID, "tex2");
+        _stdTex3Loc = Glext::GLGetUniformLocation(_stdProgID, "tex3");
+        
+        _stdPalLoc = Glext::GLGetUniformLocation(_stdProgID, "pal");
+        
+        Glext::GLUniform1i(_stdTex1Loc, 0);
+        Glext::GLUniform1i(_stdTex2Loc, 1);
+        Glext::GLUniform1i(_stdTex3Loc, 2);
+        
+        _stdBLightLoc = Glext::GLGetUniformLocation(_stdProgID, "bLight");
     }
     
     System::EventsAddHandler(EventsWatcher);
@@ -173,11 +213,41 @@ void CDrawer::Draw(const Image *img, Common::Point out)
         case MODE_HW:
         case MODE_PS:
         {
-            _state.Tex = img;
+            _state.Tex = img->HW;
+            _state.Pal = -1;
             ApplyStates();
 
             const int32_t w = img->SW->w;
             const int32_t h = img->SW->h;
+
+            std::array<TVertex, 4> vtx = {
+                TVertex( vec3f(out.x,     out.y,     0.0), tUtV(0.0, 0.0), TGLColor(1.0, 1.0, 1.0, 1.0) ),
+                TVertex( vec3f(out.x,     out.y + h, 0.0), tUtV(0.0, 1.0), TGLColor(1.0, 1.0, 1.0, 1.0) ),
+                TVertex( vec3f(out.x + w, out.y + h, 0.0), tUtV(1.0, 1.0), TGLColor(1.0, 1.0, 1.0, 1.0) ),
+                TVertex( vec3f(out.x + w, out.y,     0.0), tUtV(1.0, 0.0), TGLColor(1.0, 1.0, 1.0, 1.0) )
+            };
+            
+            DrawVtxQuad(vtx);
+        }
+            break;
+    }
+}
+
+void CDrawer::Draw(const PalImage *img, int32_t pal, Common::Point out)
+{
+    switch (_mode)
+    {
+        default:
+            break;
+            
+        case MODE_PS:
+        {
+            _state.Tex = img->HW;
+            _state.Pal = pal;
+            ApplyStates();
+
+            const int32_t w = img->SW.Width();
+            const int32_t h = img->SW.Height();
 
             std::array<TVertex, 4> vtx = {
                 TVertex( vec3f(out.x,     out.y,     0.0), tUtV(0.0, 0.0), TGLColor(1.0, 1.0, 1.0, 1.0) ),
@@ -217,30 +287,7 @@ void CDrawer::SetMode(Common::Point res, int windowed)
             
         case MODE_HW:
         case MODE_PS:
-            _state = States();
-            _state.LinearFilter = true;
-            _state.AlphaBlend = true;
-            _state.TexBlend = 2;
-            _state.SrcBlend = GL_SRC_ALPHA;
-            _state.DstBlend = GL_ONE_MINUS_SRC_ALPHA;
-            if(_mode == MODE_PS)
-                _state.Prog = _stdProgID;
-
-            ApplyStates(1);
-
-            glDisable(GL_CULL_FACE);
-            glDisable(GL_DITHER);
-            glDisable(GL_DEPTH_TEST);
-            glDepthMask(GL_FALSE);
-            glDisable(GL_ALPHA_TEST);
-
-            SetProjectionMatrix( mat4x4f::Ortho(0, res.x, res.y, 0, -1, 1) );
-            SetModelViewMatrix( mat4x4f() );
-            
-            glViewport(0, 0, res.x, res.y);
-            
-            glEnableClientState(GL_VERTEX_ARRAY);
-            glEnableClientState(GL_COLOR_ARRAY);
+            _winSize = res;            
             break;
     }
 }
@@ -259,7 +306,7 @@ Image *CDrawer::CreateImage(Common::Point sz)
         case MODE_PS:
         {
             glGenTextures(1, &img->HW);
-            _state.Tex = img;
+            _state.Tex = img->HW;
             ApplyStates();
             
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -305,7 +352,7 @@ void CDrawer::UnlockImage(Image *img)
         case MODE_HW:
         case MODE_PS:
         {
-            _state.Tex = img;
+            _state.Tex = img->HW;
             ApplyStates();
             
             glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, img->SW->w, img->SW->h, _glPixfmt, _glPixtype, img->SW->pixels);            
@@ -313,6 +360,96 @@ void CDrawer::UnlockImage(Image *img)
             break;
     }
     SDL_UnlockSurface(img->SW);
+}
+
+PalImage *CDrawer::CreatePalImage(Common::Point sz)
+{
+    PalImage *img = new PalImage();
+    img->SW.Resize(sz);
+    
+    switch (_mode)
+    {
+        default:
+            break;
+            
+        case MODE_PS:
+        {
+            glGenTextures(1, &img->HW);
+            _state.Tex = img->HW;
+            ApplyStates();
+            
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RG, sz.x, sz.y, 0, GL_RG, GL_UNSIGNED_BYTE, NULL);
+            
+        }
+            break;
+    }
+    return img;
+}
+
+void CDrawer::UpdatePalImage(PalImage *img)
+{
+    _state.Tex = img->HW;
+    ApplyStates();
+    
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, img->SW.Width(), img->SW.Height(), GL_RG, GL_UNSIGNED_BYTE, img->SW.data()); 
+}
+
+Light *CDrawer::CreateLight(Common::Point sz)
+{
+    Light *l = new Light();
+    l->SW.Resize(sz);
+    
+    switch (_mode)
+    {
+        default:
+            break;
+            
+        case MODE_HW:
+        case MODE_PS:
+        {
+            glGenTextures(1, &l->HW);
+            _state.Tex2 = l->HW;
+            ApplyStates();
+            
+            glActiveTexture(GL_TEXTURE2);
+            
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, l->SW.Width(), l->SW.Height(), 0, GL_RED, GL_UNSIGNED_BYTE, l->SW.data());     
+            glActiveTexture(GL_TEXTURE0);
+        }
+            break;
+    }
+    return l;
+}
+
+void CDrawer::UpdateLight(Light *l)
+{
+    switch (_mode)
+    {
+        default:
+            break;
+            
+        case MODE_HW:
+        case MODE_PS:
+        {
+            _state.Tex2 = l->HW;
+            ApplyStates();
+            
+            glActiveTexture(GL_TEXTURE2);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, l->SW.Width(), l->SW.Height(), GL_RED, GL_UNSIGNED_BYTE, l->SW.data());            
+            glActiveTexture(GL_TEXTURE0);
+        }
+            break;
+    }
 }
 
 void CDrawer::ApplyStates(int setAll)
@@ -343,15 +480,34 @@ void CDrawer::ApplyStates(int setAll)
     {
         if (newStates->Tex)
         {
-            glEnable(GL_TEXTURE_2D);
-            glBindTexture(GL_TEXTURE_2D, newStates->Tex->HW);
-            glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+            glBindTexture(GL_TEXTURE_2D, newStates->Tex);
+            
+            if (_mode == MODE_PS)
+                Glext::GLUniform1i(_stdTex1Loc, 0);
+        }
+        else
+            glBindTexture(GL_TEXTURE_2D, 0);
+    }
+    
+    if (setAll || (newStates->Tex2 != _lastState.Tex2))
+    {
+        if (newStates->Tex2)
+        {
+            glActiveTexture(GL_TEXTURE2);
+            glBindTexture(GL_TEXTURE_2D, newStates->Tex2);
+            glActiveTexture(GL_TEXTURE0);
         }
         else
         {
-            glDisable(GL_TEXTURE_2D);
+            glActiveTexture(GL_TEXTURE2);
             glBindTexture(GL_TEXTURE_2D, 0);
-            glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+            glActiveTexture(GL_TEXTURE0);
+        }
+        
+        if (_mode == MODE_PS)
+        {
+            if (setAll || (newStates->Tex2 != _lastState.Tex2))
+                Glext::GLUniform1i(_stdBLightLoc, (newStates->Tex2 == 0 ? 0 : 2) );
         }
     }
 
@@ -417,6 +573,9 @@ void CDrawer::ApplyStates(int setAll)
     
     if (_mode == MODE_PS)
     {
+        if (setAll || (newStates->Pal != _lastState.Pal))
+            Glext::GLUniform1i(_stdPalLoc, newStates->Pal);
+        
         if (setAll || (newStates->BBlend != _lastState.BBlend))
             Glext::GLUniform1i(_stdBBLendLoc, newStates->BBlend);
         
@@ -482,6 +641,83 @@ void CDrawer::SetFade(bool on, const vec3f &blend)
 {
     _state.BBlend = on;
     _state.CBlend = blend;
+}
+
+void CDrawer::SetLightMask(Light *l)
+{
+    if (l)
+        _state.Tex2 = l->HW;
+    else
+        _state.Tex2 = 0;
+}
+
+void CDrawer::Begin()
+{
+    if (_mode == MODE_SW)
+        return;
+
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DITHER);
+    glDisable(GL_DEPTH_TEST);
+    glDepthMask(GL_FALSE);
+    glDisable(GL_ALPHA_TEST);
+
+    SetProjectionMatrix( mat4x4f::Ortho(0, _winSize.x, _winSize.y, 0, -1, 1) );
+    SetModelViewMatrix( mat4x4f() );
+
+    glViewport(0, 0, _winSize.x, _winSize.y);
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    
+    glActiveTexture(GL_TEXTURE0);
+    glEnable(GL_TEXTURE_2D);
+    
+    if (_mode == MODE_PS)
+    {
+        glActiveTexture(GL_TEXTURE1);
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, _psPalettes);
+        glActiveTexture(GL_TEXTURE2);
+        glEnable(GL_TEXTURE_2D);
+        glActiveTexture(GL_TEXTURE0);
+        
+        Glext::GLUniform1i(_stdTex1Loc, 0);
+        Glext::GLUniform1i(_stdTex2Loc, 1);
+        Glext::GLUniform1i(_stdTex3Loc, 2);
+    }
+    
+    _state = States();
+    _state.LinearFilter = true;
+    _state.AlphaBlend = true;
+    _state.TexBlend = 2;
+    _state.SrcBlend = GL_SRC_ALPHA;
+    _state.DstBlend = GL_ONE_MINUS_SRC_ALPHA;
+    if(_mode == MODE_PS)
+        _state.Prog = _stdProgID;
+
+    ApplyStates(1);
+            
+}
+
+void CDrawer::SetPalettes(const Common::PlaneArray<SDL_Color, 256, 256> &pals)
+{
+    glActiveTexture(GL_TEXTURE1);
+    glEnable(GL_TEXTURE_2D);
+    
+    if (!_psPalettes)
+        glGenTextures(1, &_psPalettes);
+    glBindTexture(GL_TEXTURE_2D, _psPalettes);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, pals.data()); 
+    
+    glActiveTexture(GL_TEXTURE0);
 }
 
 SDL_Surface * ConvertSDLSurface(SDL_Surface *src, const SDL_PixelFormat * fmt)

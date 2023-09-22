@@ -17,19 +17,49 @@ class Resources
 public:
     struct CharacterSprites
     {
-        std::array<GFX::Image *, 768> Images;
+        std::array<GFX::PalImage *, 768> Images;
         short Frames[10][8]; //state dir
         short Seq[10][8][12]; //state dir frame
         Common::SPoint unk2[10][8][12];
         Common::SPoint unk3[10][8][12][2];
         
-        void Load(FSMgr::iFile *pfile, const SDL_Color *pal);
+        void Load(FSMgr::iFile *pfile);
     };
     
-    struct GameMap
+    struct DynamicObject
     {
-        uint8_t TileMap[160][80][2]; //y x subtile
+        std::array<GFX::PalImage *, 512> Images;
+        short Frames[6][8]; //state dir
+        short Seq[6][8][18]; //state dir frame
+        Common::SPoint unk[6][8][18][2];
+        
+        void Load(FSMgr::iFile *pfile);
     };
+    
+    struct SimpleObject
+    {
+        struct FlamePos
+        {
+            int32_t FlameID;
+            Common::Point Position;
+        };
+        
+        int32_t fld1 = 0;
+        
+        std::array<GFX::Image *,8> Images;
+        
+        //int32_t NumFlames;
+        std::vector<FlamePos> Flames;
+        
+        int32_t NumFrames;
+        int32_t FrameTime;
+        
+        Common::SPoint unk[8][2];
+        
+        void Load(FSMgr::iFile *pfile, const SDL_Color *palettes);
+    };
+    
+    
 public:
     Resources() {};
     ~Resources() {};
@@ -37,16 +67,16 @@ public:
     bool Load();
     
     bool LoadGraphRes();
+    bool LoadLightsRes();
+    bool LoadObjectsRes();
     
     static GFX::Image *LoadRL8BitImage(FSMgr::iFile *pfile, const SDL_Color *pal);
+    static GFX::PalImage *LoadRL8BitImage(FSMgr::iFile *pfile);
     static GFX::Image *LoadRL16BitImage(FSMgr::iFile *pfile);
-
-public:
-    
-    static GameMap *LoadGameMap(int32_t mapID);
+   
     
 public:
-    std::array<SDL_Color, 256 * 256 > Palettes;
+    Common::PlaneArray<SDL_Color, 256, 256> Palettes;
     
     std::array<GFX::Image *, 11> Cursors;
     
@@ -54,6 +84,14 @@ public:
     
     std::array<CharacterSprites, 3> CharacterBases;
     std::array<CharacterSprites, 24> CharacterEquip;
+    
+    
+    GFX::Light * Light1 = nullptr;
+    GFX::Light * Light2 = nullptr;
+    std::array<GFX::Light *, 19> TilesLight;
+    
+    std::array<DynamicObject, 30> DynObjects;
+    std::array<SimpleObject, 482> SimpleObjects;
     
 public:
     static Resources Res;

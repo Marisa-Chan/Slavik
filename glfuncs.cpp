@@ -32,6 +32,8 @@ PFNGLUNIFORM3IPROC Glext::GLUniform3i = NULL;
 PFNGLUNIFORM4FPROC Glext::GLUniform4f = NULL;
 PFNGLUNIFORM4IPROC Glext::GLUniform4i = NULL;
 
+PFNGLGETUNIFORMIVPROC Glext::GLGetUniformiv = NULL;
+
 PFNGLUNIFORMMATRIX2FVPROC Glext::GLUniformMatrix2fv = NULL;
 PFNGLUNIFORMMATRIX3FVPROC Glext::GLUniformMatrix3fv = NULL;
 PFNGLUNIFORMMATRIX4FVPROC Glext::GLUniformMatrix4fv = NULL;
@@ -113,6 +115,8 @@ bool Glext::Init()
     SetGLFunc(GLUniform3i, "glUniform3i");
     SetGLFunc(GLUniform4f, "glUniform4f");
     SetGLFunc(GLUniform4i, "glUniform4i");
+    
+    SetGLFunc(GLGetUniformiv, "glGetUniformiv");
     
     SetGLFunc(GLUniformMatrix2fv, "glUniformMatrix2fv");
     SetGLFunc(GLUniformMatrix3fv, "glUniformMatrix3fv");

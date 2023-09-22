@@ -85,12 +85,14 @@ struct TPoint
     
     __Point operator-() const { return __Point(-x, -y); } // -Point
 
-    void operator+=(const __Point &delta) {
+    template <typename R>
+    void operator+=(const TPoint<R> &delta) {
             x += delta.x;
             y += delta.y;
     }
 
-    void operator-=(const __Point &delta) {
+    template <typename R>
+    void operator-=(const TPoint<R> &delta) {
             x -= delta.x;
             y -= delta.y;
     }
