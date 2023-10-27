@@ -15,13 +15,27 @@ namespace Game {
 class Resources
 {
 public:
+ 
     struct CharacterSprites
     {
         std::array<GFX::PalImage *, 768> Images;
-        short Frames[10][8]; //state dir
-        short Seq[10][8][12]; //state dir frame
-        Common::SPoint unk2[10][8][12];
-        Common::SPoint unk3[10][8][12][2];
+        std::array<GFX::PalImage *, 768> Shadows;
+
+        struct FrameInfo
+        {
+            int16_t FrameID;
+            Common::Point WpnOffset;
+            Common::Point ImgOffset;
+            Common::Point ShdOffset;
+        };
+    
+        struct SeqInfo
+        {
+            int16_t FrmCount;
+            std::array<FrameInfo, 12> FrameData;
+        };
+        
+        SeqInfo Seq[10][8];  //state dir
         
         void Load(FSMgr::iFile *pfile);
     };
@@ -29,9 +43,22 @@ public:
     struct DynamicObject
     {
         std::array<GFX::PalImage *, 512> Images;
-        short Frames[6][8]; //state dir
-        short Seq[6][8][18]; //state dir frame
-        Common::SPoint unk[6][8][18][2];
+        std::array<GFX::PalImage *, 512> Shadows;
+        
+        struct FrameInfo
+        {
+            int16_t FrameID;
+            Common::Point ImgOffset;
+            Common::Point ShdOffset;
+        };
+    
+        struct SeqInfo
+        {
+            int16_t FrmCount;
+            std::array<FrameInfo, 18> FrameData;
+        };
+        
+        SeqInfo Seq[6][8];  //state dir
         
         void Load(FSMgr::iFile *pfile);
     };
@@ -47,6 +74,7 @@ public:
         int32_t fld1 = 0;
         
         std::array<GFX::Image *,8> Images;
+        std::array<GFX::PalImage *,8> Shadows;
         
         //int32_t NumFlames;
         std::vector<FlamePos> Flames;
@@ -72,6 +100,7 @@ public:
     
     static GFX::Image *LoadRL8BitImage(FSMgr::iFile *pfile, const SDL_Color *pal);
     static GFX::PalImage *LoadRL8BitImage(FSMgr::iFile *pfile);
+    static GFX::PalImage *LoadRL8BitShadow(FSMgr::iFile *pfile);
     static GFX::Image *LoadRL16BitImage(FSMgr::iFile *pfile);
    
     

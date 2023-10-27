@@ -263,7 +263,8 @@ struct Tvec3d
         return ln;
     }
 
-    const Tvec3d normalise(float *pln) const
+    template <typename K>
+    const Tvec3d normalise(K *pln) const
     {
         Tvec3d tmp = *this;
 
@@ -291,7 +292,8 @@ struct Tvec3d
     }
 
     // xyz = float
-    Tvec3d &operator=(T b)
+    template <typename K>
+    Tvec3d &operator=(K b)
     {
         x = b;
         y = b;
@@ -300,7 +302,8 @@ struct Tvec3d
         return *this;
     }
 
-    Tvec3d &operator+=(const Tvec3d &b)
+    template <typename K>
+    Tvec3d &operator+=(const Tvec3d<K> &b)
     {
         x += b.x;
         y += b.y;
@@ -308,7 +311,8 @@ struct Tvec3d
         return *this;
     }
 
-    Tvec3d &operator-=(const Tvec3d &b)
+    template <typename K>
+    Tvec3d &operator-=(const Tvec3d<K> &b)
     {
         x -= b.x;
         y -= b.y;
@@ -316,7 +320,8 @@ struct Tvec3d
         return *this;
     }
 
-    Tvec3d &operator*=(const Tvec3d &b)
+    template <typename K>
+    Tvec3d &operator*=(const Tvec3d<K> &b)
     {
         Tvec3d tmp = *this;
         x = tmp.y * b.z - tmp.z * b.y;
@@ -325,7 +330,8 @@ struct Tvec3d
         return *this;
     }
 
-    Tvec3d &operator+=(T b)
+    template <typename K>
+    Tvec3d &operator+=(K b)
     {
         x += b;
         y += b;
@@ -333,7 +339,8 @@ struct Tvec3d
         return *this;
     }
 
-    Tvec3d &operator-=(T b)
+    template <typename K>
+    Tvec3d &operator-=(K b)
     {
         x -= b;
         y -= b;
@@ -341,7 +348,8 @@ struct Tvec3d
         return *this;
     }
 
-    Tvec3d &operator*=(T b)
+    template <typename K>
+    Tvec3d &operator*=(K b)
     {
         x *= b;
         y *= b;
@@ -349,7 +357,8 @@ struct Tvec3d
         return *this;
     }
 
-    Tvec3d &operator/=(T b)
+    template <typename K>
+    Tvec3d &operator/=(K b)
     {
         x /= b;
         y /= b;
@@ -362,66 +371,76 @@ struct Tvec3d
         return Tvec3d(-x, -y, -z);
     }
 
-    const Tvec3d operator+(const Tvec3d &b) const
+    template <typename K>
+    const Tvec3d operator+(const Tvec3d<K> &b) const
     {
         Tvec3d tmp = *this;
         tmp += b;
         return tmp;
     }
 
-    const Tvec3d operator-(const Tvec3d &b) const
+    template <typename K>
+    const Tvec3d operator-(const Tvec3d<K> &b) const
     {
         Tvec3d tmp = *this;
         tmp -= b;
         return tmp;
     }
 
-    const Tvec3d operator*(const Tvec3d &b) const
+    template <typename K>
+    const Tvec3d operator*(const Tvec3d<K> &b) const
     {
         Tvec3d tmp = *this;
         tmp *= b;
         return tmp;
     }
 
-    const Tvec3d operator+(T b) const
+    template <typename K>
+    const Tvec3d operator+(K b) const
     {
         Tvec3d tmp = *this;
         tmp += b;
         return tmp;
     }
 
-    const Tvec3d operator-(T b) const
+    template <typename K>
+    const Tvec3d operator-(K b) const
     {
         Tvec3d tmp = *this;
         tmp -= b;
         return tmp;
     }
 
-    const Tvec3d operator*(T b) const
+    template <typename K>
+    const Tvec3d operator*(K b) const
     {
         Tvec3d tmp = *this;
         tmp *= b;
         return tmp;
     }
 
-    const Tvec3d operator/(T b) const
+    template <typename K>
+    const Tvec3d operator/(K b) const
     {
         Tvec3d tmp = *this;
         tmp /= b;
         return tmp;
     }
 
-    bool operator==(const Tvec3d &b) const
+    template <typename K>
+    bool operator==(const Tvec3d<K> &b) const
     {
         return x == b.x && y == b.y && z == b.z;
     }
 
-    bool operator!=(const Tvec3d &b) const
+    template <typename K>
+    bool operator!=(const Tvec3d<K> &b) const
     {
         return x != b.x || y != b.y || z != b.z;
     }
 
-    T dot(const Tvec3d &b) const
+    template <typename K>
+    T dot(const Tvec3d<K> &b) const
     {
         return x * b.x + y * b.y + z * b.z;
     }

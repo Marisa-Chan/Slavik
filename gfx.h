@@ -13,11 +13,13 @@
 #include <SDL2/SDL_surface.h>
 #include <array>
 #include <string>
+#include <GL/gl.h>
 
 #include "common/common.h"
 #include "vectors.h"
 #include "matrix.h"
 #include "common/plane.h"
+#include "font.h"
 
 
 namespace GFX
@@ -27,6 +29,15 @@ struct Image
 {
     SDL_Surface *SW = nullptr;
     uint32_t HW = 0;
+    
+    ~Image()
+    {
+        if (SW)
+            SDL_FreeSurface(SW);
+        
+        if (HW)
+            glDeleteTextures(1, &HW);
+    }
 };
 
 struct PalImage
@@ -46,7 +57,19 @@ constexpr const std::array<uint8_t, 32> Lkp5To8 = {   0,   8,  16,  24,  32,  41
                                                     131, 139, 148, 156, 164, 172, 180, 189,
                                                     197, 205, 213, 222, 230, 238, 246, 255 };
 
+int32_t PowerOf2(int32_t);
+
 SDL_Surface * ConvertSDLSurface(SDL_Surface *src, const SDL_PixelFormat * fmt);
+
+enum BUFFER
+{
+    BUF_OFF = -1,
+    BUF_0 = 0,
+    BUF_1 = 1,
+    BUF_2 = 2,
+    
+    BUF_MAX
+};
 
 class CDrawer
 {
@@ -66,8 +89,14 @@ public:
         vec3f CBlend; 
         
         int32_t Pal = -1;
+        int32_t DrawMode = 0;
 
+        float Alpha = 1.0;
+        
         uint32_t Prog = 0;
+        
+        Common::PointRect ScissorRect;
+        bool Scissor;
     };
    
     enum MODE
@@ -85,32 +114,17 @@ public:
         tUtV() = default;
         tUtV(float u, float v): tu(u), tv(v) {};
     };
-    
-    struct __attribute__((packed)) TGLColor
-    {
-        float r = 1.0;
-        float g = 1.0;
-        float b = 1.0;
-        float a = 1.0;
 
-        TGLColor() = default;
-        TGLColor(float _r, float _g, float _b, float _a = 1.0)
-            : r(_r), g(_g), b(_b), a(_a) {};
-    };
-    
     struct TVertex
     {
         vec3f Pos;
         //vec3f Normal;
         tUtV  TexCoord;
-        TGLColor Color;
-        TGLColor ComputedColor;
         uint32_t TexCoordId = 0;
 
         TVertex() = default;
         TVertex(const vec3f &p): Pos(p) {};
         TVertex(const vec3f &p, const tUtV &uv): Pos(p), TexCoord(uv) {};
-        TVertex(const vec3f &p, const tUtV &uv, const TGLColor &clr): Pos(p), TexCoord(uv), Color(clr) {};
     };
 public:
     CDrawer() {};
@@ -118,24 +132,37 @@ public:
     void Init(int mode = MODE_SW);
     
     static int EventsWatcher(void *, SDL_Event *event);
-    
+        
     void SetProjectionMatrix(const mat4x4f &mat);
     void SetModelViewMatrix(const mat4x4f &mat);
     
     void Begin();
     
+    void SetOutBuffer(int32_t bfid = BUF_OFF);
+    uint32_t GetBufferTex(int32_t bfid = BUF_OFF);
+    
     void SetPalettes(const Common::PlaneArray<SDL_Color, 256, 256> &pals);
     
     void Clear(SDL_Color clr = {0, 0, 0});
+        
+    void DrawRect(uint32_t tex, Common::FRect out, float alpha = 1.0);
+    void DrawRect(const Image *img, Common::FRect out);
     void Draw(const Image *img, Common::Point out);
+    
     void Draw(const PalImage *img, int32_t pal, Common::Point out);
+    void DrawShadow(const PalImage *img, Common::Point out);
     void Flip();
     
-    void SetFade(bool on, const vec3f &blend = vec3f());
+    void SetFade(bool on, const vec3f &blend);
+    void SetFade(bool on) {_state.BBlend = on;};
     
     void SetLightMask(Light *l);
     
     void SetMode(Common::Point res, int windowed = 1);
+    
+    void SetScissor(bool mode, Common::Rect rect = Common::Rect());
+    
+    SDL_Surface *CreateSWSurface(Common::Point sz);
     
     Image *CreateImage(Common::Point sz);
     int LockImage(Image *img);
@@ -152,6 +179,14 @@ public:
     void DrawVtxQuad(const std::array<TVertex, 4> &vtx);
     
     uint32_t CompileShader(int32_t type, const std::string &string);
+    
+    void SetBufferSize(int32_t bufid, Common::Point sz);
+    void InitBuffer(int32_t bufid);
+    
+    Font *LoadFont(const std::string &fname);
+    void DrawText(const std::string &txt, Font *fnt, Common::Point pos);
+    
+    void SetVirtResolution(Common::Point size = Common::Point());
 
 public:
     SDL_PixelFormat *_pixfmt;
@@ -171,14 +206,23 @@ public:
     int32_t _stdCBLendLoc = -1;
     int32_t _stdBLightLoc = -1;
     int32_t _stdPalLoc = -1;
+    int32_t _stdDrawModeLoc = -1;
     int32_t _stdTex1Loc = -1;
     int32_t _stdTex2Loc = -1;
     int32_t _stdTex3Loc = -1;
+    int32_t _stdAlphaLoc = -1;
+   
+    
+    int32_t _activeBuffer = 0;
+    
+    std::array<uint32_t, BUF_MAX> _glBuffer;
+    std::array<uint32_t, BUF_MAX> _bufferTex;
     
     uint32_t _psPalettes = 0;
     
-    Common::Point _resolution;
+    Common::Point _virtResolution;
     Common::Point _winSize;
+    Common::FPoint _resScale;
     
 public:
     static CDrawer Instance;

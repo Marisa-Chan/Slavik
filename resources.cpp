@@ -26,10 +26,11 @@ void Resources::CharacterSprites::Load(FSMgr::iFile *pfile)
     {
         for(int8_t j = 0; j < 8; ++j)
         {
-            Frames[k][j] = pfile->readS16L();
+            SeqInfo &s = Seq[k][j];
+            s.FrmCount = pfile->readS16L();
             
             for(int8_t i = 0; i < 12; ++i)
-                Seq[k][j][i] = pfile->readS16L();
+                s.FrameData[i].FrameID = pfile->readS16L();
         }
     }
     
@@ -37,9 +38,10 @@ void Resources::CharacterSprites::Load(FSMgr::iFile *pfile)
     {
         for(int8_t j = 0; j < 8; ++j)
         {
+            SeqInfo &s = Seq[k][j];
             for(int8_t i = 0; i < 12; ++i)
             {
-                Common::SPoint &p = unk2[k][j][i];
+                Common::Point &p = s.FrameData[i].WpnOffset;
                 p.x = pfile->readS16L();
                 p.y = pfile->readS16L();
             }
@@ -57,13 +59,14 @@ void Resources::CharacterSprites::Load(FSMgr::iFile *pfile)
     {
         for(int8_t j = 0; j < 8; ++j)
         {
+            SeqInfo &s = Seq[k][j];
             for(int8_t i = 0; i < 12; ++i)
             {
-                Common::SPoint &p1 = unk3[k][j][i][0];
+                Common::Point &p1 = s.FrameData[i].ShdOffset;
                 p1.x = pfile->readS16L();
                 p1.y = pfile->readS16L();
                 
-                Common::SPoint &p2 = unk3[k][j][i][1];
+                Common::Point &p2 = s.FrameData[i].ImgOffset;
                 p2.x = pfile->readS16L();
                 p2.y = pfile->readS16L();
             }
@@ -74,16 +77,24 @@ void Resources::CharacterSprites::Load(FSMgr::iFile *pfile)
     
     for(size_t i = 0; i < 768; ++i)
     {
-        int32_t sz = sprHdr[i * 2];
-        int32_t soff = sprHdr[i * 2 + 1];
+        int32_t shdOff = sprHdr[i * 2];
+        int32_t imgOff = sprHdr[i * 2 + 1];
         
-        if (soff >= 0 && sz > 0)
+        if (imgOff >= 0)
         {
-            pfile->seek(sprPos + soff, 0);
+            pfile->seek(sprPos + imgOff, 0);
             Images[i] = LoadRL8BitImage(pfile);
         }
         else
-            Images[i] = nullptr;        
+            Images[i] = nullptr;
+        
+        if (shdOff > 0)
+        {
+            pfile->seek(sprPos + shdOff, 0);
+            Shadows[i] = LoadRL8BitShadow(pfile);
+        }
+        else
+            Shadows[i] = nullptr;        
     }
     
     pfile->seek(spos + dataSize, 0);
@@ -99,10 +110,11 @@ void Resources::DynamicObject::Load(FSMgr::iFile *pfile)
     {
         for(int8_t j = 0; j < 8; ++j)
         {
-            Frames[k][j] = pfile->readS16L();
+            SeqInfo &s = Seq[k][j];
+            s.FrmCount = pfile->readS16L();
             
             for(int8_t i = 0; i < 18; ++i)
-                Seq[k][j][i] = pfile->readS16L();
+                s.FrameData[i].FrameID = pfile->readS16L();
         }
     }
     
@@ -117,13 +129,14 @@ void Resources::DynamicObject::Load(FSMgr::iFile *pfile)
     {
         for(int8_t j = 0; j < 8; ++j)
         {
+            SeqInfo &s = Seq[k][j];
             for(int8_t i = 0; i < 18; ++i)
             {
-                Common::SPoint &p1 = unk[k][j][i][0];
+                Common::Point &p1 = s.FrameData[i].ShdOffset;
                 p1.x = pfile->readS16L();
                 p1.y = pfile->readS16L();
                 
-                Common::SPoint &p2 = unk[k][j][i][1];
+                Common::Point &p2 = s.FrameData[i].ImgOffset;
                 p2.x = pfile->readS16L();
                 p2.y = pfile->readS16L();
             }
@@ -134,16 +147,24 @@ void Resources::DynamicObject::Load(FSMgr::iFile *pfile)
     
     for(size_t i = 0; i < 512; ++i)
     {
-        int32_t sz = sprHdr[i * 2];
-        int32_t soff = sprHdr[i * 2 + 1];
+        int32_t shdOff = sprHdr[i * 2];
+        int32_t imgOff = sprHdr[i * 2 + 1];
         
-        if (soff >= 0 && sz > 0)
+        if (imgOff >= 0)
         {
-            pfile->seek(sprPos + soff, 0);
+            pfile->seek(sprPos + imgOff, 0);
             Images[i] = LoadRL8BitImage(pfile);
         }
         else
-            Images[i] = nullptr;        
+            Images[i] = nullptr;      
+        
+        if (shdOff > 0)
+        {
+            pfile->seek(sprPos + shdOff, 0);
+            Shadows[i] = LoadRL8BitShadow(pfile);
+        }
+        else
+            Shadows[i] = nullptr;  
     }
     
     pfile->seek(spos + dataSize, 0);
@@ -210,6 +231,7 @@ void Resources::SimpleObject::Load(FSMgr::iFile *pfile, const SDL_Color *palette
         {
             pfile->seek(sprPos + soff, 0);
             Images[i] = LoadRL8BitImage(pfile, palettes + (palette / 2));
+            Shadows[i] = LoadRL8BitShadow(pfile);
         }
         else
             Images[i] = nullptr;        
@@ -449,6 +471,53 @@ GFX::PalImage *Resources::LoadRL8BitImage(FSMgr::iFile *pfile)
                 for (int32_t i = 0; i < n; ++i)
                 {
                     px[0] = pfile->readU8();
+                    px[1] = 255; 
+                    px += 2;
+                }
+            }
+        }
+    }
+    GFXDrawer.UpdatePalImage(img);
+    
+    return img;
+}
+
+
+GFX::PalImage *Resources::LoadRL8BitShadow(FSMgr::iFile *pfile)
+{
+    short w = pfile->readS16L();
+    short h = pfile->readS16L();
+    
+    /*std::vector<short> linesLength(h);
+    for(int32_t i = 0; i < h; ++i)
+        linesLength.at(i) = pfile->readS16L();*/
+    pfile->seek(h * 2, 1); // skip
+    
+    GFX::PalImage *img = GFXDrawer.CreatePalImage({w, h});
+    
+    for(int32_t y = 0; y < h; ++y)
+    {
+        uint8_t *px = (uint8_t *)(img->SW.data() + img->SW.Width() * y);
+        while(true)
+        {
+            uint8_t n = pfile->readU8();
+            
+            if (n == 0)
+                break;
+                        
+            if (n & 0x80)
+                px += (n & 0x7F) * 2;
+                /*for (int32_t i = 0; i < n; ++i)
+                    {
+                        const SDL_Color &cl = Palettes[ palOffset + pfile->readU8() ];
+                        *px = SDL_MapRGBA(); 
+                        px++;
+                    }*/
+            else
+            {
+                for (int32_t i = 0; i < n; ++i)
+                {
+                    px[0] = 0;
                     px[1] = 255; 
                     px += 2;
                 }

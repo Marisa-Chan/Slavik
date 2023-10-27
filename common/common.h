@@ -80,8 +80,10 @@ struct TPoint
 
     bool  operator==(const __Point &p)    const { return x == p.x && y == p.y; }
     bool  operator!=(const __Point &p)    const { return x != p.x || y != p.y; }
-    __Point operator+(const __Point &delta) const { return TPoint(x + delta.x, y + delta.y); }
-    __Point operator-(const __Point &delta) const { return TPoint(x - delta.x, y - delta.y); }
+    template <typename R>
+    __Point operator+(const TPoint<R> &delta) const { return TPoint(x + delta.x, y + delta.y); }
+    template <typename R>
+    __Point operator-(const TPoint<R> &delta) const { return TPoint(x - delta.x, y - delta.y); }
     
     __Point operator-() const { return __Point(-x, -y); } // -Point
 
@@ -177,16 +179,21 @@ struct TRect
         bottom = top + y;
     }
 
-    bool IsIn(T x, T y) const {
+    template <typename K>
+    bool IsIn(K x, K y) const {
         if( IsEmpty() )
             return false;
         
         return (x >= left) && (x < right) && (y >= top) && (y < bottom);
     }
-    bool IsIn(const Point &p) const {
+    
+    template <typename K>
+    bool IsIn(const TPoint<K> &p) const {
             return IsIn(p.x, p.y);
     }
-    bool IsIn(const TRect &r) const {
+    
+    template <typename K>
+    bool IsIn(const TRect<K> &r) const {
         if( IsEmpty() )
             return false;
         

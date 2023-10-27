@@ -38,11 +38,15 @@ OBJECTFILES= \
 	${OBJECTDIR}/common/strutils.o \
 	${OBJECTDIR}/fmt/format.o \
 	${OBJECTDIR}/fmt/os.o \
+	${OBJECTDIR}/font.o \
 	${OBJECTDIR}/fsmgr.o \
 	${OBJECTDIR}/game.o \
+	${OBJECTDIR}/game_data.o \
+	${OBJECTDIR}/game_newgame.o \
 	${OBJECTDIR}/game_state.o \
 	${OBJECTDIR}/gfx.o \
 	${OBJECTDIR}/glfuncs.o \
+	${OBJECTDIR}/locale.o \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/resources.o \
 	${OBJECTDIR}/system.o
@@ -87,6 +91,11 @@ ${OBJECTDIR}/fmt/os.o: fmt/os.cc
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I/usr/include -I/usr/include/c++/13.2.1 -I/usr/include/c++/13.2.1/x86_64-pc-linux-gnu `pkg-config --cflags sdl2` `pkg-config --cflags opengl` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/fmt/os.o fmt/os.cc
 
+${OBJECTDIR}/font.o: font.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I/usr/include -I/usr/include/c++/13.2.1 -I/usr/include/c++/13.2.1/x86_64-pc-linux-gnu `pkg-config --cflags sdl2` `pkg-config --cflags opengl` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/font.o font.cpp
+
 ${OBJECTDIR}/fsmgr.o: fsmgr.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
@@ -96,6 +105,16 @@ ${OBJECTDIR}/game.o: game.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I/usr/include -I/usr/include/c++/13.2.1 -I/usr/include/c++/13.2.1/x86_64-pc-linux-gnu `pkg-config --cflags sdl2` `pkg-config --cflags opengl` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game.o game.cpp
+
+${OBJECTDIR}/game_data.o: game_data.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I/usr/include -I/usr/include/c++/13.2.1 -I/usr/include/c++/13.2.1/x86_64-pc-linux-gnu `pkg-config --cflags sdl2` `pkg-config --cflags opengl` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_data.o game_data.cpp
+
+${OBJECTDIR}/game_newgame.o: game_newgame.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I/usr/include -I/usr/include/c++/13.2.1 -I/usr/include/c++/13.2.1/x86_64-pc-linux-gnu `pkg-config --cflags sdl2` `pkg-config --cflags opengl` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_newgame.o game_newgame.cpp
 
 ${OBJECTDIR}/game_state.o: game_state.cpp
 	${MKDIR} -p ${OBJECTDIR}
@@ -111,6 +130,11 @@ ${OBJECTDIR}/glfuncs.o: glfuncs.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I/usr/include -I/usr/include/c++/13.2.1 -I/usr/include/c++/13.2.1/x86_64-pc-linux-gnu `pkg-config --cflags sdl2` `pkg-config --cflags opengl` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/glfuncs.o glfuncs.cpp
+
+${OBJECTDIR}/locale.o: locale.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I/usr/include -I/usr/include/c++/13.2.1 -I/usr/include/c++/13.2.1/x86_64-pc-linux-gnu `pkg-config --cflags sdl2` `pkg-config --cflags opengl` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/locale.o locale.cpp
 
 ${OBJECTDIR}/main.o: main.cpp
 	${MKDIR} -p ${OBJECTDIR}

@@ -26,13 +26,27 @@ uniform vec3 cBlend;
 uniform bool bBlend;
 uniform bool bLight;
 uniform int pal;
+uniform int drawMode;
+uniform float Alpha;
 void main()
 {
     vec4 clr = texture2D(tex, gl_TexCoord[0].xy);
-    if (pal != -1)
+    
+    if (drawMode == 0)
     {
-        clr = vec4(texture2D(tex2, vec2(clr.r, pal / 256.0)).rgb, clr.g);
-    } 
+    }
+    else if (drawMode == 1)
+    {
+        if (pal != -1)
+        {
+            clr = vec4(texture2D(tex2, vec2(clr.r, pal / 256.0)).rgb, clr.g);
+        } 
+    }
+    else if (drawMode == 2)
+    {
+        clr = vec4(clr.r, clr.r, clr.r, clr.g);
+    }
+    
     float lightning = 0.0; 
     if (bLight)
     {
@@ -53,7 +67,7 @@ void main()
         else
            clr.b += (1.0 - clr.b) * cBlend.b;
     }
-    gl_FragColor = clr;
+    gl_FragColor = vec4(clr.rgb, clr.a * Alpha);
 })";
 
 const std::string StdVShaderText =
@@ -128,13 +142,23 @@ void CDrawer::Init(int mode)
         _stdTex2Loc = Glext::GLGetUniformLocation(_stdProgID, "tex2");
         _stdTex3Loc = Glext::GLGetUniformLocation(_stdProgID, "tex3");
         
+        _stdAlphaLoc = Glext::GLGetUniformLocation(_stdProgID, "Alpha");
+        
         _stdPalLoc = Glext::GLGetUniformLocation(_stdProgID, "pal");
+        _stdDrawModeLoc = Glext::GLGetUniformLocation(_stdProgID, "drawMode");
         
         Glext::GLUniform1i(_stdTex1Loc, 0);
         Glext::GLUniform1i(_stdTex2Loc, 1);
         Glext::GLUniform1i(_stdTex3Loc, 2);
-        
+                
         _stdBLightLoc = Glext::GLGetUniformLocation(_stdProgID, "bLight");
+        
+        
+        Glext::GLGenFramebuffers(3, _glBuffer.data());
+        glGenTextures(3, _bufferTex.data());
+        
+        for(int32_t i = 0; i < BUF_MAX; ++i)
+            InitBuffer(i);
     }
     
     System::EventsAddHandler(EventsWatcher);
@@ -198,6 +222,65 @@ void CDrawer::Clear(SDL_Color clr)
     
 }
 
+void CDrawer::DrawRect(uint32_t tex, Common::FRect out, float alpha)
+{
+    switch (_mode)
+    {
+        default:
+            break;
+            
+        case MODE_HW:
+        case MODE_PS:
+        {
+            _state.Tex = tex;
+            _state.Pal = -1;
+            _state.DrawMode = 0;
+            float tmp = _state.Alpha;
+            _state.Alpha = alpha;
+            ApplyStates();
+
+            std::array<TVertex, 4> vtx = {
+                TVertex( vec3f(out.left,  out.top,    0.0), tUtV(0.0, 0.0) ),
+                TVertex( vec3f(out.left,  out.bottom, 0.0), tUtV(0.0, 1.0) ),
+                TVertex( vec3f(out.right, out.bottom, 0.0), tUtV(1.0, 1.0) ),
+                TVertex( vec3f(out.right, out.top,    0.0), tUtV(1.0, 0.0) )
+            };
+            
+            DrawVtxQuad(vtx);
+            _state.Alpha = tmp;
+        }
+            break;
+    }
+}
+
+void CDrawer::DrawRect(const Image *img, Common::FRect out)
+{
+    switch (_mode)
+    {
+        default:
+            break;
+            
+        case MODE_HW:
+        case MODE_PS:
+        {
+            _state.Tex = img->HW;
+            _state.Pal = -1;
+            _state.DrawMode = 0;
+            ApplyStates();
+
+            std::array<TVertex, 4> vtx = {
+                TVertex( vec3f(out.left,  out.top,    0.0), tUtV(0.0, 0.0) ),
+                TVertex( vec3f(out.left,  out.bottom, 0.0), tUtV(0.0, 1.0) ),
+                TVertex( vec3f(out.right, out.bottom, 0.0), tUtV(1.0, 1.0) ),
+                TVertex( vec3f(out.right, out.top,    0.0), tUtV(1.0, 0.0) )
+            };
+            
+            DrawVtxQuad(vtx);
+        }
+            break;
+    }
+}
+
 void CDrawer::Draw(const Image *img, Common::Point out)
 {
     switch (_mode)
@@ -215,16 +298,17 @@ void CDrawer::Draw(const Image *img, Common::Point out)
         {
             _state.Tex = img->HW;
             _state.Pal = -1;
+            _state.DrawMode = 0;
             ApplyStates();
 
             const int32_t w = img->SW->w;
             const int32_t h = img->SW->h;
 
             std::array<TVertex, 4> vtx = {
-                TVertex( vec3f(out.x,     out.y,     0.0), tUtV(0.0, 0.0), TGLColor(1.0, 1.0, 1.0, 1.0) ),
-                TVertex( vec3f(out.x,     out.y + h, 0.0), tUtV(0.0, 1.0), TGLColor(1.0, 1.0, 1.0, 1.0) ),
-                TVertex( vec3f(out.x + w, out.y + h, 0.0), tUtV(1.0, 1.0), TGLColor(1.0, 1.0, 1.0, 1.0) ),
-                TVertex( vec3f(out.x + w, out.y,     0.0), tUtV(1.0, 0.0), TGLColor(1.0, 1.0, 1.0, 1.0) )
+                TVertex( vec3f(out.x,     out.y,     0.0), tUtV(0.0, 0.0) ),
+                TVertex( vec3f(out.x,     out.y + h, 0.0), tUtV(0.0, 1.0) ),
+                TVertex( vec3f(out.x + w, out.y + h, 0.0), tUtV(1.0, 1.0) ),
+                TVertex( vec3f(out.x + w, out.y,     0.0), tUtV(1.0, 0.0) )
             };
             
             DrawVtxQuad(vtx);
@@ -244,16 +328,46 @@ void CDrawer::Draw(const PalImage *img, int32_t pal, Common::Point out)
         {
             _state.Tex = img->HW;
             _state.Pal = pal;
+            _state.DrawMode = 1;
             ApplyStates();
 
             const int32_t w = img->SW.Width();
             const int32_t h = img->SW.Height();
 
             std::array<TVertex, 4> vtx = {
-                TVertex( vec3f(out.x,     out.y,     0.0), tUtV(0.0, 0.0), TGLColor(1.0, 1.0, 1.0, 1.0) ),
-                TVertex( vec3f(out.x,     out.y + h, 0.0), tUtV(0.0, 1.0), TGLColor(1.0, 1.0, 1.0, 1.0) ),
-                TVertex( vec3f(out.x + w, out.y + h, 0.0), tUtV(1.0, 1.0), TGLColor(1.0, 1.0, 1.0, 1.0) ),
-                TVertex( vec3f(out.x + w, out.y,     0.0), tUtV(1.0, 0.0), TGLColor(1.0, 1.0, 1.0, 1.0) )
+                TVertex( vec3f(out.x,     out.y,     0.0), tUtV(0.0, 0.0) ),
+                TVertex( vec3f(out.x,     out.y + h, 0.0), tUtV(0.0, 1.0) ),
+                TVertex( vec3f(out.x + w, out.y + h, 0.0), tUtV(1.0, 1.0) ),
+                TVertex( vec3f(out.x + w, out.y,     0.0), tUtV(1.0, 0.0) )
+            };
+            
+            DrawVtxQuad(vtx);
+        }
+            break;
+    }
+}
+
+void CDrawer::DrawShadow(const PalImage *img, Common::Point out)
+{
+    switch (_mode)
+    {
+        default:
+            break;
+            
+        case MODE_PS:
+        {
+            _state.Tex = img->HW;
+            _state.DrawMode = 2;
+            ApplyStates();
+
+            const int32_t w = img->SW.Width();
+            const int32_t h = img->SW.Height();
+
+            std::array<TVertex, 4> vtx = {
+                TVertex( vec3f(out.x,     out.y,     0.0), tUtV(0.0, 0.0) ),
+                TVertex( vec3f(out.x,     out.y + h, 0.0), tUtV(0.0, 1.0) ),
+                TVertex( vec3f(out.x + w, out.y + h, 0.0), tUtV(1.0, 1.0) ),
+                TVertex( vec3f(out.x + w, out.y,     0.0), tUtV(1.0, 0.0) )
             };
             
             DrawVtxQuad(vtx);
@@ -287,9 +401,26 @@ void CDrawer::SetMode(Common::Point res, int windowed)
             
         case MODE_HW:
         case MODE_PS:
-            _winSize = res;            
+            _winSize = res;  
+            _resScale = Common::FPoint(1.0 / (float)res.x, 1.0 / (float)res.y);
+            
+            SetBufferSize(BUF_0, _winSize);
+            SetBufferSize(BUF_1, _winSize);
+            SetBufferSize(BUF_2, _winSize);
+            
             break;
     }
+}
+
+void CDrawer::SetScissor(bool mode, Common::Rect rect)
+{
+    _state.Scissor = mode;
+    _state.ScissorRect = rect;
+}
+
+SDL_Surface *CDrawer::CreateSWSurface(Common::Point sz)
+{
+    return SDL_CreateRGBSurfaceWithFormat(0, sz.x, sz.y, _pixfmt->BitsPerPixel, _pixfmt->format);
 }
 
 Image *CDrawer::CreateImage(Common::Point sz)
@@ -468,7 +599,7 @@ void CDrawer::ApplyStates(int setAll)
     
     if (_glext)
     {
-        if (setAll || (newStates->Prog != _lastState.Prog))
+        //if (setAll || (newStates->Prog != _lastState.Prog))
         {            
             Glext::GLUseProgram(newStates->Prog);
             
@@ -581,6 +712,12 @@ void CDrawer::ApplyStates(int setAll)
         
         if (setAll || (newStates->CBlend != _lastState.CBlend))
             Glext::GLUniform3f(_stdCBLendLoc, newStates->CBlend.x, newStates->CBlend.y, newStates->CBlend.z);
+        
+        if (setAll || (newStates->DrawMode != _lastState.DrawMode))
+            Glext::GLUniform1i(_stdDrawModeLoc, newStates->DrawMode);
+        
+        if (setAll || (newStates->Alpha != _lastState.Alpha))
+            Glext::GLUniform1f(_stdAlphaLoc, newStates->Alpha);
     }
 
 //    if (setAll || (newStates->Zwrite != _lastState.Zwrite))
@@ -590,6 +727,23 @@ void CDrawer::ApplyStates(int setAll)
 //        else
 //            glDepthMask(GL_FALSE);
 //    }
+    
+    if (setAll || (newStates->Scissor != _lastState.Scissor) || (newStates->Scissor && (newStates->ScissorRect != _lastState.ScissorRect)))
+    {
+        if (newStates->Scissor)
+        {
+            glEnable(GL_SCISSOR_TEST);
+            Common::PointRect t = newStates->ScissorRect;
+            t.x = t.x * _winSize.x / _virtResolution.x;
+            t.y = t.y * _winSize.y / _virtResolution.y;
+            t.w = t.w * _winSize.x / _virtResolution.x;
+            t.h = t.h * _winSize.y / _virtResolution.y;
+            
+            glScissor(t.x, _winSize.y - (t.y + t.h), t.w, t.h);
+        }
+        else
+            glDisable(GL_SCISSOR_TEST);
+    }
 
     if (setAll < 2)
         _lastState = _state;
@@ -600,7 +754,6 @@ void CDrawer::DrawVtxQuad(const std::array<GFX::CDrawer::TVertex, 4> &vtx)
     static const uint16_t indexes[6] = {0, 1, 2, 0, 2, 3};
     
     glVertexPointer(3, GL_FLOAT, sizeof(TVertex), &vtx[0].Pos);
-    glColorPointer(4, GL_FLOAT, sizeof(TVertex), &vtx[0].Color);
     glTexCoordPointer(2, GL_FLOAT, sizeof(TVertex), &vtx[0].TexCoord);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, &indexes);
@@ -637,6 +790,42 @@ uint32_t CDrawer::CompileShader(int32_t type, const std::string &string)
     return sh;
 }
 
+void CDrawer::SetBufferSize(int32_t bufid, Common::Point sz)
+{
+    if (bufid != BUF_OFF)
+    {
+        glBindTexture(GL_TEXTURE_2D, _bufferTex.at(bufid));
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sz.x, sz.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+        
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        _state.Tex = 0;
+    }
+}
+
+void CDrawer::InitBuffer(int32_t bufid)
+{
+    if (bufid != BUF_OFF)
+    {
+        Glext::GLBindFramebuffer(GL_FRAMEBUFFER, _glBuffer.at(bufid));
+        glBindTexture(GL_TEXTURE_2D, _bufferTex.at(bufid));
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+        
+        Glext::GLFrameBufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _bufferTex.at(bufid), 0);
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+        SetOutBuffer(_activeBuffer);
+        
+        _state.Tex = 0;
+    }
+}
+
+
 void CDrawer::SetFade(bool on, const vec3f &blend)
 {
     _state.BBlend = on;
@@ -662,13 +851,9 @@ void CDrawer::Begin()
     glDepthMask(GL_FALSE);
     glDisable(GL_ALPHA_TEST);
 
-    SetProjectionMatrix( mat4x4f::Ortho(0, _winSize.x, _winSize.y, 0, -1, 1) );
-    SetModelViewMatrix( mat4x4f() );
-
     glViewport(0, 0, _winSize.x, _winSize.y);
 
     glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_COLOR_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     
     glActiveTexture(GL_TEXTURE0);
@@ -701,6 +886,26 @@ void CDrawer::Begin()
             
 }
 
+
+void CDrawer::SetOutBuffer(int32_t bfid)
+{
+    if (bfid != BUF_OFF)
+        Glext::GLBindFramebuffer(GL_FRAMEBUFFER, _glBuffer.at(bfid));
+    else
+        Glext::GLBindFramebuffer(GL_FRAMEBUFFER, 0);
+    
+    _activeBuffer = bfid;
+}
+
+uint32_t CDrawer::GetBufferTex(int32_t bfid)
+{
+    if (bfid == BUF_OFF)
+        return 0;
+    
+    return _bufferTex.at(bfid);
+}
+
+
 void CDrawer::SetPalettes(const Common::PlaneArray<SDL_Color, 256, 256> &pals)
 {
     glActiveTexture(GL_TEXTURE1);
@@ -718,6 +923,30 @@ void CDrawer::SetPalettes(const Common::PlaneArray<SDL_Color, 256, 256> &pals)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, pals.data()); 
     
     glActiveTexture(GL_TEXTURE0);
+}
+
+void CDrawer::SetVirtResolution(Common::Point size)
+{
+    if (size.x == 0 || size.y == 0)
+        size = _winSize;
+
+    SetProjectionMatrix( mat4x4f::Ortho(0, size.x, size.y, 0, -1, 1) );
+    
+    _state.Scissor = false;
+    _virtResolution = size;
+    
+    glMatrixMode(GL_MODELVIEW);
+}
+
+int32_t PowerOf2(int32_t n)
+{
+    for(int32_t i = 2; i < 32; ++i)
+    {
+        if ( n < (1 << i) )
+            return (1 << i);
+    }
+
+    return 0;
 }
 
 SDL_Surface * ConvertSDLSurface(SDL_Surface *src, const SDL_PixelFormat * fmt)

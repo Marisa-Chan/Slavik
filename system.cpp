@@ -87,6 +87,7 @@ void Init()
 
     
     cont = SDL_GL_CreateContext(window);
+    SDL_GL_MakeCurrent(window, cont);
 
     //TTF_Init();
 
@@ -147,6 +148,10 @@ bool ProcessEvents()
 
             case SDL_WINDOWEVENT_CLOSE:
                 return true;
+            
+            case SDL_WINDOWEVENT_DISPLAY_CHANGED:
+                SDL_GL_MakeCurrent(window, cont);
+                break;
 
             default:
                 break;

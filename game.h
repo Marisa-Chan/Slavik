@@ -4,11 +4,32 @@
 #include <map>
 #include "common/common.h"
 #include "resources.h"
+#include "font.h"
+
 
 
 namespace Game
 {
     
+constexpr const int32_t TileW = 116;
+constexpr const int32_t TileWh = TileW / 2;
+constexpr const int32_t TileWhh = TileW / 4;
+constexpr const int32_t TileH = 32;
+constexpr const int32_t TileHh = TileH / 2;
+constexpr const int32_t DayDuration = 21600;
+
+constexpr const int32_t FrameTime = 60; //ms
+
+constexpr const int32_t SCREENRESX = 800;
+constexpr const int32_t SCREENRESY = 600;
+constexpr const float PX = 1.0 / (float) SCREENRESX;
+constexpr const float PY = 1.0 / (float) SCREENRESY;
+
+constexpr const int32_t TXTHEIGHT = 15;
+
+extern const Common::Point GScrOff;
+
+
 class Engine
 {
 public:
@@ -20,6 +41,59 @@ public:
         KEYFN_MAPDOWN  = 3,
         
         KEYFN_MAX
+    };
+    
+    enum MOUSEB
+    {
+        MOUSEB_L = 1,
+        MOUSEB_R = 2,
+    };
+    
+    enum STATEMODE
+    {
+        STATEMD_PLAY = 0,
+        STATEMD_MAINMENU = 1,
+        STATEMD_NEWGAME = 2,
+        STATEMD_QUIT = 3,
+        STATEMD_MODE4 = 4,
+        STATEMD_MODE5 = 5,
+        STATEMD_SETTINGS = 6,
+        STATEMD_MODE7 = 7,
+        STATEMD_MODE8 = 8,
+        STATEMD_MODE9 = 9,
+        
+        STATEMD_UNKNOWN = -1
+    };
+    
+    enum PLAYSCREEN
+    {
+        PLSCREEN_0   = 0,
+        PLSCREEN_MAP = 5,
+    };
+    
+    enum MAINBTN
+    {
+        MAINBTN_RESUME = 0,
+        MAINBTN_SAVE = 1,
+        MAINBTN_LOAD = 2,
+        MAINBTN_NEW = 3,
+        MAINBTN_SETTINGS = 4,
+        MAINBTN_EXIT = 5
+    };
+    
+    enum BONUS
+    {
+        BONUS_KHAR = 0,
+        BONUS_LOV  = 1,
+        BONUS_KHAR2 = 2,
+        BONUS_HP   = 3,
+        BONUS_SIL  = 4,
+        BONUS_VIN  = 5,
+        BONUS_BRN  = 6,
+        BONUS_UDR  = 7,
+        BONUS_VER  = 8,
+        
+        BONUS_MAX
     };
     
     struct GameMap
@@ -56,25 +130,40 @@ public:
         Common::Point MapLimits;
     };
     
+    struct ImagePlace
+    {
+        GFX::Image *Img = nullptr;
+        Common::Point DrawPlace;
+        Common::Rect Limits;
+    };
+    
+    struct TextPlace
+    {
+        std::string Text;
+        GFX::Font *Font = nullptr;
+        Common::Point DrawPlace;
+        Common::Rect Limits;
+    };
+    
 public:
     struct Character
     {
+        int32_t CharIndex = -1;
         uint8_t State;
         uint8_t Direction;
         uint8_t field2_0x2;
-        uint8_t field3_0x3;
+        uint8_t field_0x3;
         uint8_t ClassID;
         uint8_t field5_0x5;
-        uint8_t field6_0x6;
-        uint8_t field7_0x7;
-        int16_t field8_0x8;
-        int16_t field9_0xa;
+        int16_t field6_0x6;
+        int16_t tileY;
+        int16_t tileX;
         int16_t _field_0xc;
         int16_t _field_0xe;
         uint8_t Frame;
         uint8_t field15_0x11;
-        uint8_t field16_0x12;
-        uint8_t field17_0x13;
+        uint8_t field_0x12;
+        int8_t field17_0x13;
         uint8_t field18_0x14;
         uint8_t field19_0x15;
         uint8_t field20_0x16;
@@ -141,33 +230,31 @@ public:
         uint8_t field81_0xc1;
         uint8_t field82_0xc2;
         uint8_t field83_0xc3;
-        uint8_t field84_0xc4;
-        uint8_t field85_0xc5;
-        uint8_t field86_0xc6;
-        uint8_t field87_0xc7;
-        uint8_t field88_0xc8;
-        uint8_t field89_0xc9;
+        int16_t CurrentBrn;
+        int16_t CurrentUdr;
+        int16_t CurrentVer;
         uint8_t field90_0xca;
         uint8_t field91_0xcb;
         uint8_t field92_0xcc;
         uint8_t field93_0xcd;
-        uint8_t field94_0xce;
-        uint8_t field95_0xcf;
+        int16_t field_0xce;
         uint8_t field96_0xd0;
-        uint8_t field97_0xd1;
+        uint8_t Flags;
         uint8_t field98_0xd2;
         uint8_t field99_0xd3;
-        uint8_t field100_0xd4;
-        uint8_t field101_0xd5;
+        uint8_t NameID;
+        uint8_t NickID;
         uint8_t CharacterBase;
         uint8_t FrameCount;
         int32_t paletteOffset;
-        void * pSpriteHdr;
-        uint16_t * pGraphUnk3;
+        int32_t pFrame;
+        Common::Point shdOffset;
+        Common::Point imgOffset;
         int32_t field107_0xe4;
-        int32_t xPOS;
+        //int32_t xPOS;
+        Common::Point POS;
         int32_t field109_0xec;
-        int32_t yPOS;
+        //int32_t yPOS;
         int16_t field111_0xf4;
         int16_t field112_0xf6;
         uint8_t field113_0xf8;
@@ -180,11 +267,13 @@ public:
         uint8_t field120_0xff;
         
         void Load(FSMgr::iFile *pfile);
+        
+        int32_t GetMaxPartySize();
     };
     
     struct MapChar
     {
-        int16_t CharacterIndex;
+        int16_t CharacterIndex = 0;
         uint8_t field1_0x2;
         uint8_t field2_0x3;
         uint8_t field3_0x4;
@@ -215,12 +304,48 @@ public:
         void Load(FSMgr::iFile *pfile);
     };
     
+    struct ItemInfo
+    {
+        enum FLAGS
+        {
+            FLAG_IDENTIFIED = (1 << 0),
+        };
+        
+        int8_t TypeID = -1;
+        int8_t BonusID = -1;
+        int8_t SpecialID = -1;
+        int8_t InfoID = -1;
+        float Concentration = 0.0;
+        float Weight = 0.0;
+        int16_t Poison = 0;
+        uint8_t Flags = 0;
+        
+        void Load(FSMgr::iFile *pfile);
+    };
+    
+    struct GS2
+    {
+        uint8_t field0_0x0;
+        uint8_t field1_0x1;
+        uint8_t field2_0x2;
+        int8_t MapID;
+        uint8_t field4_0x4;
+        int16_t field5_0x5;
+        int16_t field6_0x7;
+        int16_t left;
+        int16_t up;
+        int16_t right;
+        int16_t bottom;
+        
+        void Load(FSMgr::iFile *pfile);
+    };
+    
     struct GameState
     {
-        //UnkItemStruct [2000];
+        std::array<ItemInfo, 8192> Items;
         std::array<MapChar, 200> MapChar_ARRAY;
-        //DAT_0079efdc
-        //DAT_007aa2dc
+        //DAT_0079efdc GS1
+        std::array<GS2, 250> GS2ARRAY;
         std::array<Character, 2000> Characters;
         //DAT_00835b18
         
@@ -229,6 +354,7 @@ public:
     
 public:
     bool Process();
+    bool Update();
     
     void Init(int gfxmode);
     
@@ -243,18 +369,164 @@ public:
     
     static GameMap *LoadGameMap(int32_t mapID);
     
+    vec3f CalculateLight();
+    bool StartPlayMovie(const std::string &movie);
+    
+    void SetMusicOn(bool en);
+    
+    void PlayChangeScreen(int32_t screen);
+    
+    void FUN_004292e4();
+    void FUN_00429194(int32_t);
+    
+    int32_t GetMouseOnScreenBox(Common::Point point, const std::vector<Common::Rect> &boxes);
+    
+    void ImgQueue1(GFX::Image *img, Common::Point pos, Common::Rect limits);
+    void ImgQueue2(GFX::Image *img, Common::Point pos, Common::Rect limits);
+    void TextQueue(const std::string &text, GFX::Font *font, Common::Point pos, Common::Rect limits);
+    int32_t PlaceTextWidth(const std::string &text, GFX::Font *font, Common::Point pos, int32_t width);
+    std::string GetStrToken(const std::string &text);
+    
+    void UpdateMainMenu();
+    void Update7();
+    void Update9();
+    
+    void OnMovieEnd();
+    
+    bool LoadMainMenuImages();
+    void MainMenuDraw(int32_t highlight);
+
+    void FreeMenuImages();
+    
+    void PlaySound(int, int, int, int) 
+    {printf("Incomplete %s\n", __PRETTY_FUNCTION__);};
+    
+    void LoadINTR() 
+    {printf("Incomplete %s\n", __PRETTY_FUNCTION__);};
+    
+    void LoadSAVE() 
+    {printf("Incomplete %s\n", __PRETTY_FUNCTION__);};
+    
+    bool LoadNEWH();
+    void DrawNewGameMenu(int32_t);
+    void UpdateNewGameMenu();
+    void DrawNewGameText(int32_t);
+    
+    void SaveLoadMenuDraw(bool isSave)
+    {printf("Incomplete %s\n", __PRETTY_FUNCTION__);};
+    
+    void FUN_004143dc(Character &ch, int dir);
+    
+    Common::Point FUN_00439ba0(Common::Point tilepos)
+    {
+        return Common::Point(tilepos.x * TileWh + (2 - (tilepos.y & 1)) * TileWhh, tilepos.y * TileHh + TileHh);
+    }
+    
+    int32_t ComputePan(Common::Point tilepos)
+    {
+        if (_mainCharacter->tileX == tilepos.x)
+            return 0;
+        else 
+            return (float)(tilepos.x - _mainCharacter->tileX) * 10000.0 * 0.00625;
+    }
+    
+    int32_t ComputeVolume(Common::Point tilepos)
+    {
+        Common::Point tmp = FUN_00439ba0( {_mainCharacter->tileX, _mainCharacter->tileY} ) - FUN_00439ba0(tilepos);
+        int32_t dist = tmp.Length<int32_t>();
+        if (dist < 2049)
+            return dist * -10000 / 2048;
+        else 
+            return -10000;
+    }
+    
+    int32_t FUN_00411758(Character &ch1, Common::Point tilepos);
+    
+    bool FUN_0043ecba(Common::Point *out, Common::Point tilepos, int offset);
+    
+    
+    void DrawSettingsScreen(int32_t);
+    
 public:
+    std::string _langLiter;
+    Common::Point _mousePos;
+    Common::Point _mouseMove;
+    
+    uint32_t _mousePress = 0;
+    uint32_t _mouseDown = 0;
+    uint32_t _mouseDownPrev = 0;
+    
+    Common::Point _mouseCurPos;
+    
+    Common::Point _screenSize;
+    
     Common::Point _camera;
     float _zoom = 1.0;
     Common::Rect _visibleTiles;
     
     GameState _state;
+    int32_t _stateMode = STATEMD_UNKNOWN;
+    int32_t _nextStateMode = STATEMD_UNKNOWN;
+    
+    int32_t _playScreenID = PLSCREEN_0;
     
     std::map<int16_t, int8_t> _KeyMap;
     std::array<int8_t, KEYFN_MAX> _KeyState;
     
     GameMap *_currentMap = nullptr;
     int32_t _currentMapID = -1;
+    
+    vec3f _fadeLevelRGB;
+    
+    bool _isPlayingVideo = false;
+    bool _isGameStarted = false;
+    
+    bool _bConfTransparency = true;
+    bool _bConfDayNight = true;
+    bool _bConfLightEffects = true;
+    bool _bConfMusic = true;
+    bool _bConfShadows = true;
+    bool _bConfSound = true;
+    
+    bool _svTransparency;
+    bool _svDayNight;
+    bool _svLightEffects;
+    bool _svMusic;
+    bool _svShadows;
+    bool _svSound;
+    
+    static const std::map<uint8_t, vec3i> _mapsLights;
+    static const std::array<int32_t, 13> _lightPhazes;
+    
+    bool _bLightEff = false;
+    bool _bLightGround = false;
+    
+    int32_t _counter = 0;
+    
+    
+    Character *_mainCharacter = nullptr;
+    bool _bGodMode = false;
+    
+    
+    
+    
+    std::vector<GFX::Image *> _menuImages;
+    GFX::Image *_bkgImage = nullptr;
+    
+    static const std::vector<Common::Rect> _mainMenuBoxes;
+    static const std::vector<Common::Rect> _saveMenuBoxes; 
+    static const std::vector<Common::Rect> _newGameMenuBoxes; 
+    
+    int32_t _saveMenuBtnID = -1;
+    
+    std::array<ImagePlace, 100> _imgQueue1;
+    int32_t _imgQueue1Count = 0;
+    std::array<ImagePlace, 100> _imgQueue2;
+    int32_t _imgQueue2Count = 0;
+    std::array<TextPlace, 100> _textQueue;
+    int32_t _textQueueCount = 0;
+    
+    std::array<GFX::Font *, 4> _Fonts;
     
 public:
     static Engine Instance;

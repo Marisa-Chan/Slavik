@@ -5,7 +5,6 @@
 namespace Game
 {
     
-    int aaa = 0;
     
 void Engine::Character::Load(FSMgr::iFile* pfile)
 {
@@ -13,13 +12,16 @@ void Engine::Character::Load(FSMgr::iFile* pfile)
     Direction = pfile->readU8();
     pfile->seek(2, 1);
     ClassID = pfile->readU8();
-    pfile->seek(3, 1);
-    field8_0x8 = pfile->readS16L();
-    field9_0xa = pfile->readS16L();
+    field5_0x5 = pfile->readU8();
+    field6_0x6 = pfile->readS16L();
+    tileY = pfile->readS16L();
+    tileX = pfile->readS16L();
     _field_0xc = pfile->readS16L();
     _field_0xe = pfile->readS16L();
     Frame = pfile->readU8();
-    pfile->seek(34, 1);
+    field15_0x11 = pfile->readU8();
+    field_0x12 = pfile->readU8();
+    pfile->seek(32, 1);
     Level = pfile->readU8();
     Gold = pfile->readS32L();
     FreePoints = pfile->readS32L();
@@ -57,17 +59,51 @@ void Engine::Character::Load(FSMgr::iFile* pfile)
     
     CharacterBase = pfile->readU8();
     FrameCount = pfile->readU8();
-    paletteOffset = pfile->readS32L();
+    paletteOffset = pfile->readS32L() / 512;
     pfile->seek(8, 1);
     field107_0xe4 = pfile->readS32L();
-    xPOS = pfile->readS32L();
+    POS.x = pfile->readS32L();
     field109_0xec = pfile->readS32L();
-    yPOS = pfile->readS32L();
+    POS.y = pfile->readS32L();
     field111_0xf4 = pfile->readS16L();
     field112_0xf6 = pfile->readS16L();
     pfile->seek(8, 1);
+}
+
+int32_t Engine::Character::GetMaxPartySize()
+{
+    static const int32_t PartySizeCharm [5][10] =
+    {{15, 21, 28, 36, 45, 55, 65, 74, 83, 95},
+     {15, 21, 28, 36, 45, 55, 65, 74, 83, 95},
+     {17, 23, 30, 38, 47, 57, 67, 76, 85, 97},
+     {15, 21, 28, 36, 45, 55, 65, 74, 83, 95},
+     {20, 28, 36, 45, 55, 65, 74, 83, 95, 110}};
     
-    aaa += 1;
+    int32_t partySize = 0;
+    for (; partySize < 10; ++partySize)
+    {
+        if (PartySizeCharm[(ClassID & 7) - 1][partySize] <= CurrentHarizm)
+            break;
+    }
+    
+    if (partySize < 10)
+        partySize++;
+    
+    return partySize;
+}
+
+
+void Engine::ItemInfo::Load(FSMgr::iFile* pfile)
+{
+    TypeID = pfile->readS8();
+    BonusID = pfile->readS8();
+    SpecialID = pfile->readS8();
+    InfoID = pfile->readS8();
+    Concentration = pfile->readFloatL();
+    Weight = pfile->readFloatL();
+    Poison = pfile->readS16L();
+    Flags = pfile->readU8();
+    /*unk = */ pfile->readU8();
 }
 
 void Engine::MapChar::Load(FSMgr::iFile* pfile)
@@ -85,10 +121,26 @@ void Engine::MapChar::Load(FSMgr::iFile* pfile)
     MapID = pfile->readU8();
     pfile->seek(4, 1);
 }
+
+void Engine::GS2::Load(FSMgr::iFile* pfile)
+{
+    field0_0x0 = pfile->readU8();
+    field1_0x1 = pfile->readU8();
+    field2_0x2 = pfile->readU8();
+    MapID = pfile->readS8();
+    field4_0x4 = pfile->readU8();
+    field5_0x5 = pfile->readS16L();
+    field6_0x7 = pfile->readS16L();
+    left = pfile->readS16L();
+    up = pfile->readS16L();
+    right = pfile->readS16L();
+    bottom = pfile->readS16L();
+}
     
 void Engine::GameState::Load(FSMgr::iFile *pfile)
 {
-    pfile->seek(0x20000, 1);
+    for(ItemInfo &it : Items)
+        it.Load(pfile);
     
     for(MapChar &it : MapChar_ARRAY)
         it.Load(pfile);
@@ -96,8 +148,14 @@ void Engine::GameState::Load(FSMgr::iFile *pfile)
     pfile->seek(32000, 1);
     pfile->seek(4250, 1);
     
-    for(Character &it : Characters)
+    
+    for(int32_t i = 0; i < Characters.size(); ++i)
+    {
+        Character &it = Characters.at(i);
+        it.CharIndex = i;
         it.Load(pfile);
+    }
+        
     
     pfile->seek(24100, 1);
 }
