@@ -346,7 +346,7 @@ void Engine::Draw()
         if ( obj.MapID == _currentMapID )
         {
             Character &ch = _state.Characters.at(obj.CharacterIndex);
-            if (ch.ClassID & 0x40)
+            if (ch.ClassID & CLASS_BIT40)
             {
                 auto &dynobj = Res.DynObjects[ch.CharacterBase];
                 si = dynobj.Seq[ch.State][ch.Direction].FrameData[0].FrameID;
@@ -375,32 +375,48 @@ void Engine::Draw()
         for(int32_t i = 0; i < _imgQueue1Count; ++i)
         {
             ImagePlace &im = _imgQueue1.at(i);
-            if (im.Img)
+            if (im.Img || im.PalImg)
             {
                 if (!im.Limits.IsEmpty())
                 {
                     GFXDrawer.SetScissor(true, im.Limits);
-                    GFXDrawer.Draw(im.Img, im.DrawPlace);
+                    if (im.Pal != -1)
+                        GFXDrawer.Draw(im.PalImg, im.Pal, im.DrawPlace);
+                    else
+                        GFXDrawer.Draw(im.Img, im.DrawPlace);
                     GFXDrawer.SetScissor(false);
                 }
                 else
-                    GFXDrawer.Draw(im.Img, im.DrawPlace);
+                {
+                    if (im.Pal != -1)
+                        GFXDrawer.Draw(im.PalImg, im.Pal, im.DrawPlace);
+                    else
+                        GFXDrawer.Draw(im.Img, im.DrawPlace);
+                }
             }
         }
         
         for(int32_t i = 0; i < _imgQueue2Count; ++i)
         {
             ImagePlace &im = _imgQueue2.at(i);
-            if (im.Img)
+            if (im.Img || im.PalImg)
             {
                 if (!im.Limits.IsEmpty())
                 {
                     GFXDrawer.SetScissor(true, im.Limits);
-                    GFXDrawer.Draw(im.Img, im.DrawPlace);
+                    if (im.Pal != -1)
+                        GFXDrawer.Draw(im.PalImg, im.Pal, im.DrawPlace);
+                    else
+                        GFXDrawer.Draw(im.Img, im.DrawPlace);
                     GFXDrawer.SetScissor(false);
                 }
                 else
-                    GFXDrawer.Draw(im.Img, im.DrawPlace);
+                {
+                    if (im.Pal != -1)
+                        GFXDrawer.Draw(im.PalImg, im.Pal, im.DrawPlace);
+                    else
+                        GFXDrawer.Draw(im.Img, im.DrawPlace);
+                }
             }
         }
         
@@ -831,35 +847,31 @@ void Engine::UpdateMainMenu()
                 _mainCharacter->Metkost = 0;
                 _mainCharacter->PlotnickoeDelo = 1;
                 _mainCharacter->Medicine = 50;
-                _mainCharacter->BaseLovkost = 3;
-                _mainCharacter->CurrentLovkost = _mainCharacter->BaseLovkost;
+                _mainCharacter->CurrentLovkost = _mainCharacter->BaseLovkost = 3;
                 _mainCharacter->FreePoints = 0;
                 _mainCharacter->Direction = 5;
-                _mainCharacter->BaseHarizm = 3;
-                _mainCharacter->CurrentHarizm = _mainCharacter->BaseHarizm;
+                _mainCharacter->CurrentHarizm = _mainCharacter->BaseHarizm = 3;
                 _mainCharacter->Identification = 20;
                 _mainCharacter->NameID = 124;
                 _mainCharacter->tileX = 0;
-                _mainCharacter->tileY = _mainCharacter->tileX;
+                _mainCharacter->tileY = 0;
                 _mainCharacter->Level = 10;
                 _mainCharacter->field_0xce = 0;
                 _mainCharacter->CharacterBase = 1;
                 _mainCharacter->paletteOffset = 33;
                 _mainCharacter->KuznechnoeDelo = 10;
                 _mainCharacter->field_0x3 = 4;
-                _mainCharacter->BaseSila = 15;
-                _mainCharacter->CurrentSila = _mainCharacter->BaseSila;
-                _mainCharacter->ClassID = 5;
-                _mainCharacter->BaseVinoslivost = 10;
-                _mainCharacter->CurrentVinoslivost = _mainCharacter->BaseVinoslivost;
-                _mainCharacter->field_0x12 = 0;
+                _mainCharacter->CurrentSila = _mainCharacter->BaseSila = 15;
+                _mainCharacter->ClassID = CLASS_VOIN;
+                _mainCharacter->CurrentVinoslivost = _mainCharacter->BaseVinoslivost = 10;
+                _mainCharacter->field_0x12 = EQSLOT_SLOT0;
                 
-                _mainCharacter->ArmorWeapons[0] = 3;
-                _mainCharacter->ArmorWeapons[1] = 4;
-                _mainCharacter->ArmorWeapons[2] = 0;
-                _mainCharacter->ArmorWeapons[3] = 1;
-                _mainCharacter->ArmorWeapons[4] = 8;
-                _mainCharacter->ArmorWeapons[5] = 11;
+                _mainCharacter->ArmorWeapons[EQSLOT_SLOT0] = 3;
+                _mainCharacter->ArmorWeapons[EQSLOT_SLOT1] = 4;
+                _mainCharacter->ArmorWeapons[EQSLOT_SLOT2] = 0;
+                _mainCharacter->ArmorWeapons[EQSLOT_SLOT3] = 1;
+                _mainCharacter->ArmorWeapons[EQSLOT_SLOT4] = 8;
+                _mainCharacter->ArmorWeapons[EQSLOT_SLOT5] = 11;
                 
                 FUN_004143dc(*_mainCharacter, 0);
                 
@@ -1020,8 +1032,10 @@ void Engine::ImgQueue1(GFX::Image *img, Common::Point pos, Common::Rect limits)
     {
         ImagePlace &place = _imgQueue1.at(_imgQueue1Count);
         place.Img = img;
+        place.PalImg = nullptr;
         place.DrawPlace = pos;
         place.Limits = limits;
+        place.Pal = -1;
         
         _imgQueue1Count++;
     }
@@ -1033,8 +1047,40 @@ void Engine::ImgQueue2(GFX::Image *img, Common::Point pos, Common::Rect limits)
     {
         ImagePlace &place = _imgQueue2.at(_imgQueue2Count);
         place.Img = img;
+        place.PalImg = nullptr;
         place.DrawPlace = pos;
         place.Limits = limits;
+        place.Pal = -1;
+        
+        _imgQueue2Count++;
+    }
+}
+
+void Engine::ImgQueue1(GFX::PalImage *img, int32_t Pal, Common::Point pos, Common::Rect limits)
+{
+    if (_imgQueue1Count < _imgQueue1.size())
+    {
+        ImagePlace &place = _imgQueue1.at(_imgQueue1Count);
+        place.Img = nullptr;
+        place.PalImg = img;
+        place.DrawPlace = pos;
+        place.Limits = limits;
+        place.Pal = Pal;
+        
+        _imgQueue1Count++;
+    }
+}
+
+void Engine::ImgQueue2(GFX::PalImage *img, int32_t Pal, Common::Point pos, Common::Rect limits)
+{
+    if (_imgQueue2Count < _imgQueue2.size())
+    {
+        ImagePlace &place = _imgQueue2.at(_imgQueue2Count);
+        place.Img = nullptr;
+        place.PalImg = img;
+        place.DrawPlace = pos;
+        place.Limits = limits;
+        place.Pal = Pal;
         
         _imgQueue2Count++;
     }
@@ -1111,7 +1157,7 @@ void Engine::FUN_004143dc(Character &ch, int state)
 {
     ch.POS = FUN_00439ba0({ch.tileX, ch.tileY});
         
-    if ((ch.ClassID & 0x40) == 0) 
+    if ((ch.ClassID & CLASS_BIT40) == 0) 
     {
         int32_t soundId = 0;
         switch(state) 
@@ -1143,7 +1189,7 @@ void Engine::FUN_004143dc(Character &ch, int state)
                 break;
                 
             case 5:
-                if (ch.field_0x12 == 2)
+                if (ch.field_0x12 == EQSLOT_SLOT2)
                     soundId = 8;
                 else
                     soundId = 2;
@@ -1165,6 +1211,7 @@ void Engine::FUN_004143dc(Character &ch, int state)
         ch.FrameCount = seqData.FrmCount;
         ch.imgOffset = seqData.FrameData[0].ImgOffset;
         ch.shdOffset = seqData.FrameData[0].ShdOffset;
+        ch.wpnOffset = seqData.FrameData[0].WpnOffset;
         ch.field111_0xf4 = chbase.Images.at(ch.pFrame)->SW.Width();
         ch.field112_0xf6 = chbase.Images.at(ch.pFrame)->SW.Height();
     }
@@ -1215,6 +1262,7 @@ void Engine::FUN_004143dc(Character &ch, int state)
         ch.FrameCount = seqData.FrmCount;
         ch.imgOffset = seqData.FrameData[0].ImgOffset;
         ch.shdOffset = seqData.FrameData[0].ShdOffset;
+        ch.wpnOffset = Common::Point();
         
         if ((ch.field_0x3 & 0x80) == 0) 
         {
@@ -1311,7 +1359,7 @@ int32_t Engine::FUN_00411758(Character &ch1, Common::Point tilepos)
     //ch2Id -= 1;
     Character &ch2 = _state.Characters.at(ch2Id - 1);
     
-    if ((ch2.ClassID & 0x80) || (ch2.State == 9) || (ch2.State == 3)) 
+    if ((ch2.ClassID & CLASS_BIT80) || (ch2.State == 9) || (ch2.State == 3)) 
         return 0;
 
     if ((ch1.field6_0x6 != ch2Id) || (ch2.field5_0x5 == ch1.field5_0x5)) 

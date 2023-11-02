@@ -8,28 +8,35 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/home/marisa/git/slavik/resources.h</file>
-            <file>file:/home/marisa/git/slavik/main.cpp</file>
-            <file>file:/home/marisa/git/slavik/Makefile</file>
             <file>file:/home/marisa/git/slavik/common/plane.h</file>
             <file>file:/home/marisa/git/slavik/system.h</file>
-            <file>file:/home/marisa/git/slavik/glfuncs.cpp</file>
             <file>file:/home/marisa/git/slavik/gfx.h</file>
-            <file>file:/home/marisa/git/slavik/fmt/os.cc</file>
-            <file>file:/home/marisa/git/slavik/common/strutils.h</file>
-            <file>file:/home/marisa/git/slavik/fsmgr.h</file>
             <file>file:/home/marisa/git/slavik/gfx.cpp</file>
-            <file>file:/home/marisa/git/slavik/resources.cpp</file>
             <file>file:/home/marisa/git/slavik/system.cpp</file>
             <file>file:/home/marisa/git/slavik/game_state.cpp</file>
             <file>file:/home/marisa/git/slavik/game.h</file>
-            <file>file:/home/marisa/git/slavik/common/common.h</file>
-            <file>file:/home/marisa/git/slavik/matrix.h</file>
+            <file>file:/home/marisa/git/slavik/fmt/core.h</file>
             <file>file:/home/marisa/git/slavik/vectors.h</file>
             <file>file:/home/marisa/git/slavik/common/strutils.cpp</file>
             <file>file:/home/marisa/git/slavik/game.cpp</file>
             <file>file:/home/marisa/git/slavik/fsmgr.cpp</file>
-            <file>file:/home/marisa/git/slavik/glfuncs.h</file>
             <file>file:/home/marisa/git/slavik/fmt/format.cc</file>
+            <file>file:/home/marisa/git/slavik/game_data.cpp</file>
+            <file>file:/home/marisa/git/slavik/font.h</file>
+            <file>file:/home/marisa/git/slavik/main.cpp</file>
+            <file>file:/home/marisa/git/slavik/Makefile</file>
+            <file>file:/home/marisa/git/slavik/glfuncs.cpp</file>
+            <file>file:/home/marisa/git/slavik/locale.h</file>
+            <file>file:/home/marisa/git/slavik/fmt/os.cc</file>
+            <file>file:/home/marisa/git/slavik/common/strutils.h</file>
+            <file>file:/home/marisa/git/slavik/fsmgr.h</file>
+            <file>file:/home/marisa/git/slavik/font.cpp</file>
+            <file>file:/home/marisa/git/slavik/resources.cpp</file>
+            <file>file:/home/marisa/git/slavik/locale.cpp</file>
+            <file>file:/home/marisa/git/slavik/common/common.h</file>
+            <file>file:/home/marisa/git/slavik/matrix.h</file>
+            <file>file:/home/marisa/git/slavik/game_newgame.cpp</file>
+            <file>file:/home/marisa/git/slavik/glfuncs.h</file>
         </group>
     </open-files>
 </project-private>

@@ -121,7 +121,7 @@ void Engine::DrawNewGameMenu(int32_t n)
             ImgQueue1(_menuImages[1], Common::Point(x, y), Common::Rect());
         }
     }
-    //for(int i = 0; )
+    
     ImgQueue1(_menuImages[0], Common::Point(), Common::Rect());
     
     if (_mainCharacter->CharacterBase == 1) 
@@ -182,9 +182,96 @@ void Engine::DrawNewGameMenu(int32_t n)
     else
         ImgQueue2(_menuImages[9], _newGameMenuBoxes.at(21).Pos(), Common::Rect());
     
-    Common::Rect ttt = _newGameMenuBoxes.at(22);
-    ttt.SetSize(50, 50);
-    ImgQueue2(_menuImages[5], _newGameMenuBoxes.at(22).Pos() - Common::Point(30, 30), ttt);
+    DrawNewGameChar();
+}
+
+void Engine::DrawNewGameChar()
+{
+    Common::Rect drawRect = _newGameMenuBoxes.at(22);
+    drawRect.SetSize(160, 160);
+    Common::Point pos = drawRect.Pos() + Common::Point(60, 20);
+
+    ImgQueue2(Res.CharacterBases.at(_mainCharacter->CharacterBase).Images[_mainCharacter->pFrame], 
+                                    Res.CharBasePal.at(_mainCharacter->CharacterBase),
+                                    pos,
+                                    drawRect);
+    
+    if ((_mainCharacter->field_0x3 & 4) == 0) 
+    {
+        for (int32_t i : EqLookUp1[ _mainCharacter->Direction ]) 
+        {
+            int32_t itemID = _mainCharacter->ArmorWeapons[i];
+            if (itemID)
+            {
+                const WeapArmorItemInfo &info = ArmorWeaponInfo.at( _state.Items.at(itemID).InfoID );
+                if (info.SprImage > -1)
+                {
+                    Resources::CharacterSprites &spr = Res.CharacterEquip.at(info.SprImage);
+                    Resources::CharacterSprites::FrameInfo &frm = spr.Seq[_mainCharacter->State][_mainCharacter->Direction].FrameData.at(_mainCharacter->Frame);
+                    
+                    ImgQueue2(spr.Images.at(frm.FrameID), 
+                              Res.CharEquipPal.at(info.SprImage), 
+                              pos - _mainCharacter->imgOffset + _mainCharacter->wpnOffset + frm.ImgOffset, 
+                              drawRect);
+                }
+            }
+        }
+    }
+    else
+    {
+        int32_t tmp = 0;
+        
+        if (_mainCharacter->State == 1)
+            tmp = 3;
+        else if (_mainCharacter->State == 5)
+            tmp = 2;
+        else if (_mainCharacter->State == 4)
+            tmp = 1;
+        else
+            tmp = 0;
+        
+        int32_t eqSlot = _mainCharacter->field_0x12;
+        int32_t eqSlot2 = EQSLOT_SLOT0;
+        
+        const int8_t *lkp = nullptr;
+        if ((eqSlot == EQSLOT_SLOT1) && (tmp != EQSLOT_SLOT2)) 
+        {
+            lkp = EqLookUp2[tmp][_mainCharacter->Direction];
+            eqSlot2 = EQSLOT_UNK;
+        }
+        else 
+        {
+            if (eqSlot == EQSLOT_SLOT1)
+                eqSlot = EQSLOT_UNK;
+            
+            lkp = EqLookUp3[tmp][_mainCharacter->Direction];
+            eqSlot2 = EQSLOT_SLOT5;
+        }
+        
+        for (int32_t i = 0; i < 6; ++i) 
+        {
+            int32_t itemID = _mainCharacter->ArmorWeapons[ lkp[i] ];
+            if (itemID)
+            {
+                const WeapArmorItemInfo &info = ArmorWeaponInfo.at( _state.Items.at(itemID).InfoID );
+                if (info.SprImage > -1)
+                {
+                    int32_t simg = info.SprImage;
+                    
+                    if ((eqSlot == lkp[i]) || (eqSlot2 == lkp[i]))
+                        simg += 1;
+                    
+                    Resources::CharacterSprites &spr = Res.CharacterEquip.at(simg);
+                    Resources::CharacterSprites::FrameInfo &frm = spr.Seq[_mainCharacter->State][_mainCharacter->Direction].FrameData.at(_mainCharacter->Frame);
+                                        
+                    ImgQueue2(spr.Images.at(frm.FrameID), 
+                              Res.CharEquipPal.at(simg), 
+                              pos - _mainCharacter->imgOffset + _mainCharacter->wpnOffset + frm.ImgOffset, 
+                              drawRect);
+                }
+            }
+        }
+    }
 }
 
 void Engine::UpdateNewGameMenu()
@@ -223,18 +310,17 @@ void Engine::UpdateNewGameMenu()
                 t = 0;
             
             if (_mainCharacter->Fehtovanie < _mainCharacter->Metkost || _mainCharacter->Fehtovanie == _mainCharacter->Metkost) 
-                _mainCharacter->field_0x12 = 1;
+                _mainCharacter->field_0x12 = EQSLOT_SLOT1;
             else
-                _mainCharacter->field_0x12 = 0;
+                _mainCharacter->field_0x12 = EQSLOT_SLOT0;
             
-            _mainCharacter->ArmorWeapons[0] = 3;
-            _mainCharacter->ArmorWeapons[1] = 4;
-            _mainCharacter->ArmorWeapons[3] = 1;
-            _mainCharacter->ArmorWeapons[4] = 8;
-            _mainCharacter->ArmorWeapons[5] = 11;
+            _mainCharacter->ArmorWeapons[EQSLOT_SLOT0] = 3;
+            _mainCharacter->ArmorWeapons[EQSLOT_SLOT1] = 4;
+            _mainCharacter->ArmorWeapons[EQSLOT_SLOT3] = 1;
+            _mainCharacter->ArmorWeapons[EQSLOT_SLOT4] = 8;
+            _mainCharacter->ArmorWeapons[EQSLOT_SLOT5] = 11;
             
             FUN_004143dc(*_mainCharacter, 0);
-            drawID = 0;
             drawTextID = 0;
             break;
         case 1:
@@ -247,17 +333,16 @@ void Engine::UpdateNewGameMenu()
                 t = 0;
             
             if (_mainCharacter->Fehtovanie < _mainCharacter->Metkost || _mainCharacter->Fehtovanie == _mainCharacter->Metkost)
-                _mainCharacter->field_0x12 = 1;
+                _mainCharacter->field_0x12 = EQSLOT_SLOT1;
             else 
-                _mainCharacter->field_0x12 = 2;
+                _mainCharacter->field_0x12 = EQSLOT_SLOT2;
             
-            _mainCharacter->ArmorWeapons[1] = 4;
-            _mainCharacter->ArmorWeapons[2] = 5;
-            _mainCharacter->ArmorWeapons[4] = 7;
-            _mainCharacter->ArmorWeapons[5] = 10;
+            _mainCharacter->ArmorWeapons[EQSLOT_SLOT1] = 4;
+            _mainCharacter->ArmorWeapons[EQSLOT_SLOT2] = 5;
+            _mainCharacter->ArmorWeapons[EQSLOT_SLOT4] = 7;
+            _mainCharacter->ArmorWeapons[EQSLOT_SLOT5] = 10;
             
             FUN_004143dc(*_mainCharacter, 0);
-            DrawNewGameMenu(0);
             drawTextID = 1;
             break;
         case 2:
@@ -270,19 +355,152 @@ void Engine::UpdateNewGameMenu()
                 t = 0;
             
             if (_mainCharacter->Fehtovanie < _mainCharacter->Metkost || _mainCharacter->Fehtovanie == _mainCharacter->Metkost)
-                _mainCharacter->field_0x12 = 1;
+                _mainCharacter->field_0x12 = EQSLOT_SLOT1;
             
             else
-                _mainCharacter->field_0x12 = 2;
+                _mainCharacter->field_0x12 = EQSLOT_SLOT2;
             
-            _mainCharacter->ArmorWeapons[1] = 4;
-            _mainCharacter->ArmorWeapons[2] = 5;
-            _mainCharacter->ArmorWeapons[3] = 2;
-            _mainCharacter->ArmorWeapons[4] = 6;
-            _mainCharacter->ArmorWeapons[5] = 9;
+            _mainCharacter->ArmorWeapons[EQSLOT_SLOT1] = 4;
+            _mainCharacter->ArmorWeapons[EQSLOT_SLOT2] = 5;
+            _mainCharacter->ArmorWeapons[EQSLOT_SLOT3] = 2;
+            _mainCharacter->ArmorWeapons[EQSLOT_SLOT4] = 6;
+            _mainCharacter->ArmorWeapons[EQSLOT_SLOT5] = 9;
             
             FUN_004143dc(*_mainCharacter, 0);
             drawTextID = 2;
+            break;
+        case 3:
+                // КУПЕЦ
+            _mainCharacter->CurrentLovkost = _mainCharacter->BaseLovkost = 3;
+            _mainCharacter->CurrentHarizm = _mainCharacter->BaseHarizm = 3;
+            _mainCharacter->CurrentSila = _mainCharacter->BaseSila = 10;
+            _mainCharacter->CurrentVinoslivost = _mainCharacter->BaseVinoslivost = 12;
+            _mainCharacter->FreePoints = 0;
+            _mainCharacter->ClassID = CLASS_KUPETC;
+            
+            drawTextID = id;
+            break;
+        case 4:
+                // ОХОТНИК
+            _mainCharacter->CurrentLovkost = _mainCharacter->BaseLovkost = 15;
+            _mainCharacter->CurrentHarizm = _mainCharacter->BaseHarizm = 3;
+            _mainCharacter->CurrentSila = _mainCharacter->BaseSila = 3;
+            _mainCharacter->CurrentVinoslivost = _mainCharacter->BaseVinoslivost = 10;
+            _mainCharacter->FreePoints = 0;
+            _mainCharacter->ClassID = CLASS_OHOTNIK;
+            
+            drawTextID = id;
+            break;
+        case 5:
+                // ВОЖДЬ
+            _mainCharacter->CurrentLovkost = _mainCharacter->BaseLovkost = 3;
+            _mainCharacter->CurrentHarizm = _mainCharacter->BaseHarizm = 25;
+            _mainCharacter->CurrentSila = _mainCharacter->BaseSila = 7;
+            _mainCharacter->CurrentVinoslivost = _mainCharacter->BaseVinoslivost = 7;
+            _mainCharacter->FreePoints = 0;
+            _mainCharacter->ClassID = CLASS_VOJD;
+            
+            drawTextID = id;
+            break;
+        case 6:
+                // ВОИН
+            _mainCharacter->CurrentLovkost = _mainCharacter->BaseLovkost = 3;
+            _mainCharacter->CurrentHarizm = _mainCharacter->BaseHarizm = 3;
+            _mainCharacter->CurrentSila = _mainCharacter->BaseSila = 15;
+            _mainCharacter->CurrentVinoslivost = _mainCharacter->BaseVinoslivost = 10;
+            _mainCharacter->FreePoints = 0;
+            _mainCharacter->ClassID = CLASS_VOIN;
+            
+            drawTextID = id;
+            break;
+            
+        case 15:
+            _mainCharacter->Fehtovanie = 100;
+            _mainCharacter->Metkost = 0;
+            _mainCharacter->PlotnickoeDelo = 1;
+            _mainCharacter->KuznechnoeDelo = 10;
+            
+            if (_mainCharacter->CharacterBase == 1)
+                _mainCharacter->field_0x12 = EQSLOT_SLOT0;
+            else
+                _mainCharacter->field_0x12 = EQSLOT_SLOT2;
+            
+            drawTextID = id;
+            break;
+            
+        case 16:
+            _mainCharacter->Fehtovanie = 0;
+            _mainCharacter->Metkost = 100;
+            _mainCharacter->PlotnickoeDelo = 2;
+            _mainCharacter->KuznechnoeDelo = 5;
+            _mainCharacter->field_0x12 = 1;
+            drawTextID = id;
+            break;
+            
+        case 17:
+            _mainCharacter->Trading = 10;
+            _mainCharacter->Medicine = 50;
+            _mainCharacter->Identification = 20;
+            drawTextID = id;
+            break;
+            
+        case 18:
+            _mainCharacter->Trading = 20;
+            _mainCharacter->Medicine = 50;
+            _mainCharacter->Identification = 10;
+            drawTextID = id;
+            break;
+            
+        case 19:
+            _mainCharacter->Trading = 10;
+            _mainCharacter->Medicine = 100;
+            _mainCharacter->Identification = 10;
+            drawTextID = id;
+            break;
+            
+        case 20:
+            _stateMode = STATEMD_MODE8;
+            drawID = 1;
+            break;
+            
+        case 21:
+            _stateMode = STATEMD_MODE7;
+            _isGameStarted = false;
+            _nextStateMode = STATEMD_NEWGAME;
+            drawID = -1;
+            break;
+            
+        case 25:
+            if (_mainCharacter->BaseHarizm) 
+            {
+                _mainCharacter->BaseHarizm -= 1;
+                _mainCharacter->FreePoints += 1000;
+                int32_t points = CheckKharUp(*_mainCharacter, KHAR_HARIZMA);
+                _mainCharacter->FreePoints -= 1000;
+                
+                if (points == 0)
+                    _mainCharacter->BaseHarizm += 1;
+                else 
+                {
+                    _mainCharacter->FreePoints += points;
+                    _mainCharacter->CurrentHarizm -= 1;
+
+                    drawTextID = 7;
+                }
+            }
+            break;
+            
+        case 26:
+        {
+            int32_t points = CheckKharUp(*_mainCharacter, KHAR_HARIZMA);
+            if (points != 0) {
+                _mainCharacter->CurrentHarizm += 1;
+                _mainCharacter->BaseHarizm += 1;
+                _mainCharacter->FreePoints -= points;
+                
+                drawTextID = 7;
+            }
+        }
             break;
             
         default:

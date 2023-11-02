@@ -16,6 +16,8 @@ public:
     static std::array<std::string, Engine::BONUS_MAX> BonusName;
     
     static std::array<std::string, 20> NewGameMenu;
+    
+    static std::array<std::string, 70> WeapArmorNames;
 };
 
 }

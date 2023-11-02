@@ -96,6 +96,45 @@ public:
         BONUS_MAX
     };
     
+    enum KHAR
+    {
+        KHAR_LEVEL = 0,
+        KHAR_N1 = 1,
+        KHAR_LOVKOST = 2,
+        KHAR_HARIZMA = 3,
+        KHAR_N4 = 4,
+        KHAR_SILA = 5,
+        KHAR_VINOSLIVOST = 6,
+    };
+    
+    enum CLASSID
+    {
+        CLASS_KUPETC = 2,
+        CLASS_OHOTNIK = 3,
+        CLASS_VOJD = 4,
+        CLASS_VOIN = 5,
+        
+        CLASS_MASK = 7,
+        
+        CLASS_BIT40 = 0x40,
+        CLASS_BIT80 = 0x80,
+        
+    };
+    
+    enum EQSLOT
+    {
+        EQSLOT_SLOT0 = 0,
+        EQSLOT_SLOT1 = 1,
+        EQSLOT_SLOT2 = 2,
+        EQSLOT_SLOT3 = 3,
+        EQSLOT_SLOT4 = 4,
+        EQSLOT_SLOT5 = 5,
+                
+        EQSLOT_UNK = -1,
+    };
+    
+public:
+    
     struct GameMap
     {
         struct Decoration
@@ -133,8 +172,10 @@ public:
     struct ImagePlace
     {
         GFX::Image *Img = nullptr;
+        GFX::PalImage *PalImg = nullptr;
         Common::Point DrawPlace;
         Common::Rect Limits;
+        int32_t Pal = -1;
     };
     
     struct TextPlace
@@ -145,7 +186,6 @@ public:
         Common::Rect Limits;
     };
     
-public:
     struct Character
     {
         int32_t CharIndex = -1;
@@ -219,7 +259,7 @@ public:
         uint16_t BaseSila;
         uint16_t CurrentVinoslivost;
         uint16_t BaseVinoslivost;
-        uint16_t ArmorWeapons[6];
+        int16_t ArmorWeapons[6];
         uint16_t field74_0x72[32];
         uint16_t nnnn[5];
         uint8_t field76_0xbc;
@@ -250,6 +290,7 @@ public:
         int32_t pFrame;
         Common::Point shdOffset;
         Common::Point imgOffset;
+        Common::Point wpnOffset;
         int32_t field107_0xe4;
         //int32_t xPOS;
         Common::Point POS;
@@ -340,6 +381,22 @@ public:
         void Load(FSMgr::iFile *pfile);
     };
     
+    struct WeapArmorItemInfo
+    {
+        int32_t ID;
+        int32_t Dmg;
+        int32_t unk1;
+        int32_t unk2;
+        int32_t unk3;
+        int32_t unk4;
+        int32_t unk5;
+        int32_t unk6;
+        int32_t unk7;
+        int32_t unk8;
+        int32_t SprImage;
+    };
+    
+    
     struct GameState
     {
         std::array<ItemInfo, 8192> Items;
@@ -383,6 +440,8 @@ public:
     
     void ImgQueue1(GFX::Image *img, Common::Point pos, Common::Rect limits);
     void ImgQueue2(GFX::Image *img, Common::Point pos, Common::Rect limits);
+    void ImgQueue1(GFX::PalImage *img, int32_t Pal, Common::Point pos, Common::Rect limits);
+    void ImgQueue2(GFX::PalImage *img, int32_t Pal, Common::Point pos, Common::Rect limits);
     void TextQueue(const std::string &text, GFX::Font *font, Common::Point pos, Common::Rect limits);
     int32_t PlaceTextWidth(const std::string &text, GFX::Font *font, Common::Point pos, int32_t width);
     std::string GetStrToken(const std::string &text);
@@ -411,6 +470,7 @@ public:
     void DrawNewGameMenu(int32_t);
     void UpdateNewGameMenu();
     void DrawNewGameText(int32_t);
+    void DrawNewGameChar();
     
     void SaveLoadMenuDraw(bool isSave)
     {printf("Incomplete %s\n", __PRETTY_FUNCTION__);};
@@ -446,6 +506,8 @@ public:
     
     
     void DrawSettingsScreen(int32_t);
+    
+    int32_t CheckKharUp(Character &pchar, int32_t param);
     
 public:
     std::string _langLiter;
@@ -516,6 +578,12 @@ public:
     static const std::vector<Common::Rect> _mainMenuBoxes;
     static const std::vector<Common::Rect> _saveMenuBoxes; 
     static const std::vector<Common::Rect> _newGameMenuBoxes; 
+    
+    static const int8_t EqLookUp1[8][6];
+    static const int8_t EqLookUp2[4][8][6];
+    static const int8_t EqLookUp3[4][8][6];
+    
+    static const std::array<WeapArmorItemInfo, 70> ArmorWeaponInfo;
     
     int32_t _saveMenuBtnID = -1;
     

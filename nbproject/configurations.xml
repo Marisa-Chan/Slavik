@@ -11,6 +11,7 @@
       <itemPath>font.cpp</itemPath>
       <itemPath>fsmgr.cpp</itemPath>
       <itemPath>game.cpp</itemPath>
+      <itemPath>game_character.cpp</itemPath>
       <itemPath>game_data.cpp</itemPath>
       <itemPath>game_newgame.cpp</itemPath>
       <itemPath>game_state.cpp</itemPath>
@@ -89,6 +90,7 @@
             <pElem>/usr/include/c++/13.2.1</pElem>
             <pElem>/usr/include/c++/13.2.1/x86_64-pc-linux-gnu</pElem>
           </incDir>
+          <commandLine>-O0</commandLine>
         </ccTool>
         <linkerTool>
           <linkerLibItems>
@@ -146,6 +148,8 @@
       <item path="game.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="game_character.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game_data.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -249,6 +253,8 @@
       <item path="game.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="game_character.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game_data.cpp" ex="false" tool="1" flavor2="0">
       </item>

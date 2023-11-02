@@ -47,7 +47,7 @@ void Engine::Character::Load(FSMgr::iFile* pfile)
     BaseVinoslivost = pfile->readU16L();
     
     for (size_t i = 0; i < 6; ++i)
-        ArmorWeapons[i] = pfile->readU16L();
+        ArmorWeapons[i] = pfile->readS16L();
     
     for (size_t i = 0; i < 32; ++i)
         field74_0x72[i] = pfile->readU16L();

@@ -41,6 +41,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/font.o \
 	${OBJECTDIR}/fsmgr.o \
 	${OBJECTDIR}/game.o \
+	${OBJECTDIR}/game_character.o \
 	${OBJECTDIR}/game_data.o \
 	${OBJECTDIR}/game_newgame.o \
 	${OBJECTDIR}/game_state.o \
@@ -105,6 +106,11 @@ ${OBJECTDIR}/game.o: game.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game.o game.cpp
+
+${OBJECTDIR}/game_character.o: game_character.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_character.o game_character.cpp
 
 ${OBJECTDIR}/game_data.o: game_data.cpp
 	${MKDIR} -p ${OBJECTDIR}

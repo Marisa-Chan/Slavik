@@ -237,6 +237,7 @@ void CDrawer::DrawRect(uint32_t tex, Common::FRect out, float alpha)
             _state.DrawMode = 0;
             float tmp = _state.Alpha;
             _state.Alpha = alpha;
+            _state.LinearFilter = true;
             ApplyStates();
 
             std::array<TVertex, 4> vtx = {
@@ -266,6 +267,7 @@ void CDrawer::DrawRect(const Image *img, Common::FRect out)
             _state.Tex = img->HW;
             _state.Pal = -1;
             _state.DrawMode = 0;
+            _state.LinearFilter = true;
             ApplyStates();
 
             std::array<TVertex, 4> vtx = {
@@ -299,6 +301,7 @@ void CDrawer::Draw(const Image *img, Common::Point out)
             _state.Tex = img->HW;
             _state.Pal = -1;
             _state.DrawMode = 0;
+            _state.LinearFilter = true;
             ApplyStates();
 
             const int32_t w = img->SW->w;
@@ -329,6 +332,7 @@ void CDrawer::Draw(const PalImage *img, int32_t pal, Common::Point out)
             _state.Tex = img->HW;
             _state.Pal = pal;
             _state.DrawMode = 1;
+            _state.LinearFilter = false;
             ApplyStates();
 
             const int32_t w = img->SW.Width();
@@ -358,6 +362,7 @@ void CDrawer::DrawShadow(const PalImage *img, Common::Point out)
         {
             _state.Tex = img->HW;
             _state.DrawMode = 2;
+            _state.LinearFilter = true;
             ApplyStates();
 
             const int32_t w = img->SW.Width();
@@ -599,7 +604,7 @@ void CDrawer::ApplyStates(int setAll)
     
     if (_glext)
     {
-        //if (setAll || (newStates->Prog != _lastState.Prog))
+        if (setAll || (newStates->Prog != _lastState.Prog))
         {            
             Glext::GLUseProgram(newStates->Prog);
             
