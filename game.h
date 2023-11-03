@@ -40,6 +40,9 @@ public:
         KEYFN_MAPUP    = 2,
         KEYFN_MAPDOWN  = 3,
         
+        KEYFN_SHIFT = 4,
+        KEYFN_CTRL = 5,
+        
         KEYFN_MAX
     };
     
@@ -419,7 +422,7 @@ public:
     
     void Draw();
     
-    void LoadMap(int32_t mapID);
+    bool LoadMap(int32_t mapID, int32_t param = 0);
     void DrawMap();
     
     void LoadGameState(int32_t stateID);
@@ -448,7 +451,13 @@ public:
     
     void UpdateMainMenu();
     void Update7();
+    void Update8();
     void Update9();
+    
+    void UsedObjectsLoad();
+    
+    void FUN_00428f90(int32_t param_1, int32_t param_2);
+    void FUN_004290d8();
     
     void OnMovieEnd();
     
@@ -534,7 +543,7 @@ public:
     
     std::map<int16_t, int8_t> _KeyMap;
     std::array<int8_t, KEYFN_MAX> _KeyState;
-    
+        
     GameMap *_currentMap = nullptr;
     int32_t _currentMapID = -1;
     
@@ -568,6 +577,26 @@ public:
     
     Character *_mainCharacter = nullptr;
     bool _bGodMode = false;
+    
+    Character *CharInfoCharacter = nullptr;
+    
+    
+    int32_t DAT_00a3e704 = 0;
+    int32_t DisplayInvOfCharID2 = 1;
+    int32_t DisplayInvOfCharID = 1;
+    int32_t DAT_00a3e690 = 0;
+    int32_t DAT_00a3e84c = 0;
+    
+    std::array<uint8_t, 56> DAT_00a3e0a8;
+    std::array<Character *, 10> PartyCharacters;
+    
+    Character CharTmp;
+    MapChar *_mainMapChar = nullptr;
+    
+    
+    
+    int32_t _objectsToLoadCount = 0;
+    std::array<int32_t, 512> _objectsToLoad;
     
     
     

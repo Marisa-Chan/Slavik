@@ -97,6 +97,7 @@ public:
     bool LoadGraphRes();
     bool LoadLightsRes();
     bool LoadObjectsRes();
+    bool LoadFlames();
     
     static GFX::Image *LoadRL8BitImage(FSMgr::iFile *pfile, const SDL_Color *pal);
     static GFX::PalImage *LoadRL8BitImage(FSMgr::iFile *pfile);
@@ -121,6 +122,8 @@ public:
     
     std::array<DynamicObject, 30> DynObjects;
     std::array<SimpleObject, 482> SimpleObjects;
+    
+    std::array<GFX::Image *,74> Flames;
     
 public:
     static Resources Res;

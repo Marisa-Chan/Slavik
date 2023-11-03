@@ -82,7 +82,7 @@ int32_t Engine::Character::GetMaxPartySize()
     int32_t partySize = 0;
     for (; partySize < 10; ++partySize)
     {
-        if (PartySizeCharm[(ClassID & 7) - 1][partySize] <= CurrentHarizm)
+        if (CurrentHarizm < PartySizeCharm[(ClassID & CLASS_MASK) - 1][partySize])
             break;
     }
     
@@ -164,6 +164,7 @@ void Engine::GameState::Load(FSMgr::iFile *pfile)
 
 void Engine::LoadGameState(int32_t stateID)
 {
+    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
     FSMgr::File file = FSMgr::Mgr::ReadFile(fmt::format("GAME.{:d}", stateID));
     _state.Load(file.get());
 }

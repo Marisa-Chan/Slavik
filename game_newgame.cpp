@@ -503,6 +503,101 @@ void Engine::UpdateNewGameMenu()
         }
             break;
             
+        case 27:
+            if (_mainCharacter->BaseSila) 
+            {
+                _mainCharacter->BaseSila -= 1;
+                _mainCharacter->FreePoints += 1000;
+                int32_t points = CheckKharUp(*_mainCharacter, KHAR_SILA);
+                _mainCharacter->FreePoints -= 1000;
+                
+                if (points == 0)
+                    _mainCharacter->BaseSila += 1;
+                else 
+                {
+                    _mainCharacter->FreePoints += points;
+
+                    drawTextID = 8;
+                }
+            }
+            break;
+            
+        case 28:
+        {
+            int32_t points = CheckKharUp(*_mainCharacter, KHAR_SILA);
+            if (points != 0) {
+                _mainCharacter->BaseSila += 1;
+                _mainCharacter->FreePoints -= points;
+                
+                drawTextID = 8;
+            }
+        }
+            break;
+            
+        case 29:
+            if (_mainCharacter->BaseLovkost) 
+            {
+                _mainCharacter->BaseLovkost -= 1;
+                _mainCharacter->FreePoints += 1000;
+                int32_t points = CheckKharUp(*_mainCharacter, KHAR_LOVKOST);
+                _mainCharacter->FreePoints -= 1000;
+                
+                if (points == 0)
+                    _mainCharacter->BaseLovkost += 1;
+                else 
+                {
+                    _mainCharacter->FreePoints += points;
+
+                    drawTextID = 9;
+                }
+            }
+            break;
+            
+        case 30:
+        {
+            int32_t points = CheckKharUp(*_mainCharacter, KHAR_LOVKOST);
+            if (points != 0) {
+                _mainCharacter->BaseLovkost += 1;
+                _mainCharacter->FreePoints -= points;
+                
+                drawTextID = 9;
+            }
+        }
+            break;
+            
+        case 31:
+            if (_mainCharacter->BaseVinoslivost) 
+            {
+                _mainCharacter->BaseVinoslivost -= 1;
+                _mainCharacter->FreePoints += 1000;
+                int32_t points = CheckKharUp(*_mainCharacter, KHAR_VINOSLIVOST);
+                _mainCharacter->FreePoints -= 1000;
+                
+                if (points == 0)
+                    _mainCharacter->BaseVinoslivost += 1;
+                else 
+                {
+                    _mainCharacter->FreePoints += points;
+                    _mainCharacter->CurrentVinoslivost -= 1;
+
+                    drawTextID = 10;
+                }
+            }
+            break;
+            
+        case 32:
+        {
+            int32_t points = CheckKharUp(*_mainCharacter, KHAR_VINOSLIVOST);
+            if (points != 0) {
+                _mainCharacter->BaseVinoslivost += 1;
+                _mainCharacter->CurrentVinoslivost += 1;
+                _mainCharacter->FreePoints -= points;
+                
+                drawTextID = 10;
+            }
+        }
+            break;
+            
         default:
             break;
         }

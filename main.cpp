@@ -15,8 +15,6 @@ int main(int argc, char** argv) {
     GFXDrawer.SetMode({1024,768});
 
     GameInst.Init(GFX::CDrawer::MODE_PS);
-    GameInst.LoadGameState(0);
-    GameInst.LoadMap(3);
     
     while(true)
     {

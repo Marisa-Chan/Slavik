@@ -245,7 +245,8 @@ bool Resources::Load()
 {
     if ( LoadGraphRes() &&
          LoadLightsRes() &&
-         LoadObjectsRes() )
+         LoadObjectsRes() &&
+         LoadFlames())
         return true;
     
     return false;
@@ -384,6 +385,25 @@ bool Resources::LoadObjectsRes()
             fobj->seek(spos + headers[j * 2],0);
             SimpleObjects[i].Load(fobj.get(), Palettes.data());
         }
+    }
+    
+    return true;
+}
+
+bool Resources::LoadFlames()
+{
+    FSMgr::File fobj = FSMgr::Mgr::ReadFile("flames.res");
+    
+    if (!fobj)
+        return false;
+    
+    for(GFX::Image *&flame : Flames)
+    {
+        fobj->seek(4, 1);
+        int32_t sz = fobj->readS32L();
+        size_t pos = fobj->tell();
+        flame = LoadRL16BitImage(fobj.get()); 
+        fobj->seek(pos + sz, 0);
     }
     
     return true;

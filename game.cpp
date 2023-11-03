@@ -40,8 +40,6 @@ bool Engine::Update()
     if (_KeyState[KEYFN_MAPDOWN])
         _camera.y += 10;
     
-    
-    
     if (_mouseDownPrev == 0)
         _mouseDownPrev = _mousePress;
     else
@@ -107,6 +105,7 @@ bool Engine::Update()
             break;
             
         case STATEMD_MODE8:
+            Update8();
             break;
             
         case STATEMD_MODE9:
@@ -127,6 +126,10 @@ void Engine::Init(int gfxmode)
     _KeyMap[SDL_SCANCODE_RIGHT] = KEYFN_MAPRIGHT;
     _KeyMap[SDL_SCANCODE_UP] = KEYFN_MAPUP;
     _KeyMap[SDL_SCANCODE_DOWN] = KEYFN_MAPDOWN;
+    _KeyMap[SDL_SCANCODE_LSHIFT] = KEYFN_SHIFT;
+    _KeyMap[SDL_SCANCODE_RSHIFT] = KEYFN_SHIFT;
+    _KeyMap[SDL_SCANCODE_LCTRL] = KEYFN_CTRL;
+    _KeyMap[SDL_SCANCODE_RCTRL] = KEYFN_CTRL;
     
     _KeyState.fill(0);
     
@@ -151,6 +154,7 @@ void Engine::Init(int gfxmode)
     
     _stateMode = STATEMD_MODE9;
     
+    _mainMapChar = &_state.MapChar_ARRAY[0];
     _mainCharacter = & _state.Characters.at(_state.MapChar_ARRAY[0].CharacterIndex);
 }
 
@@ -362,9 +366,9 @@ void Engine::Draw()
     GFXDrawer.SetProjectionMatrix( mat4x4f() );
     GFXDrawer.SetModelViewMatrix( mat4x4f() );
     
-    GFXDrawer.DrawRect(GFXDrawer.GetBufferTex(GFX::BUF_0), Common::FRect(1.0, 1.0) );
-    GFXDrawer.DrawRect(GFXDrawer.GetBufferTex(GFX::BUF_1), Common::FRect(1.0, 1.0), 0.5);
-    GFXDrawer.DrawRect(GFXDrawer.GetBufferTex(GFX::BUF_2), Common::FRect(1.0, 1.0) );
+    GFXDrawer.DrawRect(GFXDrawer.GetBufferTex(GFX::BUF_0), Common::FRect(-1.0, -1.0, 1.0, 1.0) );
+    GFXDrawer.DrawRect(GFXDrawer.GetBufferTex(GFX::BUF_1), Common::FRect(-1.0, -1.0, 1.0, 1.0), 0.5);
+    GFXDrawer.DrawRect(GFXDrawer.GetBufferTex(GFX::BUF_2), Common::FRect(-1.0, -1.0, 1.0, 1.0) );
     }
     //else
     {
@@ -445,13 +449,18 @@ void Engine::Draw()
     GFXDrawer.Flip();
 }
 
-void Engine::LoadMap(int32_t mapID)
+bool Engine::LoadMap(int32_t mapID, int32_t param)
 {
+    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
     if (_currentMap)
         delete _currentMap;
     
     _currentMap = LoadGameMap(mapID);
+    if (!_currentMap)
+        return false;
+    
     _currentMapID = mapID;
+    return true;
 }
 
 void Engine::DrawMap()
@@ -780,6 +789,21 @@ void Engine::FUN_004292e4()
     printf("Incomplete %s\n", __PRETTY_FUNCTION__);
 }
 
+void Engine::UsedObjectsLoad()
+{
+    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
+}
+
+void Engine::FUN_00428f90(int32_t param_1, int32_t param_2)
+{
+    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
+}
+
+void Engine::FUN_004290d8()
+{
+    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
+}
+
 void Engine::UpdateMainMenu()
 {
     printf("Incomplete %s\n", __PRETTY_FUNCTION__);
@@ -968,6 +992,76 @@ void Engine::Update7()
             PlayMusicId((int)uVar7 % 9);
         }
     }*/
+}
+
+void Engine::Update8()
+{
+    CharInfoCharacter = nullptr;
+    _KeyState[KEYFN_SHIFT] = 0;
+    _KeyState[KEYFN_CTRL] = 0;
+    _playScreenID = 0;
+    _fadeLevelRGB = 0;
+    
+    DAT_00a3e704 = 0;
+    DisplayInvOfCharID2 = 1;
+    DisplayInvOfCharID = 1;
+    DAT_00a3e690 = 0;
+    DAT_00a3e84c = 0;
+    
+    _counter = 0;
+    
+    DAT_00a3e0a8.fill(0);
+    PartyCharacters.fill(nullptr);
+    
+    PartyCharacters[0] = _mainCharacter;
+    
+    CharTmp = *_mainCharacter;
+   
+    //Res.LoadFlames();
+    LoadGameState(CharTmp.CharacterBase);
+    LoadINTR();
+    
+    _mainCharacter->Fehtovanie = CharTmp.Fehtovanie;
+    _mainCharacter->Trading = CharTmp.Trading;
+    _mainCharacter->Metkost = CharTmp.Metkost;
+    _mainCharacter->PlotnickoeDelo = CharTmp.PlotnickoeDelo;
+    _mainCharacter->Medicine = CharTmp.Medicine;
+    _mainCharacter->CurrentLovkost = _mainCharacter->BaseLovkost = CharTmp.BaseLovkost;
+    _mainCharacter->FreePoints = CharTmp.FreePoints;
+    _mainCharacter->Direction = 5;
+    _mainCharacter->CurrentHarizm = _mainCharacter->BaseHarizm = CharTmp.BaseHarizm;
+    _mainCharacter->Identification = CharTmp.Identification;
+    _mainCharacter->NameID = CharTmp.NameID;
+    _mainCharacter->Level = 1;
+    _mainCharacter->CharacterBase = CharTmp.CharacterBase;
+    _mainCharacter->paletteOffset = CharTmp.paletteOffset;
+    _mainCharacter->KuznechnoeDelo = CharTmp.KuznechnoeDelo;
+    _mainCharacter->CurrentSila = _mainCharacter->BaseSila = CharTmp.BaseSila;
+    _mainCharacter->ClassID = CharTmp.ClassID;
+    _mainCharacter->CurrentVinoslivost = _mainCharacter->BaseVinoslivost = CharTmp.BaseVinoslivost;
+    
+    _mainMapChar->MapID = _mainCharacter->CharacterBase * 3 + 1;
+    bool loaded = LoadMap(_mainMapChar->MapID, 0);//dMap(0);
+    if (loaded == 0)
+    {
+        //ShutdownMsg("Map not found!",0x10);
+        printf("Map not found!\n");
+        System::PostQuitMessage();
+    }
+    else 
+    {
+        while (_objectsToLoadCount != 0) {
+            UsedObjectsLoad();
+        }
+        
+        FUN_00428f90(_mainCharacter->field107_0xe4,_mainCharacter->field109_0xec);
+        
+        _stateMode = STATEMD_PLAY;
+        
+        FUN_004290d8();
+        PlayChangeScreen(-1);
+        FUN_004292e4();
+    }
 }
 
 void Engine::Update9()
@@ -1369,6 +1463,11 @@ int32_t Engine::FUN_00411758(Character &ch1, Common::Point tilepos)
 }
 
 void Engine::DrawSettingsScreen(int32_t)
+{
+    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
+}
+
+void UsedObjectsLoad()
 {
     printf("Incomplete %s\n", __PRETTY_FUNCTION__);
 }
