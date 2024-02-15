@@ -67,8 +67,16 @@ public:
     {
         struct FlamePos
         {
-            int32_t FlameID;
+            int32_t Index = -1;
+                    
+            int32_t FlameID; //Animation seq id
             Common::Point Position;
+        };
+        
+        struct FrameInfo
+        {
+            Common::Point ShdOffset;
+            Common::Point Offset;
         };
         
         int32_t fld1 = 0;
@@ -82,7 +90,7 @@ public:
         int32_t NumFrames;
         int32_t FrameTime;
         
-        Common::SPoint unk[8][2];
+        std::array<FrameInfo, 8> Offsets;
         
         void Load(FSMgr::iFile *pfile, const SDL_Color *palettes);
     };

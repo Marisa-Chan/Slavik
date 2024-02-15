@@ -76,14 +76,29 @@ struct TPoint
     T y;
 
     TPoint() : x(0), y(0) {};
-    TPoint(T x1, T y1) : x(x1), y(y1) {};
+    constexpr TPoint(T x1, T y1) : x(x1), y(y1) {};
 
     bool  operator==(const __Point &p)    const { return x == p.x && y == p.y; }
     bool  operator!=(const __Point &p)    const { return x != p.x || y != p.y; }
+    
+    template <typename R>
+    __Point operator*(const TPoint<R> &p) const { return TPoint(x * p.x, y * p.y); }
+    
+    template <typename R>
+    __Point operator/(const TPoint<R> &p) const { return TPoint(x / p.x, y / p.y); }
+    
     template <typename R>
     __Point operator+(const TPoint<R> &delta) const { return TPoint(x + delta.x, y + delta.y); }
     template <typename R>
     __Point operator-(const TPoint<R> &delta) const { return TPoint(x - delta.x, y - delta.y); }
+    
+    template <typename R>
+    __Point operator*(R val) const { return TPoint(x * val, y * val); }
+    
+    template <typename R>
+    __Point operator/(R val) const { return TPoint(x / val, y / val); }
+    
+    
     
     __Point operator-() const { return __Point(-x, -y); } // -Point
 
@@ -147,7 +162,7 @@ struct TRect
     TRect(T w, T h) : left(0), top(0), right(w), bottom(h) {};
     TRect(TPoint<T> p) : left(0), top(0), right(p.x), bottom(p.y) {};
     TRect(TPoint<T> lt, TPoint<T> rb) : left(lt.x), top(lt.y), right(rb.x), bottom(rb.y) {};
-    TRect(T x1, T y1, T x2, T y2) : left(x1), top(y1), right(x2), bottom(y2) {};
+    constexpr TRect(T x1, T y1, T x2, T y2) : left(x1), top(y1), right(x2), bottom(y2) {};
     TRect(const SDL_Rect &r) : left(r.x), top(r.y), right(r.x + r.w), bottom(r.y + r.h) {};
 
     bool IsValid() const {

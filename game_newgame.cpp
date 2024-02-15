@@ -221,31 +221,31 @@ void Engine::DrawNewGameChar()
     {
         int32_t tmp = 0;
         
-        if (_mainCharacter->State == 1)
+        if (_mainCharacter->State == CHSTATE_1)
             tmp = 3;
-        else if (_mainCharacter->State == 5)
+        else if (_mainCharacter->State == CHSTATE_5)
             tmp = 2;
-        else if (_mainCharacter->State == 4)
+        else if (_mainCharacter->State == CHSTATE_4)
             tmp = 1;
         else
             tmp = 0;
         
         int32_t eqSlot = _mainCharacter->field_0x12;
-        int32_t eqSlot2 = EQSLOT_SLOT0;
+        int32_t eqSlot2 = ESLT_0;
         
         const int8_t *lkp = nullptr;
-        if ((eqSlot == EQSLOT_SLOT1) && (tmp != EQSLOT_SLOT2)) 
+        if ((eqSlot == ESLT_1) && (tmp != ESLT_2)) 
         {
             lkp = EqLookUp2[tmp][_mainCharacter->Direction];
             eqSlot2 = EQSLOT_UNK;
         }
         else 
         {
-            if (eqSlot == EQSLOT_SLOT1)
+            if (eqSlot == ESLT_1)
                 eqSlot = EQSLOT_UNK;
             
             lkp = EqLookUp3[tmp][_mainCharacter->Direction];
-            eqSlot2 = EQSLOT_SLOT5;
+            eqSlot2 = ESLT_5;
         }
         
         for (int32_t i = 0; i < 6; ++i) 
@@ -310,17 +310,17 @@ void Engine::UpdateNewGameMenu()
                 t = 0;
             
             if (_mainCharacter->Fehtovanie < _mainCharacter->Metkost || _mainCharacter->Fehtovanie == _mainCharacter->Metkost) 
-                _mainCharacter->field_0x12 = EQSLOT_SLOT1;
+                _mainCharacter->field_0x12 = ESLT_1;
             else
-                _mainCharacter->field_0x12 = EQSLOT_SLOT0;
+                _mainCharacter->field_0x12 = ESLT_0;
             
-            _mainCharacter->ArmorWeapons[EQSLOT_SLOT0] = 3;
-            _mainCharacter->ArmorWeapons[EQSLOT_SLOT1] = 4;
-            _mainCharacter->ArmorWeapons[EQSLOT_SLOT3] = 1;
-            _mainCharacter->ArmorWeapons[EQSLOT_SLOT4] = 8;
-            _mainCharacter->ArmorWeapons[EQSLOT_SLOT5] = 11;
+            _mainCharacter->ArmorWeapons[ESLT_0] = 3;
+            _mainCharacter->ArmorWeapons[ESLT_1] = 4;
+            _mainCharacter->ArmorWeapons[ESLT_3] = 1;
+            _mainCharacter->ArmorWeapons[ESLT_4] = 8;
+            _mainCharacter->ArmorWeapons[ESLT_5] = 11;
             
-            FUN_004143dc(*_mainCharacter, 0);
+            FUN_004143dc(_mainCharacter, 0);
             drawTextID = 0;
             break;
         case 1:
@@ -333,16 +333,16 @@ void Engine::UpdateNewGameMenu()
                 t = 0;
             
             if (_mainCharacter->Fehtovanie < _mainCharacter->Metkost || _mainCharacter->Fehtovanie == _mainCharacter->Metkost)
-                _mainCharacter->field_0x12 = EQSLOT_SLOT1;
+                _mainCharacter->field_0x12 = ESLT_1;
             else 
-                _mainCharacter->field_0x12 = EQSLOT_SLOT2;
+                _mainCharacter->field_0x12 = ESLT_2;
             
-            _mainCharacter->ArmorWeapons[EQSLOT_SLOT1] = 4;
-            _mainCharacter->ArmorWeapons[EQSLOT_SLOT2] = 5;
-            _mainCharacter->ArmorWeapons[EQSLOT_SLOT4] = 7;
-            _mainCharacter->ArmorWeapons[EQSLOT_SLOT5] = 10;
+            _mainCharacter->ArmorWeapons[ESLT_1] = 4;
+            _mainCharacter->ArmorWeapons[ESLT_2] = 5;
+            _mainCharacter->ArmorWeapons[ESLT_4] = 7;
+            _mainCharacter->ArmorWeapons[ESLT_5] = 10;
             
-            FUN_004143dc(*_mainCharacter, 0);
+            FUN_004143dc(_mainCharacter, 0);
             drawTextID = 1;
             break;
         case 2:
@@ -355,18 +355,18 @@ void Engine::UpdateNewGameMenu()
                 t = 0;
             
             if (_mainCharacter->Fehtovanie < _mainCharacter->Metkost || _mainCharacter->Fehtovanie == _mainCharacter->Metkost)
-                _mainCharacter->field_0x12 = EQSLOT_SLOT1;
+                _mainCharacter->field_0x12 = ESLT_1;
             
             else
-                _mainCharacter->field_0x12 = EQSLOT_SLOT2;
+                _mainCharacter->field_0x12 = ESLT_2;
             
-            _mainCharacter->ArmorWeapons[EQSLOT_SLOT1] = 4;
-            _mainCharacter->ArmorWeapons[EQSLOT_SLOT2] = 5;
-            _mainCharacter->ArmorWeapons[EQSLOT_SLOT3] = 2;
-            _mainCharacter->ArmorWeapons[EQSLOT_SLOT4] = 6;
-            _mainCharacter->ArmorWeapons[EQSLOT_SLOT5] = 9;
+            _mainCharacter->ArmorWeapons[ESLT_1] = 4;
+            _mainCharacter->ArmorWeapons[ESLT_2] = 5;
+            _mainCharacter->ArmorWeapons[ESLT_3] = 2;
+            _mainCharacter->ArmorWeapons[ESLT_4] = 6;
+            _mainCharacter->ArmorWeapons[ESLT_5] = 9;
             
-            FUN_004143dc(*_mainCharacter, 0);
+            FUN_004143dc(_mainCharacter, 0);
             drawTextID = 2;
             break;
         case 3:
@@ -421,9 +421,9 @@ void Engine::UpdateNewGameMenu()
             _mainCharacter->KuznechnoeDelo = 10;
             
             if (_mainCharacter->CharacterBase == 1)
-                _mainCharacter->field_0x12 = EQSLOT_SLOT0;
+                _mainCharacter->field_0x12 = ESLT_0;
             else
-                _mainCharacter->field_0x12 = EQSLOT_SLOT2;
+                _mainCharacter->field_0x12 = ESLT_2;
             
             drawTextID = id;
             break;

@@ -240,4 +240,9 @@ void FlipHW()
     SDL_GL_SwapWindow(window);
 }
 
+int rand() 
+{ 
+    return ::rand(); 
+};
+
 }

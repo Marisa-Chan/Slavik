@@ -44,7 +44,7 @@ int32_t Engine::CheckKharUp(Engine::Character &pchar, int32_t param)
     
     int32_t classID = 0;
     
-    if ((pchar.ClassID & CLASS_BIT40) == 0) 
+    if (!(pchar.ClassID & CLASS_BIT40)) 
         classID = (pchar.ClassID & CLASS_MASK) - 1;
     else 
         classID = 1;
@@ -125,5 +125,442 @@ int32_t Engine::CheckKharUp(Engine::Character &pchar, int32_t param)
     
     return 0;
 }
+
+
+void Engine::FUN_00414078(Character *pchar)
+{
+    if ( !(pchar->ClassID & CLASS_BIT40) ) 
+    {
+        Resources::CharacterSprites &chbase = Res.CharacterBases.at(pchar->CharacterBase);
+        auto &frmInfo = chbase.Seq[pchar->State][pchar->Direction].FrameData[pchar->Frame];
+        
+        pchar->pFrame = frmInfo.FrameID;
+        pchar->imgOffset = frmInfo.ImgOffset;
+        pchar->field111_0xf4 = chbase.Images.at(pchar->pFrame)->SW.Width();
+        pchar->field112_0xf6 = chbase.Images.at(pchar->pFrame)->SW.Height();
+    }
+    else 
+    {
+        if (pchar->State > CHSTATE_5)
+            pchar->State -= 6;
+              
+        Resources::DynamicObject &obj = Res.DynObjects.at(pchar->CharacterBase);
+        auto &frmInfo = obj.Seq[pchar->State][pchar->Direction].FrameData[pchar->Frame];
+        
+        pchar->pFrame = frmInfo.FrameID;
+        pchar->imgOffset = frmInfo.ImgOffset;
+        
+        if (!(pchar->field_0x3 & 0x80)) 
+        {
+            pchar->field111_0xf4 = obj.Images.at(pchar->pFrame)->SW.Width();
+            pchar->field112_0xf6 = obj.Images.at(pchar->pFrame)->SW.Height();
+        }
+        else 
+        {
+            pchar->field112_0xf6 = 1;
+            pchar->field111_0xf4 = 1;
+        }
+    }
+    pchar->field107_0xe4 = pchar->POS.x + pchar->imgOffset.x + GScrOff.x;
+    pchar->field109_0xec = pchar->POS.y + pchar->imgOffset.y + GScrOff.y;
+}
+
+void Engine::DrawCharacterSprite(Character &ch)
+{    
+    if ( !(ch.field_0x3 & 4) ) 
+    {
+        for (int32_t i : EqLookUp1[ ch.Direction ]) 
+        {
+            int32_t itemID = ch.ArmorWeapons[i];
+            if (itemID)
+            {
+                const WeapArmorItemInfo &info = ArmorWeaponInfo.at( _state.Items.at(itemID).InfoID );
+                if (info.SprImage > -1)
+                {
+                    Resources::CharacterSprites &spr = Res.CharacterEquip.at(info.SprImage);
+                    Resources::CharacterSprites::FrameInfo &frm = spr.Seq[ch.State][ch.Direction].FrameData.at(ch.Frame);
+                    
+                    GFXDrawer.Draw(spr.Images.at(frm.FrameID), 
+                                   Res.CharEquipPal.at(info.SprImage), 
+                                   _outOff + ch.POS + ch.wpnOffset + frm.ImgOffset); //???
+                }
+            }
+        }
+    }
+    else
+    {
+        int32_t tmp = 0;
+        
+        if (ch.State == CHSTATE_1)
+            tmp = 3;
+        else if (ch.State == CHSTATE_5)
+            tmp = 2;
+        else if (ch.State == CHSTATE_4)
+            tmp = 1;
+        else
+            tmp = 0;
+        
+        int32_t eqSlot = ch.field_0x12;
+        int32_t eqSlot2 = ESLT_0;
+        
+        const int8_t *lkp = nullptr;
+        if ((eqSlot == ESLT_1) && (tmp != ESLT_2)) 
+        {
+            lkp = EqLookUp2[tmp][ch.Direction];
+            eqSlot2 = EQSLOT_UNK;
+        }
+        else 
+        {
+            if (eqSlot == ESLT_1)
+                eqSlot = EQSLOT_UNK;
+            
+            lkp = EqLookUp3[tmp][ch.Direction];
+            eqSlot2 = ESLT_5;
+        }
+        
+        for (int32_t i = 0; i < 6; ++i) 
+        {
+            int32_t itemID = ch.ArmorWeapons[ lkp[i] ];
+            if (itemID)
+            {
+                const WeapArmorItemInfo &info = ArmorWeaponInfo.at( _state.Items.at(itemID).InfoID );
+                if (info.SprImage > -1)
+                {
+                    int32_t simg = info.SprImage;
+                    
+                    if ((eqSlot == lkp[i]) || (eqSlot2 == lkp[i]))
+                        simg += 1;
+                    
+                    Resources::CharacterSprites &spr = Res.CharacterEquip.at(simg);
+                    Resources::CharacterSprites::FrameInfo &frm = spr.Seq[ch.State][ch.Direction].FrameData.at(ch.Frame);
+                                        
+                    GFXDrawer.Draw(spr.Images.at(frm.FrameID), 
+                                   Res.CharEquipPal.at(info.SprImage), 
+                                   _outOff + ch.POS + ch.wpnOffset + frm.ImgOffset); //???
+                }
+            }
+        }
+    }
+}
+
+
+bool Engine::PlaceMob(Character *pchar)
+{
+    Common::Rect spawnRect = _state.MapChar_ARRAY.at( pchar->MapCharID ).spwnTlRect;
+    int32_t Hcenter = spawnRect.Height() / 2;
+    int32_t Wcenter = spawnRect.Width() / 2;
+    
+    for(int32_t i = 0; i < 100; ++i)
+    {
+        int32_t hdist = 0;
+        if (Hcenter >= 2)
+            hdist = (System::rand() % Hcenter);
+        
+        int32_t hdir = 1;
+        if (System::rand() % 2 == 0)
+            hdir = -1;
+        
+        pchar->Tile.y = ((spawnRect.bottom + spawnRect.top + 1) / 2) + hdir * hdist;
+        
+        int32_t wdist = 0;
+        if (Wcenter >= 2)
+            wdist = (System::rand() % Wcenter);
+        
+        int32_t wdir = 1;
+        if (System::rand() % 2 == 0)
+            wdir = -1;
+        
+        pchar->Tile.x = ((spawnRect.right + spawnRect.left + 1) / 2) + wdir * wdist;
+        
+        if (_currentMap->FootMap(pchar->Tile).ID == 0)
+            return true;
+    }
+    return false;
+}
+
+
+
+Engine::Character *Engine::CalcMapChar(MapChar *mchar)
+{
+    Character &pchar = _state.Characters.at(mchar->CharacterIndex);
+    
+    int32_t lovkost = pchar.CurrentLovkost;
+    int32_t harizm = pchar.CurrentHarizm;    
+    int32_t level = pchar.Level;
+    int32_t gold = pchar.Gold;
+    int32_t armor = pchar.Armor;
+    int32_t f52 = pchar.field62_0x52;
+    int32_t sila = pchar.CurrentSila;
+    int32_t f11 = pchar.field15_0x11;
+    int32_t vinoslivost = pchar.CurrentVinoslivost;
+        
+    if (mchar->GroupSize > 1) 
+    {
+        for (int32_t i = 1; i < mchar->GroupSize; ++i) 
+        {
+            Character &gchar = _state.Characters.at(mchar->CharacterIndex + i);
+            
+            lovkost += gchar.CurrentLovkost;
+            harizm += gchar.CurrentHarizm;
+            level += gchar.Level;
+            gold += gchar.Gold;
+            armor += gchar.Armor;
+            f52 += gchar.field62_0x52;
+            sila += gchar.CurrentSila;
+            f11 += gchar.field15_0x11;
+            vinoslivost += gchar.CurrentVinoslivost;
+        }
+        
+        lovkost /= mchar->GroupSize;
+        harizm /= mchar->GroupSize;
+        level /= mchar->GroupSize;
+        gold /= mchar->GroupSize;
+        armor /= mchar->GroupSize;
+        f52 /= mchar->GroupSize;
+        sila /= mchar->GroupSize;
+        vinoslivost /= mchar->GroupSize;
+        f11 /= mchar->GroupSize;
+    }
+    
+    int32_t local_44 = 0;
+    
+    if (mchar->GroupSize >= 2)
+        local_44 = System::rand() % mchar->GroupSize;
+    
+    local_44 += mchar->CharacterIndex;
+    
+    
+    const int32_t lastId = mchar->CharacterIndex + mchar->GroupSize;
+    Character &lchar = _state.Characters.at(lastId);
+    
+    lchar.ClassID = mchar->unk5;
+    lchar.ArmorWeapons.fill(0);
+    lchar.field74_0x72.fill(0);
+    lchar.nnnn.fill(0);
+    
+    if (lchar.ClassID == 0x4c || lchar.ClassID == 0x46 || lchar.ClassID == 0x55)
+        lchar.State = CHSTATE_4;
+    else
+        lchar.State = CHSTATE_0;
+    
+    lchar.Direction = System::rand() % 8;
+    lchar.CurrentLovkost = lchar.BaseLovkost = lovkost;
+    lchar.CurrentHarizm = lchar.BaseHarizm = harizm;
+    lchar.HP = 1600;
+    lchar.NameID = lchar.NickID = 0;
+    lchar.field96_0xd0 = -1;
+    lchar.Tile = Common::Point();
+    lchar.Level = level;
+    lchar.CharacterBase = _state.Characters[local_44].CharacterBase;
+    lchar.Gold = gold;
+    lchar.Armor = armor;
+    lchar.MapCharID = mchar->Index;
+    lchar.field2_0x2 = 0x40;
+    lchar.paletteOffset = _state.Characters[local_44].paletteOffset;
+    lchar.field17_0x13.at(0) = 0xff;
+    lchar.Frame = 0;
+    lchar.Otravlenie = 0;
+    lchar.field62_0x52 = f52;
+    
+    if (lchar.ClassID == 0x4c)
+        lchar.field_0x12 = (System::rand() % 5) + 1;
+    
+    lchar.field_0x3 = 4;
+    lchar.CurrentSila = lchar.BaseSila = sila;
+    lchar.field15_0x11 = f11;
+    lchar.CurrentVinoslivost = lchar.BaseVinoslivost = vinoslivost;
+    
+    if (!PlaceMob(&lchar))
+        return nullptr;
+    
+    mchar->GroupSize++;
+    
+    return &lchar;
+}
+
+
+
+void Engine::FUN_0041c750(Character *param_1)
+{    
+    std::array<int32_t, 9> TempBonusValues;
+    std::array<int, 9> TempBonusValueType;
+    
+    TempBonusValues.fill(0);
+    TempBonusValueType.fill(0);
+    
+    for (int32_t i = 0; i < 6; ++i) 
+    {
+        int32_t itemID = param_1->ArmorWeapons.at(i);
+        if (itemID)
+        {
+            ItemInfo &inf = _state.Items.at(itemID);
+            if (inf.BonusID > -1 && (inf.Flags & 1))
+            {   
+                for (int i = 0; i < 3; i++)
+                {
+                    const Bonus &pBonus = BonusesInfo.at(inf.BonusID).Bonuses[i];
+                    int32_t bnsID = pBonus.BonusID - 1;
+                    if (bnsID > -1 && TempBonusValueType[bnsID]) 
+                    {
+                        TempBonusValueType[bnsID] &= pBonus.BonusType;
+
+                        if (TempBonusValueType[bnsID] == 0)
+                            TempBonusValueType[bnsID] = pBonus.BonusValue;
+                        else
+                            TempBonusValueType[bnsID] += pBonus.BonusValue;
+                    }
+                }
+            }
+        }
+    }
+    
+    for (int32_t i = 0; i < 5; ++i) 
+    {
+        int32_t itemID = param_1->nnnn.at(i);
+        if (itemID)
+        {
+            ItemInfo &inf = _state.Items.at(itemID);
+            if (inf.BonusID > -1 && (inf.Flags & 1))
+            {   
+                for (int i = 0; i < 3; i++)
+                {
+                    const Bonus &pBonus = BonusesInfo.at(inf.BonusID).Bonuses[i];
+                    int32_t bnsID = pBonus.BonusID - 1;
+                    if (bnsID > -1 && TempBonusValueType[bnsID]) 
+                    {
+                        TempBonusValueType[bnsID] &= pBonus.BonusType;
+
+                        if (TempBonusValueType[bnsID] == 0)
+                            TempBonusValueType[bnsID] = pBonus.BonusValue;
+                        else
+                            TempBonusValueType[bnsID] += pBonus.BonusValue;
+                    }
+                }
+            }
+        }
+    }
+    
+    int32_t iVar13 = param_1->field98_0xd2;
+    if (param_1->field98_0xd2 > -1) 
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            const Bonus &pBonus = BonusesInfo.at(param_1->field98_0xd2).Bonuses[i];
+            int32_t bnsID = pBonus.BonusID - 1;
+            if (bnsID > -1 && TempBonusValueType[bnsID]) 
+            {
+                TempBonusValueType[bnsID] &= pBonus.BonusType;
+
+                if (TempBonusValueType[bnsID] == 0)
+                    TempBonusValueType[bnsID] = pBonus.BonusValue;
+                else
+                    TempBonusValueType[bnsID] += pBonus.BonusValue;
+            }
+        }
+    }
+    
+    if (param_1->field99_0xd3 > -1) 
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            const Bonus &pBonus = BonusesInfo.at(param_1->field99_0xd3).Bonuses[i];
+            int32_t bnsID = pBonus.BonusID - 1;
+            if (bnsID > -1 && TempBonusValueType[bnsID]) 
+            {
+                TempBonusValueType[bnsID] &= pBonus.BonusType;
+
+                if (TempBonusValueType[bnsID] == 0)
+                    TempBonusValueType[bnsID] = pBonus.BonusValue;
+                else
+                    TempBonusValueType[bnsID] += pBonus.BonusValue;
+            }
+        }
+    }
+    
+    TempBonusValues[3] *= 16;
+        
+    if (TempBonusValues[1] == 0) 
+        param_1->CurrentLovkost  = param_1->BaseLovkost;
+    else 
+    {
+        param_1->CurrentLovkost = TempBonusValues[1];
+        
+        if (TempBonusValueType[1] != 0) 
+            param_1->CurrentLovkost += param_1->BaseLovkost;
+    }
+    
+    if (param_1->CurrentLovkost < 0)
+        param_1->CurrentLovkost = 0;
+    
+    
+    if (TempBonusValues[2] == 0) 
+        param_1->CurrentHarizm = param_1->BaseHarizm;
+    else 
+    {
+        param_1->CurrentHarizm = TempBonusValues[2];
+        if (TempBonusValueType[2] != 0)
+            param_1->CurrentHarizm += param_1->BaseHarizm;
+    }
+
+    if (param_1->CurrentHarizm < 0)
+        param_1->CurrentHarizm = 0;
+    
+    
+    int16_t tmpHp = 0;
+    if (TempBonusValues[3] == 0)
+        tmpHp = param_1->HP;
+    else if (TempBonusValueType[3] == 0)
+        tmpHp = TempBonusValues[3];
+    else 
+        tmpHp = TempBonusValues[3] + param_1->HP;
+    
+    if (tmpHp < 1600)
+        param_1->HP = tmpHp;
+    else
+        param_1->HP = 1600;
+
+    
+    if (TempBonusValues[4] == 0)
+        param_1->CurrentSila = param_1->BaseSila;
+    else 
+    {
+        param_1->CurrentSila = TempBonusValues[4];
+        if (TempBonusValueType[4] != 0) 
+            param_1->CurrentSila += param_1->BaseSila;
+    }
+    
+    if (param_1->CurrentSila < 0)
+        param_1->CurrentSila = 0;
+    
+    
+    if (TempBonusValues[5] == 0)
+        param_1->CurrentVinoslivost = param_1->BaseVinoslivost;
+    else 
+    {
+        param_1->CurrentVinoslivost = TempBonusValues[5];
+        if (TempBonusValueType[5] != 0)
+            param_1->CurrentVinoslivost += param_1->BaseVinoslivost;
+    }
+    
+    if (param_1->CurrentVinoslivost < 1)
+        param_1->CurrentVinoslivost = 1;
+    
+    param_1->CurrentBrn = TempBonusValues[6];
+    param_1->CurrentUdr = TempBonusValues[7];
+    param_1->CurrentVer = TempBonusValues[8];
+    param_1->Flags = 0;
+    
+    if (TempBonusValueType[6] != 0)
+        param_1->Flags |= 1;
+    
+    if (TempBonusValueType[7] != 0)
+        param_1->Flags |= 2;
+    
+    if (TempBonusValueType[8] != 0)
+        param_1->Flags |= 4;
+}
+
+
+
 
 }

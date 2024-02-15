@@ -25,6 +25,7 @@ uniform sampler2D tex3;
 uniform vec3 cBlend;
 uniform bool bBlend;
 uniform bool bLight;
+uniform vec3 cLight;
 uniform int pal;
 uniform int drawMode;
 uniform float Alpha;
@@ -55,17 +56,27 @@ void main()
     if (bBlend)
     {
         if (cBlend.r < 0.0)
-           clr.r *= 1.0 + clamp(cBlend.r + lightning, -1.0, 0.0);
+        {
+            if (lightning >= 0.01)
+                clr.r += (1.0 - clr.r) * cLight.r;
+            clr.r *= 1.0 + clamp(cBlend.r + lightning, -1.0, 0.0);
+        }
         else
-           clr.r += (1.0 - clr.r) * cBlend.r;
+            clr.r += (1.0 - clr.r) * cBlend.r;
+
         if (cBlend.g < 0.0)
-           clr.g *= 1.0 + clamp(cBlend.g + lightning, -1.0, 0.0);
+        {
+            if (lightning >= 0.01)
+                clr.g += (1.0 - clr.g) * cLight.g;
+            clr.g *= 1.0 + clamp(cBlend.g + lightning, -1.0, 0.0);
+        }
         else
-           clr.g += (1.0 - clr.g) * cBlend.g;
+            clr.g += (1.0 - clr.g) * cBlend.g;
+
         if (cBlend.b < 0.0)
-           clr.b *= 1.0 + cBlend.b;
+            clr.b *= 1.0 + cBlend.b;
         else
-           clr.b += (1.0 - clr.b) * cBlend.b;
+            clr.b += (1.0 - clr.b) * cBlend.b;
     }
     gl_FragColor = vec4(clr.rgb, clr.a * Alpha);
 })";
@@ -152,6 +163,7 @@ void CDrawer::Init(int mode)
         Glext::GLUniform1i(_stdTex3Loc, 2);
                 
         _stdBLightLoc = Glext::GLGetUniformLocation(_stdProgID, "bLight");
+        _stdCLightLoc = Glext::GLGetUniformLocation(_stdProgID, "cLight");
         
         
         Glext::GLGenFramebuffers(3, _glBuffer.data());
@@ -241,10 +253,10 @@ void CDrawer::DrawRect(uint32_t tex, Common::FRect out, float alpha)
             ApplyStates();
 
             std::array<TVertex, 4> vtx = {
-                TVertex( vec3f(out.left,  out.top,    0.0), tUtV(0.0, 0.0) ),
-                TVertex( vec3f(out.left,  out.bottom, 0.0), tUtV(0.0, 1.0) ),
-                TVertex( vec3f(out.right, out.bottom, 0.0), tUtV(1.0, 1.0) ),
-                TVertex( vec3f(out.right, out.top,    0.0), tUtV(1.0, 0.0) )
+                TVertex( vec3f(out.left,  out.top,    0.0), tUtV(0.0, 1.0) ),
+                TVertex( vec3f(out.left,  out.bottom, 0.0), tUtV(0.0, 0.0) ),
+                TVertex( vec3f(out.right, out.bottom, 0.0), tUtV(1.0, 0.0) ),
+                TVertex( vec3f(out.right, out.top,    0.0), tUtV(1.0, 1.0) )
             };
             
             DrawVtxQuad(vtx);
@@ -408,10 +420,6 @@ void CDrawer::SetMode(Common::Point res, int windowed)
         case MODE_PS:
             _winSize = res;  
             _resScale = Common::FPoint(1.0 / (float)res.x, 1.0 / (float)res.y);
-            
-            SetBufferSize(BUF_0, _winSize);
-            SetBufferSize(BUF_1, _winSize);
-            SetBufferSize(BUF_2, _winSize);
             
             break;
     }
@@ -643,7 +651,10 @@ void CDrawer::ApplyStates(int setAll)
         if (_mode == MODE_PS)
         {
             if (setAll || (newStates->Tex2 != _lastState.Tex2))
-                Glext::GLUniform1i(_stdBLightLoc, (newStates->Tex2 == 0 ? 0 : 2) );
+                Glext::GLUniform1i(_stdBLightLoc, (newStates->Tex2 == 0 ? 0 : 1) );
+            
+            if (setAll || (newStates->CLight != _lastState.CLight))
+            Glext::GLUniform3f(_stdCLightLoc, newStates->CLight.x, newStates->CLight.y, newStates->CLight.z);
         }
     }
 
@@ -808,6 +819,8 @@ void CDrawer::SetBufferSize(int32_t bufid, Common::Point sz)
         
         glBindTexture(GL_TEXTURE_2D, 0);
         
+        _bufferSize.at(bufid) = sz;
+        
         _state.Tex = 0;
     }
 }
@@ -895,9 +908,15 @@ void CDrawer::Begin()
 void CDrawer::SetOutBuffer(int32_t bfid)
 {
     if (bfid != BUF_OFF)
+    {
         Glext::GLBindFramebuffer(GL_FRAMEBUFFER, _glBuffer.at(bfid));
+        glViewport(0, 0, _bufferSize.at(bfid).x , _bufferSize.at(bfid).y);
+    }
     else
+    {
         Glext::GLBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glViewport(0, 0, _winSize.x, _winSize.y);
+    }
     
     _activeBuffer = bfid;
 }

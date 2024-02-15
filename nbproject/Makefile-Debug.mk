@@ -43,8 +43,12 @@ OBJECTFILES= \
 	${OBJECTDIR}/game.o \
 	${OBJECTDIR}/game_character.o \
 	${OBJECTDIR}/game_data.o \
+	${OBJECTDIR}/game_loot.o \
 	${OBJECTDIR}/game_newgame.o \
+	${OBJECTDIR}/game_placeoff.o \
+	${OBJECTDIR}/game_play.o \
 	${OBJECTDIR}/game_state.o \
+	${OBJECTDIR}/game_village.o \
 	${OBJECTDIR}/gfx.o \
 	${OBJECTDIR}/glfuncs.o \
 	${OBJECTDIR}/locale.o \
@@ -117,15 +121,35 @@ ${OBJECTDIR}/game_data.o: game_data.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I/usr/include -I/usr/include/c++/13.2.1 -I/usr/include/c++/13.2.1/x86_64-pc-linux-gnu `pkg-config --cflags sdl2` `pkg-config --cflags opengl` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_data.o game_data.cpp
 
+${OBJECTDIR}/game_loot.o: game_loot.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I/usr/include -I/usr/include/c++/13.2.1 -I/usr/include/c++/13.2.1/x86_64-pc-linux-gnu `pkg-config --cflags sdl2` `pkg-config --cflags opengl` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_loot.o game_loot.cpp
+
 ${OBJECTDIR}/game_newgame.o: game_newgame.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I/usr/include -I/usr/include/c++/13.2.1 -I/usr/include/c++/13.2.1/x86_64-pc-linux-gnu `pkg-config --cflags sdl2` `pkg-config --cflags opengl` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_newgame.o game_newgame.cpp
 
+${OBJECTDIR}/game_placeoff.o: game_placeoff.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I/usr/include -I/usr/include/c++/13.2.1 -I/usr/include/c++/13.2.1/x86_64-pc-linux-gnu `pkg-config --cflags sdl2` `pkg-config --cflags opengl` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_placeoff.o game_placeoff.cpp
+
+${OBJECTDIR}/game_play.o: game_play.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I/usr/include -I/usr/include/c++/13.2.1 -I/usr/include/c++/13.2.1/x86_64-pc-linux-gnu `pkg-config --cflags sdl2` `pkg-config --cflags opengl` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_play.o game_play.cpp
+
 ${OBJECTDIR}/game_state.o: game_state.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I/usr/include -I/usr/include/c++/13.2.1 -I/usr/include/c++/13.2.1/x86_64-pc-linux-gnu `pkg-config --cflags sdl2` `pkg-config --cflags opengl` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_state.o game_state.cpp
+
+${OBJECTDIR}/game_village.o: game_village.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I/usr/include -I/usr/include/c++/13.2.1 -I/usr/include/c++/13.2.1/x86_64-pc-linux-gnu `pkg-config --cflags sdl2` `pkg-config --cflags opengl` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_village.o game_village.cpp
 
 ${OBJECTDIR}/gfx.o: gfx.cpp
 	${MKDIR} -p ${OBJECTDIR}

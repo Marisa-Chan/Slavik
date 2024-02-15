@@ -194,6 +194,7 @@ void Resources::SimpleObject::Load(FSMgr::iFile *pfile, const SDL_Color *palette
         for(size_t i = 0; i < numFlame; ++i)
         {
             FlamePos &flame = Flames[i];
+            flame.Index = i;
             flame.FlameID = pfile->readS8();
             flame.Position.x = pfile->readS16L();
             flame.Position.y = pfile->readS16L();
@@ -211,11 +212,11 @@ void Resources::SimpleObject::Load(FSMgr::iFile *pfile, const SDL_Color *palette
     
     for(int8_t i = 0; i < 8; ++i)
     {
-        Common::SPoint &p1 = unk[i][0];
+        Common::Point &p1 = Offsets.at(i).ShdOffset;
         p1.x = pfile->readS16L();
         p1.y = pfile->readS16L();
 
-        Common::SPoint &p2 = unk[i][1];
+        Common::Point &p2 = Offsets.at(i).Offset;
         p2.x = pfile->readS16L();
         p2.y = pfile->readS16L();
     }

@@ -30,6 +30,13 @@ struct Image
     SDL_Surface *SW = nullptr;
     uint32_t HW = 0;
     
+    Common::Point GetSize() const 
+    {
+        if (!SW)
+            return Common::Point();
+        return Common::Point(SW->w, SW->h);
+    }
+    
     ~Image()
     {
         if (SW)
@@ -87,6 +94,8 @@ public:
         
         bool BBlend = false;
         vec3f CBlend; 
+        
+        vec3f CLight;
         
         int32_t Pal = -1;
         int32_t DrawMode = 0;
@@ -158,6 +167,9 @@ public:
     
     void SetLightMask(Light *l);
     
+    void SetLightColor(const vec3f &color)
+    { _state.CLight = color; }
+    
     void SetMode(Common::Point res, int windowed = 1);
     
     void SetScissor(bool mode, Common::Rect rect = Common::Rect());
@@ -205,6 +217,7 @@ public:
     int32_t _stdBBLendLoc = -1;
     int32_t _stdCBLendLoc = -1;
     int32_t _stdBLightLoc = -1;
+    int32_t _stdCLightLoc = -1;
     int32_t _stdPalLoc = -1;
     int32_t _stdDrawModeLoc = -1;
     int32_t _stdTex1Loc = -1;
@@ -217,6 +230,7 @@ public:
     
     std::array<uint32_t, BUF_MAX> _glBuffer;
     std::array<uint32_t, BUF_MAX> _bufferTex;
+    std::array<Common::Point, BUF_MAX> _bufferSize;
     
     uint32_t _psPalettes = 0;
     

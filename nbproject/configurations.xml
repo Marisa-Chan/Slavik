@@ -13,8 +13,12 @@
       <itemPath>game.cpp</itemPath>
       <itemPath>game_character.cpp</itemPath>
       <itemPath>game_data.cpp</itemPath>
+      <itemPath>game_loot.cpp</itemPath>
       <itemPath>game_newgame.cpp</itemPath>
+      <itemPath>game_placeoff.cpp</itemPath>
+      <itemPath>game_play.cpp</itemPath>
       <itemPath>game_state.cpp</itemPath>
+      <itemPath>game_village.cpp</itemPath>
       <itemPath>gfx.cpp</itemPath>
       <itemPath>glfuncs.cpp</itemPath>
       <itemPath>locale.cpp</itemPath>
@@ -153,9 +157,17 @@
       </item>
       <item path="game_data.cpp" ex="false" tool="1" flavor2="0">
       </item>
+      <item path="game_loot.cpp" ex="false" tool="1" flavor2="0">
+      </item>
       <item path="game_newgame.cpp" ex="false" tool="1" flavor2="0">
       </item>
+      <item path="game_placeoff.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_play.cpp" ex="false" tool="1" flavor2="0">
+      </item>
       <item path="game_state.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_village.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="gfx.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -258,9 +270,17 @@
       </item>
       <item path="game_data.cpp" ex="false" tool="1" flavor2="0">
       </item>
+      <item path="game_loot.cpp" ex="false" tool="1" flavor2="0">
+      </item>
       <item path="game_newgame.cpp" ex="false" tool="1" flavor2="0">
       </item>
+      <item path="game_placeoff.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_play.cpp" ex="false" tool="1" flavor2="0">
+      </item>
       <item path="game_state.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_village.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="gfx.cpp" ex="false" tool="1" flavor2="0">
       </item>

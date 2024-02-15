@@ -39,6 +39,8 @@ namespace  System
     // Return drawable area sizes
     ResRatio GetRResolution();
     Common::Point GetResolution();
+    
+    int rand();
 }
 
 
