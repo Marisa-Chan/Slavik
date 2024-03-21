@@ -2,7 +2,7 @@
 #include "fmt/printf.h"
 #include "system.h"
 #include "game.h"
-#include "locale.h"
+#include "game_locale.h"
 
 namespace Game
 {
@@ -320,7 +320,7 @@ void Engine::UpdateNewGameMenu()
             _mainCharacter->ArmorWeapons[ESLT_4] = 8;
             _mainCharacter->ArmorWeapons[ESLT_5] = 11;
             
-            FUN_004143dc(_mainCharacter, 0);
+            FUN_004143dc(_mainCharacter, CHSTATE_0);
             drawTextID = 0;
             break;
         case 1:
@@ -342,7 +342,7 @@ void Engine::UpdateNewGameMenu()
             _mainCharacter->ArmorWeapons[ESLT_4] = 7;
             _mainCharacter->ArmorWeapons[ESLT_5] = 10;
             
-            FUN_004143dc(_mainCharacter, 0);
+            FUN_004143dc(_mainCharacter, CHSTATE_0);
             drawTextID = 1;
             break;
         case 2:
@@ -366,7 +366,7 @@ void Engine::UpdateNewGameMenu()
             _mainCharacter->ArmorWeapons[ESLT_4] = 6;
             _mainCharacter->ArmorWeapons[ESLT_5] = 9;
             
-            FUN_004143dc(_mainCharacter, 0);
+            FUN_004143dc(_mainCharacter, CHSTATE_0);
             drawTextID = 2;
             break;
         case 3:

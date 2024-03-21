@@ -194,6 +194,11 @@ public:
         return this->at(x + y * XW);
     }
     
+    const T& At(uint32_t x, uint32_t y) const
+    {
+        return this->at(x + y * XW);
+    }
+    
     T& At(const Point &p)
     {
         return this->at(p.x + p.y * XW);
@@ -257,6 +262,14 @@ public:
         return -1;
     }
     
+    size_t GetID(Common::Point p) const
+    {
+        size_t n = p.x + p.y * XW;
+        if (n < size())
+            return n;
+        return -1;
+    }
+    
     Point GetPos(size_t id) const
     {
         if (id >= 0 && id < size())
@@ -264,12 +277,12 @@ public:
         return Point(-1, -1);
     }
     
-    uint32_t Width() const
+    constexpr uint32_t Width() const
     {
         return XW;
     }
     
-    uint32_t Height() const
+    constexpr uint32_t Height() const
     {
         return XH;
     }
@@ -279,6 +292,13 @@ public:
             PlaneArray t;
             t.fill(val);
             return t;
+    }
+    
+    constexpr bool IsIn(Common::Point pt) const
+    {
+        if (pt.x >= 0 && pt.x < XW && pt.y >= 0 && pt.y < XH)
+            return true;
+        return false;
     }
 };
 

@@ -111,6 +111,7 @@ public:
     static GFX::PalImage *LoadRL8BitImage(FSMgr::iFile *pfile);
     static GFX::PalImage *LoadRL8BitShadow(FSMgr::iFile *pfile);
     static GFX::Image *LoadRL16BitImage(FSMgr::iFile *pfile);
+    static GFX::Image *LoadFlameImage(FSMgr::iFile *pfile);
    
     
 public:

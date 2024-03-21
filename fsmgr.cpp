@@ -469,7 +469,7 @@ iDirNode *FSDirNode::ScanDir(const std::string &_name, const std::string &_path)
     if (!dr)
         return nullptr;
 
-    iDirNode *ndr = new iDirNode(_name, _path);
+    iDirNode *ndr = new FSDirNode(_name, _path);
 
     std::string tmp = _path + "/";
 

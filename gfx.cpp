@@ -29,6 +29,7 @@ uniform vec3 cLight;
 uniform int pal;
 uniform int drawMode;
 uniform float Alpha;
+uniform bool AlphaLogic;
 void main()
 {
     vec4 clr = texture2D(tex, gl_TexCoord[0].xy);
@@ -47,6 +48,9 @@ void main()
     {
         clr = vec4(clr.r, clr.r, clr.r, clr.g);
     }
+
+    if (AlphaLogic && clr.a != 1.0)
+        discard;
     
     float lightning = 0.0; 
     if (bLight)
@@ -154,6 +158,7 @@ void CDrawer::Init(int mode)
         _stdTex3Loc = Glext::GLGetUniformLocation(_stdProgID, "tex3");
         
         _stdAlphaLoc = Glext::GLGetUniformLocation(_stdProgID, "Alpha");
+        _stdAlphaLogicLoc = Glext::GLGetUniformLocation(_stdProgID, "AlphaLogic");
         
         _stdPalLoc = Glext::GLGetUniformLocation(_stdProgID, "pal");
         _stdDrawModeLoc = Glext::GLGetUniformLocation(_stdProgID, "drawMode");
@@ -249,7 +254,6 @@ void CDrawer::DrawRect(uint32_t tex, Common::FRect out, float alpha)
             _state.DrawMode = 0;
             float tmp = _state.Alpha;
             _state.Alpha = alpha;
-            _state.LinearFilter = true;
             ApplyStates();
 
             std::array<TVertex, 4> vtx = {
@@ -279,7 +283,6 @@ void CDrawer::DrawRect(const Image *img, Common::FRect out)
             _state.Tex = img->HW;
             _state.Pal = -1;
             _state.DrawMode = 0;
-            _state.LinearFilter = true;
             ApplyStates();
 
             std::array<TVertex, 4> vtx = {
@@ -313,7 +316,6 @@ void CDrawer::Draw(const Image *img, Common::Point out)
             _state.Tex = img->HW;
             _state.Pal = -1;
             _state.DrawMode = 0;
-            _state.LinearFilter = true;
             ApplyStates();
 
             const int32_t w = img->SW->w;
@@ -325,6 +327,45 @@ void CDrawer::Draw(const Image *img, Common::Point out)
                 TVertex( vec3f(out.x + w, out.y + h, 0.0), tUtV(1.0, 1.0) ),
                 TVertex( vec3f(out.x + w, out.y,     0.0), tUtV(1.0, 0.0) )
             };
+            
+            DrawVtxQuad(vtx);
+        }
+            break;
+    }
+}
+
+void CDrawer::DrawFlame(const Image *img, Common::Point out)
+{
+    switch (_mode)
+    {
+        default:
+        case MODE_SW:
+        {
+            SDL_Rect sdlout = out;
+            SDL_BlitSurface(img->SW, NULL, System::screen, &sdlout);       
+        }
+            break;
+            
+        case MODE_HW:
+        case MODE_PS:
+        {
+            _state.Tex = img->HW;
+            _state.Pal = -1;
+            _state.DrawMode = 0;
+            _state.SrcBlend = GL_ONE;
+            ApplyStates();
+
+            const int32_t w = img->SW->w;
+            const int32_t h = img->SW->h;
+
+            std::array<TVertex, 4> vtx = {
+                TVertex( vec3f(out.x,     out.y,     0.0), tUtV(0.0, 0.0) ),
+                TVertex( vec3f(out.x,     out.y + h, 0.0), tUtV(0.0, 1.0) ),
+                TVertex( vec3f(out.x + w, out.y + h, 0.0), tUtV(1.0, 1.0) ),
+                TVertex( vec3f(out.x + w, out.y,     0.0), tUtV(1.0, 0.0) )
+            };
+            
+            _state.SrcBlend = GL_SRC_ALPHA;
             
             DrawVtxQuad(vtx);
         }
@@ -344,6 +385,7 @@ void CDrawer::Draw(const PalImage *img, int32_t pal, Common::Point out)
             _state.Tex = img->HW;
             _state.Pal = pal;
             _state.DrawMode = 1;
+            bool tmp = _state.LinearFilter;
             _state.LinearFilter = false;
             ApplyStates();
 
@@ -358,6 +400,7 @@ void CDrawer::Draw(const PalImage *img, int32_t pal, Common::Point out)
             };
             
             DrawVtxQuad(vtx);
+            _state.LinearFilter = tmp;
         }
             break;
     }
@@ -374,7 +417,6 @@ void CDrawer::DrawShadow(const PalImage *img, Common::Point out)
         {
             _state.Tex = img->HW;
             _state.DrawMode = 2;
-            _state.LinearFilter = true;
             ApplyStates();
 
             const int32_t w = img->SW.Width();
@@ -433,13 +475,22 @@ void CDrawer::SetScissor(bool mode, Common::Rect rect)
 
 SDL_Surface *CDrawer::CreateSWSurface(Common::Point sz)
 {
+#if SDL_VERSION_ATLEAST(2,0,5)
     return SDL_CreateRGBSurfaceWithFormat(0, sz.x, sz.y, _pixfmt->BitsPerPixel, _pixfmt->format);
+#else
+    return SDL_CreateRGBSurface(0, sz.x, sz.y, _pixfmt->BitsPerPixel, _pixfmt->Rmask, _pixfmt->Gmask, _pixfmt->Bmask, _pixfmt->Amask );
+#endif
 }
 
 Image *CDrawer::CreateImage(Common::Point sz)
 {
     Image *img = new Image();
+#if SDL_VERSION_ATLEAST(2,0,5)
     img->SW = SDL_CreateRGBSurfaceWithFormat(0, sz.x, sz.y, _pixfmt->BitsPerPixel, _pixfmt->format);
+#else
+    img->SW = SDL_CreateRGBSurface(0, sz.x, sz.y, _pixfmt->BitsPerPixel, _pixfmt->Rmask, _pixfmt->Gmask, _pixfmt->Bmask, _pixfmt->Amask );
+#endif
+    
     
     switch (_mode)
     {
@@ -734,6 +785,9 @@ void CDrawer::ApplyStates(int setAll)
         
         if (setAll || (newStates->Alpha != _lastState.Alpha))
             Glext::GLUniform1f(_stdAlphaLoc, newStates->Alpha);
+        
+        if (setAll || (newStates->AlphaLogic != _lastState.AlphaLogic))
+            Glext::GLUniform1i(_stdAlphaLogicLoc, newStates->AlphaLogic);
     }
 
 //    if (setAll || (newStates->Zwrite != _lastState.Zwrite))
@@ -862,6 +916,8 @@ void CDrawer::Begin()
 {
     if (_mode == MODE_SW)
         return;
+    
+    _winSize = System::GetResolution();
 
     glDisable(GL_CULL_FACE);
     glDisable(GL_DITHER);

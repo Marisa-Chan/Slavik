@@ -13,15 +13,17 @@
       <itemPath>game.cpp</itemPath>
       <itemPath>game_character.cpp</itemPath>
       <itemPath>game_data.cpp</itemPath>
+      <itemPath>game_item.cpp</itemPath>
+      <itemPath>game_locale.cpp</itemPath>
       <itemPath>game_loot.cpp</itemPath>
       <itemPath>game_newgame.cpp</itemPath>
+      <itemPath>game_pathfind.cpp</itemPath>
       <itemPath>game_placeoff.cpp</itemPath>
       <itemPath>game_play.cpp</itemPath>
       <itemPath>game_state.cpp</itemPath>
       <itemPath>game_village.cpp</itemPath>
       <itemPath>gfx.cpp</itemPath>
       <itemPath>glfuncs.cpp</itemPath>
-      <itemPath>locale.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
       <itemPath>resources.cpp</itemPath>
       <itemPath>common/strutils.cpp</itemPath>
@@ -49,9 +51,9 @@
       <itemPath>font.h</itemPath>
       <itemPath>fsmgr.h</itemPath>
       <itemPath>game.h</itemPath>
+      <itemPath>game_locale.h</itemPath>
       <itemPath>gfx.h</itemPath>
       <itemPath>glfuncs.h</itemPath>
-      <itemPath>locale.h</itemPath>
       <itemPath>matrix.h</itemPath>
       <itemPath>common/plane.h</itemPath>
       <itemPath>resources.h</itemPath>
@@ -93,9 +95,136 @@
             <pElem>/usr/include</pElem>
             <pElem>/usr/include/c++/13.2.1</pElem>
             <pElem>/usr/include/c++/13.2.1/x86_64-pc-linux-gnu</pElem>
+            <pElem>.</pElem>
           </incDir>
-          <commandLine>-O0</commandLine>
+          <commandLine>-O0 -fsanitize=address</commandLine>
         </ccTool>
+        <linkerTool>
+          <output>${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/slavik</output>
+          <linkerLibItems>
+            <linkerOptionItem>`pkg-config --libs sdl2`</linkerOptionItem>
+            <linkerOptionItem>`pkg-config --libs opengl`</linkerOptionItem>
+          </linkerLibItems>
+          <commandLine>-fsanitize=address</commandLine>
+        </linkerTool>
+      </compileType>
+      <item path="common/common.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="common/plane.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="common/strutils.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="common/strutils.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fmt/args.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fmt/chrono.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fmt/color.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fmt/compile.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fmt/core.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fmt/format-inl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fmt/format.cc" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="fmt/format.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fmt/os.cc" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="fmt/os.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fmt/ostream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fmt/printf.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fmt/ranges.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fmt/std.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fmt/xchar.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="font.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="font.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fsmgr.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="fsmgr.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="game.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="game_character.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_data.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_item.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_locale.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_locale.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="game_loot.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_newgame.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_pathfind.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_placeoff.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_play.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_state.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_village.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="gfx.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="gfx.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="glfuncs.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="glfuncs.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="main.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="matrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="resources.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="resources.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="system.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="system.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="vectors.h" ex="false" tool="3" flavor2="0">
+      </item>
+    </conf>
+    <conf name="Release" type="1">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+          <commandLine>-g</commandLine>
+        </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>5</developmentMode>
+        </asmTool>
         <linkerTool>
           <linkerLibItems>
             <linkerOptionItem>`pkg-config --libs sdl2`</linkerOptionItem>
@@ -157,9 +286,17 @@
       </item>
       <item path="game_data.cpp" ex="false" tool="1" flavor2="0">
       </item>
+      <item path="game_item.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_locale.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_locale.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="game_loot.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game_newgame.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_pathfind.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game_placeoff.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -176,123 +313,6 @@
       <item path="glfuncs.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="glfuncs.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="locale.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="locale.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="main.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="matrix.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="resources.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="resources.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="system.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="system.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="vectors.h" ex="false" tool="3" flavor2="0">
-      </item>
-    </conf>
-    <conf name="Release" type="1">
-      <toolsSet>
-        <compilerSet>default</compilerSet>
-        <dependencyChecking>true</dependencyChecking>
-        <rebuildPropChanged>false</rebuildPropChanged>
-      </toolsSet>
-      <compileType>
-        <cTool>
-          <developmentMode>5</developmentMode>
-        </cTool>
-        <ccTool>
-          <developmentMode>5</developmentMode>
-        </ccTool>
-        <fortranCompilerTool>
-          <developmentMode>5</developmentMode>
-        </fortranCompilerTool>
-        <asmTool>
-          <developmentMode>5</developmentMode>
-        </asmTool>
-      </compileType>
-      <item path="common/common.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="common/plane.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="common/strutils.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="common/strutils.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="fmt/args.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="fmt/chrono.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="fmt/color.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="fmt/compile.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="fmt/core.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="fmt/format-inl.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="fmt/format.cc" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="fmt/format.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="fmt/os.cc" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="fmt/os.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="fmt/ostream.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="fmt/printf.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="fmt/ranges.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="fmt/std.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="fmt/xchar.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="font.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="font.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="fsmgr.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="fsmgr.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="game.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="game.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="game_character.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="game_data.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="game_loot.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="game_newgame.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="game_placeoff.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="game_play.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="game_state.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="game_village.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="gfx.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="gfx.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="glfuncs.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="glfuncs.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="locale.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="locale.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
       </item>

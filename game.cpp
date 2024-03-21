@@ -11,6 +11,8 @@
 
 #include <set>
 
+#include <signal.h>
+
 namespace Game
 {
  
@@ -18,14 +20,27 @@ Engine Engine::Instance;
     
 bool Engine::Process()
 {
+    _screenSize = System::GetResolution();
+    Common::Point bufsz((_screenSize.x * MAPVIEWW) / SCREENRESX, (_screenSize.y * MAPVIEWH) / SCREENRESY);
+
+    GFXDrawer.SetBufferSize(GFX::BUF_0, bufsz);
+    GFXDrawer.SetBufferSize(GFX::BUF_1, bufsz);
+    GFXDrawer.SetBufferSize(GFX::BUF_2, bufsz);
+    
     uint32_t start = SDL_GetTicks();
     if (Update())
         return true;
     
     Draw();
     
-    uint32_t frmTime = start - SDL_GetTicks();
-    SDL_Delay((FrameTime - frmTime) - (1000 / FrameTime) / 5);
+    uint32_t frmTime = SDL_GetTicks() - start;
+    
+    if (frmTime > 1000)
+        frmTime = 1000;
+        
+    int32_t delay = (FrameTime - frmTime) - (1000 / FrameTime) / 5;
+    if (delay > 0)
+        SDL_Delay(delay);
     
     return false;
 }
@@ -158,7 +173,7 @@ void Engine::Init(int gfxmode)
         }
     }                
     
-    _screenSize = Common::Point(1024, 768);
+    _screenSize = System::GetResolution();//Common::Point(1024, 768);
    
     _langLiter = "R";
     
@@ -249,6 +264,18 @@ int Engine::EventsWatcher(void *, SDL_Event *event)
             Instance._mouseCurPos.y = event->motion.y;
         }
         break;
+        
+//        case SDL_WINDOWEVENT_RESIZED:
+//        case SDL_WINDOWEVENT_SIZE_CHANGED:
+//        {                
+//            Common::Point res = System::GetResolution();
+//            Common::Point bufsz((res.x * MAPVIEWW) / SCREENRESX, (res.y * MAPVIEWH) / SCREENRESY);
+//
+//            GFXDrawer.SetBufferSize(GFX::BUF_0, bufsz);
+//            GFXDrawer.SetBufferSize(GFX::BUF_1, bufsz);
+//            GFXDrawer.SetBufferSize(GFX::BUF_2, bufsz);
+//        }
+//        break;
     }
     
     return 1; // This event can be passed to another event watcher
@@ -278,7 +305,7 @@ void Engine::Draw()
     GFXDrawer.Clear();
     
     
-    _counter++;
+    //_counter+=5;
     //printf("%d %d \n", winSize.x, winSize.y);
 
     DrawGame();
@@ -386,6 +413,7 @@ void Engine::Draw()
     outpos.top = 0;
     outpos.right = SCREENRESX;
     outpos.bottom = 555;
+    GFXDrawer.SetLinearFilter(true);
     GFXDrawer.DrawRect(GFXDrawer.GetBufferTex(GFX::BUF_0), outpos );
     GFXDrawer.DrawRect(GFXDrawer.GetBufferTex(GFX::BUF_1), outpos, 0.5);
     GFXDrawer.DrawRect(GFXDrawer.GetBufferTex(GFX::BUF_2), outpos );
@@ -393,9 +421,12 @@ void Engine::Draw()
     
     //else
     {
+        
         GFXDrawer.SetOutBuffer(GFX::BUF_OFF);
         GFXDrawer.SetVirtResolution(Common::Point(SCREENRESX, SCREENRESY));
         GFXDrawer.SetModelViewMatrix( mat4x4f() );
+        
+        GFXDrawer.SetLinearFilter(true);
         
         for(int32_t i = 0; i < _imgQueue1Count; ++i)
         {
@@ -472,6 +503,14 @@ void Engine::Draw()
 
 bool Engine::LoadMap(int32_t mapID, int32_t param)
 {
+    DWORD_00a3e758 = false;
+    MapObjects2Count = 0;
+    MapsOpened.at(mapID - 1) = 1;
+    _objectsToLoadCount = 0;
+    
+    if (_playScreenID == PLSCREEN_MAP)
+        PlayChangeScreen(PLSCREEN_4);
+    
     printf("Incomplete %s\n", __PRETTY_FUNCTION__);
     if (_currentMap)
         delete _currentMap;
@@ -526,18 +565,21 @@ bool Engine::LoadMap(int32_t mapID, int32_t param)
     
     //int32_t local_1c = 0;
     
-    for (int32_t i = 1; i < 200; ++i) 
+//    for (int32_t i = 1; i < 200; ++i) 
+//    {
+//        MapChar &mchar = _state.MapChar_ARRAY.at(i)
+    for (MapChar &mchar : _state.MapChar_ARRAY)
     {
-        MapChar &mchar = _state.MapChar_ARRAY.at(i);
         if (mchar.unk5 != 0 && mchar.MapID == _currentMapID) 
         {
             if (param == 0 && (mchar.unk5 & 0x40)) 
                 mchar.unk4 = 0;
             
-            Character &rchar = _state.Characters.at(mchar.CharacterIndex);
             for (int32_t j = 0; j < mchar.GroupSize; ++j) 
             {
-                if (!param && !(mchar.unk5 & 0x80) && mchar.unk5 < 81 &&
+                Character &rchar = _state.Characters.at(mchar.CharacterIndex + j);
+                
+                if (!param && !(mchar.unk5 & 0x80) && mchar.unk5 < 0x51 &&
                     !PlaceMob(&rchar)) 
                 {
                     mchar.GroupSize = j;
@@ -550,7 +592,7 @@ bool Engine::LoadMap(int32_t mapID, int32_t param)
                     bVar21 = true;
                 
                 if (bVar21)
-                    _currentMap->FootMap(rchar.Tile).ID = rchar.CharIndex + 1;
+                    _currentMap->FootMap(rchar.Tile).ID = rchar.Index + 1;
                 
                 if (rchar.ClassID & CLASS_BIT40) 
                 {
@@ -588,11 +630,12 @@ bool Engine::LoadMap(int32_t mapID, int32_t param)
     if (param == 0)
     {
         bool bVar21 = true;
-        for (int32_t i = 1; i < _state.MapChar_ARRAY.size(); ++i)
+//        for (int32_t i = 1; i < _state.MapChar_ARRAY.size(); ++i)
+//        {
+//            MapChar &mchar = _state.MapChar_ARRAY.at(i);
+        for (MapChar &mchar : _state.MapChar_ARRAY)
         {
-            MapChar &mchar = _state.MapChar_ARRAY.at(i);
-            
-            if (!(mchar.unk5 & 0x40) && (mchar.MapID == _currentMapID) && 
+            if ((mchar.unk5 & 0x40) && (mchar.MapID == _currentMapID) && 
                 (mchar.unk5 - 0x41 < 0x10))
             {
                 if (bVar21)
@@ -608,10 +651,10 @@ bool Engine::LoadMap(int32_t mapID, int32_t param)
                         
                         if (!PlaceMob(pCVar25))
                             break;
-                                        
-                        mchar.field1_0x2 += 0;//DAT_0045e276[mchar.field21_0x1e];
+                                                                
+                        mchar.field1_0x2 += 0;//DAT_0045e276[mchar.unk5];
                         
-                        _currentMap->FootMap(pCVar25->Tile).ID = pCVar25->CharIndex;
+                        _currentMap->FootMap(pCVar25->Tile).ID = pCVar25->Index + 1;
                         
                         if (pCVar25->ClassID & CLASS_BIT40) 
                         {
@@ -740,19 +783,20 @@ bool Engine::LoadMap(int32_t mapID, int32_t param)
         mapGS1Count = 0;
         for (int32_t i = 0; i < _state.GS1ARRAYCount; ++i)
         {
-            GS1 &local_50 = _state.GS1ARRAY.at(i);
+            GS1 &globalLoot = _state.GS1ARRAY.at(i);
             
-            if ( (local_50.MapID == _currentMapID) && 
-                   ( (local_50.Pos.x > -1 || 
-                     (local_50.Pos.x != local_50.Pos.y)) || 
-                     (_counter + local_50.Pos.x > 5399) )  ) 
+            if ( (globalLoot.MapID == _currentMapID) && 
+                   ( (globalLoot.Pos.x > -1 || 
+                     (globalLoot.Pos.x != globalLoot.Pos.y)) || 
+                     (_counter + globalLoot.Pos.x > 5399) )  ) 
             {
-                _currentMap->FootMap(local_50.Tile).Flags |= 0x2;
+                _currentMap->FootMap(globalLoot.Tile).Flags |= 0x2;
 
-                mapGS1[mapGS1Count] = local_50;
-                mapGS1[mapGS1Count].unk1 = i;
+                mapGS1[mapGS1Count] = globalLoot;
+                mapGS1[mapGS1Count].LootID = i;
+                mapGS1[mapGS1Count].Index = mapGS1Count;
 
-                mapGS1[mapGS1Count].Pos = FUN_00439ba0(local_50.Tile) - (_menuImages.at(local_50.ImgID)->GetSize() / 2);
+                mapGS1[mapGS1Count].Pos = FUN_00439ba0(globalLoot.Tile) - (_menuImages.at(globalLoot.ImgID)->GetSize() / 2);
                 mapGS1Count += 1;
             }
         }
@@ -804,6 +848,8 @@ void Engine::DrawGame()
     _ambientColor = CalculateLight() / 100.0;
     _lightColor = vec3f((rand() % 8) + 16, (rand() % 4) + 8, 0);
     
+    _tracePos = _mouseMapPos;
+    
     GFXDrawer.SetLightColor(_lightColor / 100.0);
     
     DrawGroundAndObj();
@@ -821,6 +867,8 @@ void Engine::DrawGroundAndObj()
     Common::Point MaxTile = _viewStartPos + ViewTiles;
     
     GFXDrawer.SetLightMask(nullptr);
+    GFXDrawer.SetLinearFilter(true);
+    GFXDrawer.SetAlphaLogic(true);
     
     if (!_bLightGround || !_bConfLightEffects)
     {
@@ -830,9 +878,9 @@ void Engine::DrawGroundAndObj()
         {
             Common::Point pnt;
             pnt.x = _outOff.x + _viewStartPos.x * TileW;
-            if ((y & 1) != 0) {
+            if ((y & 1) != 0)
                 pnt.x += TileWh;
-            }
+            
             pnt.y = _outOff.y + y * TileH;
             
             for (int32_t x = _viewStartPos.x; x < MaxTile.x; ++x) 
@@ -862,9 +910,9 @@ void Engine::DrawGroundAndObj()
         {
             Common::Point pnt;
             pnt.x = _outOff.x + _viewStartPos.x * TileW;
-            if ((y & 1) != 0) {
+            if ((y & 1) != 0) 
                 pnt.x += TileWh;
-            }
+            
             pnt.y = _outOff.y + y * TileH;
             
             for (int32_t x = _viewStartPos.x; x < MaxTile.x; ++x) 
@@ -885,8 +933,11 @@ void Engine::DrawGroundAndObj()
         }
     }
     
+    GFXDrawer.SetAlphaLogic(false);
+    
     GFXDrawer.SetLightMask(nullptr);
     
+    GFXDrawer.SetLinearFilter(true);
     for(const auto &dec : _currentMap->Decorations)   
         GFXDrawer.Draw( Res.Tiles[ dec.TileID ], _outOff + dec.Position);
 
@@ -919,8 +970,8 @@ void Engine::DrawGroundAndObj()
                     
                 if (charObj.ClassID & CLASS_BIT80) 
                 {
-                    Common::Point pos = Common::Point(charObj.field107_0xe4, charObj.field109_0xec) - _camera;                        
-                    Common::Point rbpos = pos + Common::Point(charObj.field111_0xf4, charObj.field112_0xf6);
+                    Common::Point pos = charObj.ViewPos - _camera;
+                    Common::Point rbpos = pos + charObj.imgSize;
 
                     if ( (pos.x < _gameViewport.x) && (rbpos.x >= 0) &&
                          (pos.y < _gameViewport.y) && (rbpos.y >= 0) ) 
@@ -1070,7 +1121,7 @@ void Engine::DrawGroundAndObj()
                         Common::Point outpos = _outOff + loot->Pos;
                         
                         //iVar22 = _outOff + loot->Pos;
-                        if (DWORD_00a3e758 == 0) 
+                        if (!DWORD_00a3e758) 
                         {
                             GFXDrawer.SetFade(true, _ambientColor);
                             
@@ -1142,7 +1193,9 @@ void Engine::DrawObjects()
     MapObjDraw.fill(MapObjDrawRef());
     MapObjDrawHeap.fill(MapObjDrawRef());
     
-    //if (_bConfShadows)
+    GFXDrawer.SetLinearFilter(true);
+    
+    if (_bConfShadows)
     {
         GFXDrawer.SetOutBuffer(GFX::BUF_1);
         // Draw Characters shadows
@@ -1257,7 +1310,7 @@ void Engine::DrawObjects()
                 {
                     if (obj.unk3 & 8)
                     {
-                        refid -= img->GetSize().y;
+                        refid -= img->GetSize().y / 4;
                         if (refid < 0)
                             refid = 0;
                     }
@@ -1279,6 +1332,7 @@ void Engine::DrawObjects()
                         href.NextObjInHeap = ref.NextObjInHeap;
                         href.MOBJ1 = &obj;
                         href.Pos = pt;
+                        
                         ref.NextObjInHeap = MapObjDrawRefCount2;
                         MapObjDrawRefCount2++;
                     }
@@ -1300,8 +1354,8 @@ void Engine::DrawObjects()
                 if ((charObj.ClassID & CLASS_BIT80) || (charObj.field_0x3 & 0x80)) 
                     continue;
                 
-                Common::Point pt = Common::Point(charObj.field107_0xe4, charObj.field109_0xec) - _camera; 
-                int32_t refid = pt + charObj.field112_0xf6;
+                Common::Point pt = charObj.ViewPos - _camera; 
+                int32_t refid = pt.y + charObj.imgSize.y;
                 
                 if (pt.x > _gameViewport.x || pt.y > _gameViewport.y || refid < GScrOff.y)
                     continue;
@@ -1326,6 +1380,7 @@ void Engine::DrawObjects()
                     href.NextObjInHeap = ref.NextObjInHeap;
                     href.CHAR = &charObj;
                     href.Pos = pt;
+                    
                     ref.NextObjInHeap = MapObjDrawRefCount2;
                     MapObjDrawRefCount2++;
                 }
@@ -1391,7 +1446,7 @@ void Engine::DrawObjects()
                     {
                         GFXDrawer.SetFade(true, _ambientColor);
                         GFXDrawer.Draw(img, ref->Pos);
-                        if ((obj->unk3 & 1) && CheckMouseOnImage(img, ref->Pos) )
+                        if ((obj->unk3 & 1) && CheckTraceImage(img, ref->Pos) )
                             MouseOnObject = obj;
                     }
                     else
@@ -1407,21 +1462,59 @@ void Engine::DrawObjects()
                             GFXDrawer.Draw(img, ref->Pos);
                         }
                         
-                        if ((obj->unk3 & 1) && CheckMouseOnImage(img, ref->Pos) )
+                        if ((obj->unk3 & 1) && CheckTraceImage(img, ref->Pos) )
                             MouseOnObject = obj;
                         
                         for(Resources::SimpleObject::FlamePos &flame : pSimple.Flames)
                         {
                             Common::Point pt = _outOff + flame.Position + obj->Pos;
-                            int32_t frame = obj->Flames.at(flame.Index);
+                            int16_t &frame = obj->Flames.at(flame.Index);
                             
-                            GFXDrawer.Draw(Res.Flames.at(frame), pt);
-                        }
+                            GFXDrawer.SetFade(false, _ambientColor);
+                            GFXDrawer.DrawFlame(Res.Flames.at(frame), pt);
+                            
+                            frame++;
+                            if (frame >= FlameAnims[flame.FlameID][1])
+                                frame = FlameAnims[flame.FlameID][0];
+                        }                        
                     }
                 }
             }
             else if (ref->Type == MapObjDrawRef::TYPE_CHAR)
             {
+                Character *chr = ref->CHAR;
+                
+                if (chr->ClassID & CLASS_BIT40)
+                {
+                    Resources::DynamicObject &obj = Res.DynObjects.at(chr->CharacterBase);
+                    GFX::PalImage *img = obj.Images.at(chr->pFrame);
+                    
+                    if ( _currentMap->LightMap2(chr->Tile) == 0 ) 
+                        GFXDrawer.SetFade(true, _ambientColor);
+                    else
+                        GFXDrawer.SetFade(false);
+                    
+                    GFXDrawer.Draw(img, chr->paletteOffset, ref->Pos);
+                    
+                    if (CheckTraceImage(img, ref->Pos))
+                        MouseOnCharacter = chr;
+                }
+                else
+                {
+                    Resources::CharacterSprites &obj = Res.CharacterBases.at(chr->CharacterBase);
+                    GFX::PalImage *img = obj.Images.at(chr->pFrame);
+                    
+                    if ( _currentMap->LightMap2(chr->Tile) == 0 ) 
+                        GFXDrawer.SetFade(true, _ambientColor);
+                    else
+                        GFXDrawer.SetFade(false);
+                    
+                    GFXDrawer.Draw(img, chr->paletteOffset, ref->Pos);
+                    DrawCharacterSprite(*chr);
+                    
+                    if (CheckTraceImage(img, ref->Pos))
+                        MouseOnCharacter = chr;
+                }
             }
             
             if (!ref->NextObjInHeap)
@@ -1734,14 +1827,12 @@ void Engine::LoadUsedObjects()
 
 void Engine::FUN_00428f90(Common::Point pos)
 {
-    _camera.x = pos.x - _gameViewport.x / 2;
+    _camera = pos - _gameViewport / 2;
     
     if (_camera.x < TileWh)
         _camera.x = TileWh;
     else if (_camera.x + _gameViewport.x > _camMax.x)
         _camera.x = _camMax.x - _gameViewport.x;
-    
-    _camera.x = pos.y - _gameViewport.y / 2;
     
     if (_camera.y < TileH)
         _camera.y = TileH;
@@ -1804,14 +1895,14 @@ void Engine::ProcessCamera()
             }
         }
         else
-            tmpx = (((_camLockChar->field111_0xf4 / 2) + _camLockChar->field107_0xe4 + 1) & ~1) - GScrOff.x;
+            tmpx = (((_camLockChar->imgSize.x / 2) + _camLockChar->ViewPos.x + 1) & ~1) - GScrOff.x;
         
         if (tmpx < tmp.x + 60)
             tmp.x = tmpx - 60;
         else if (tmpx >= tmp.x + _gameViewport.x - 60)
             tmp.x = (tmpx - _gameViewport.x) + 60;
         
-        int32_t tmpy = (((_camLockChar->field112_0xf6 / 2) + _camLockChar->field109_0xec + 1) & ~1) - GScrOff.y;
+        int32_t tmpy = (((_camLockChar->imgSize.y / 2) + _camLockChar->ViewPos.y + 1) & ~1) - GScrOff.y;
         if (tmpy < tmp.y + 50)
             tmp.y = tmpy - 50;
         else if (tmpy >= tmp.y + _gameViewport.y - 50)
@@ -1838,10 +1929,10 @@ void Engine::ProcessCamera()
         _viewStartPos = FUN_0043a000(_camera);
         
         if (_viewStartPos.y != 0)
-            _viewStartPos.y += -1;
+            _viewStartPos.y--;
         
         if (_viewStartPos.x != 0)
-            _viewStartPos.x += -1;
+            _viewStartPos.x--;
     }
 }
 
@@ -1902,15 +1993,16 @@ Common::Point Engine::FUN_00439bdc(Common::Point pos)
 Common::Point Engine::FUN_0043a000(Common::Point pos)
 {
     Common::Point out;
-    Common::Point cpos;
     
     out.y = pos.y / TileH;
     out.x = (pos.x - TileWh * (out.y & 1)) / TileW;
     
-    cpos.x = out.x * TileW + TileWh;
+    Common::Point cpos;
     
     if (out.y & 1)
         cpos.x = out.x * TileW + TileW;
+    else
+        cpos.x = out.x * TileW + TileWh;
     
     cpos.y = (out.y + 1) * TileH;
     
@@ -2050,7 +2142,7 @@ void Engine::UpdateMainMenu()
                 _mainCharacter->ArmorWeapons[ESLT_4] = 8;
                 _mainCharacter->ArmorWeapons[ESLT_5] = 11;
                 
-                FUN_004143dc(_mainCharacter, 0);
+                FUN_004143dc(_mainCharacter, CHSTATE_0);
                 
                 _state.Items[1].TypeID = 3;
                 _state.Items[1].InfoID = 36;
@@ -2158,7 +2250,7 @@ void Engine::Update8()
     DAT_00a3e704 = 0;
     DisplayInvOfCharID2 = 1;
     DisplayInvOfCharID = 1;
-    DAT_00a3e690 = 0;
+    HardComputeUnit = nullptr;
     DAT_00a3e84c = 0;
     
     _counter = 0;
@@ -2205,7 +2297,7 @@ void Engine::Update8()
     {
         LoadUsedObjects();
 
-        FUN_00428f90({_mainCharacter->field107_0xe4,_mainCharacter->field109_0xec});
+        FUN_00428f90(_mainCharacter->ViewPos);
         
         _stateMode = STATEMD_PLAY;
         
@@ -2457,8 +2549,7 @@ void Engine::FUN_004143dc(Character *ch, int state)
         ch->imgOffset = seqData.FrameData[0].ImgOffset;
         ch->shdOffset = seqData.FrameData[0].ShdOffset;
         ch->wpnOffset = seqData.FrameData[0].WpnOffset;
-        ch->field111_0xf4 = chbase.Images.at(ch->pFrame)->SW.Width();
-        ch->field112_0xf6 = chbase.Images.at(ch->pFrame)->SW.Height();
+        ch->imgSize = chbase.Images.at(ch->pFrame)->SW.Size();
     }
     else
     {
@@ -2510,20 +2601,14 @@ void Engine::FUN_004143dc(Character *ch, int state)
         ch->wpnOffset = Common::Point();
         
         if ((ch->field_0x3 & 0x80) == 0) 
-        {
-            ch->field111_0xf4 = obj.Images.at(ch->pFrame)->SW.Width();
-            ch->field112_0xf6 = obj.Images.at(ch->pFrame)->SW.Height();
-        }
-        else {
-            ch->field111_0xf4 = 1;
-            ch->field112_0xf6 = 1;            
-        }
+            ch->imgSize = obj.Images.at(ch->pFrame)->SW.Size();
+        else
+            ch->imgSize = Common::Point(1, 1);
     }
     
-    ch->field107_0xe4 = ch->POS.x + GScrOff.x + ch->imgOffset.x;
-    ch->field109_0xec = ch->POS.y + GScrOff.y + ch->imgOffset.y;
+    ch->RecalcViewPos(GScrOff);
     
-    if (((state == CHSTATE_1) || (state == CHSTATE_7)) && (ch->field17_0x13[0] != -1)) 
+    if (((state == CHSTATE_1) || (state == CHSTATE_7)) && (ch->field17_0x13[0] != 0xff)) 
     {
         Common::Point posCor;
         FUN_0043ecba(&posCor, ch->Tile, ch->field17_0x13[0]);
@@ -2534,7 +2619,7 @@ void Engine::FUN_004143dc(Character *ch, int state)
             
             ch->Tile = posCor;
             
-            _currentMap->FootMap(ch->Tile).ID = ch->CharIndex + 1;
+            _currentMap->FootMap(ch->Tile).ID = ch->Index + 1;
         }
         else 
         {
@@ -2546,12 +2631,11 @@ void Engine::FUN_004143dc(Character *ch, int state)
             }
             else 
             {
-                ch->field6_0x6 = chrID;
-                ch->_field_0xc = posCor.y;
-                ch->_field_0xe = posCor.x;
+                ch->EnemyCharID = chrID;
+                ch->MoveTile = posCor;
                 ch->field17_0x13[0] = 0xff;
                 ch->field_0x3 |= 4;
-                FUN_004143dc(ch, 5);
+                FUN_004143dc(ch, CHSTATE_5);
             }
         }
     }
@@ -2560,34 +2644,32 @@ void Engine::FUN_004143dc(Character *ch, int state)
 
 bool Engine::FUN_0043ecba(Common::Point *out, Common::Point tilepos, int offset)
 {    
-    static const int d[32] = 
-    { 0, -1,    0, -1,
-     -1, -1,   -1,  0,
-     -2,  0,   -2,  0,
-     -1,  0,   -1,  1,
-      0,  1,    0,  1,
-      1,  0,    1,  1,
-      2,  0,    2,  0,
-      1, -1,    1,  0 };
-    
-    int id = offset * 4;
+    static const Common::Point d[8][2] = 
+    { 
+        {{-1, 0},   {-1,  0}},
+        {{-1,-1},   {0,  -1}},
+        {{0, -2},   {0,  -2}},
+        {{0, -1},   {1,  -1}},
+        {{1,  0},   {1,   0}},
+        {{0,  1},   {1,   1}},
+        {{0,  2},   {0,   2}},
+        {{-1, 1},   {0,   1}} 
+    };
     
     if ((tilepos.y & 1) == 0)
-        id += 2;
+        tilepos += d[offset][1];
+    else
+        tilepos += d[offset][0];
     
-    int32_t y = tilepos.y + d[id + 0];
-    
-    if ((y <= -1) || (y >= 320))
+    if ((tilepos.y <= -1) || (tilepos.y >= 320))
         return false;
     
-    out->y = y;
+    out->y = tilepos.y;
     
-    int32_t x = tilepos.x + d[id + 1];
-    
-    if ((x >= -1) || (x >= 160))
+    if ((tilepos.x <= -1) || (tilepos.x >= 160))
         return false;
     
-    out->x = x;
+    out->x = tilepos.x;
     return true;
 }
 
@@ -2606,7 +2688,7 @@ int32_t Engine::FUN_00411758(Character *ch1, Common::Point tilepos)
     if ((ch2.ClassID & CLASS_BIT80) || (ch2.State == CHSTATE_9) || (ch2.State == CHSTATE_3)) 
         return 0;
 
-    if ((ch1->field6_0x6 != ch2Id) || (ch2.MapCharID == ch1->MapCharID)) 
+    if ((ch1->EnemyCharID != ch2Id) || (ch2.MapCharID == ch1->MapCharID)) 
         return 0;
 
     return ch2Id;
@@ -2630,6 +2712,7 @@ Engine::ItemInfo *Engine::AllocItem()
             inf.SpecialID = -1;
             inf.BonusID = -1;
             inf.Poison = 0;
+            inf.Index = i;
             return &inf;
         }
     }
@@ -2638,12 +2721,12 @@ Engine::ItemInfo *Engine::AllocItem()
 }
 
 
-bool Engine::CheckMouseOnImage(GFX::Image *img, Common::Point drawPos)
+bool Engine::CheckTraceImage(GFX::Image *img, Common::Point drawPos)
 {
-    if (_mouseMapPos == Common::Point(-1, -1))
+    if (_tracePos == Common::Point(-1, -1))
         return false;
     
-    Common::Point imgPos = _mouseMapPos - drawPos;
+    Common::Point imgPos = _tracePos - drawPos;
     
     if (imgPos.x < 0 || imgPos.y < 0 ||
         imgPos.x >= img->SW->w || imgPos.y >= img->SW->h)
@@ -2674,6 +2757,19 @@ bool Engine::CheckMouseOnImage(GFX::Image *img, Common::Point drawPos)
     SDL_UnlockSurface(img->SW);
     
     return a != 0;
+}
+
+bool Engine::CheckTraceImage(GFX::PalImage *img, Common::Point drawPos)
+{
+    if (_tracePos == Common::Point(-1, -1))
+        return false;
+    
+    Common::Point imgPos = _tracePos - drawPos;
+    
+    if ( ! Common::Rect(img->SW.Size()).IsIn(imgPos))
+        return false;
+    
+    return img->SW.At(imgPos) != 0;
 }
 
 

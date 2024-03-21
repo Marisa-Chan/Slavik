@@ -8,69 +8,83 @@ namespace Game
     
 void Engine::Character::Load(FSMgr::iFile* pfile)
 {
-    State = pfile->readU8();
-    Direction = pfile->readU8();
-    pfile->seek(2, 1);
-    ClassID = pfile->readU8();
-    MapCharID = pfile->readU8();
-    field6_0x6 = pfile->readS16L();
-    Tile.y = pfile->readS16L();
-    Tile.x = pfile->readS16L();
-    _field_0xc = pfile->readS16L();
-    _field_0xe = pfile->readS16L();
-    Frame = pfile->readU8();
-    field15_0x11 = pfile->readU8();
-    field_0x12 = pfile->readU8();
-    for(auto &field : field17_0x13)
-        field = pfile->readU8();
-    Level = pfile->readU8();
-    Gold = pfile->readS32L();
-    FreePoints = pfile->readS32L();
-    Exp = pfile->readS32L();
-    Fehtovanie = pfile->readS16L();
-    Trading = pfile->readS16L();
-    Metkost = pfile->readS16L();
-    PlotnickoeDelo = pfile->readS16L();
-    Medicine = pfile->readS16L();
-    Identification = pfile->readS16L();
-    KuznechnoeDelo = pfile->readS16L();
-    Armor = pfile->readS16L();
-    Otravlenie = pfile->readS16L();
-    pfile->seek(2, 1);
-    CurrentLovkost = pfile->readS16L();
-    BaseLovkost = pfile->readS16L();
-    CurrentHarizm = pfile->readS16L();
-    BaseHarizm = pfile->readS16L();
-    HP = pfile->readS16L();
-    CurrentSila = pfile->readS16L();
-    BaseSila = pfile->readS16L();
-    CurrentVinoslivost = pfile->readS16L();
-    BaseVinoslivost = pfile->readS16L();
+    State = pfile->readU8();        //0
+    Direction = pfile->readU8();    //1
+    field2_0x2 = pfile->readU8();   //2
+    field_0x3 = pfile->readU8();    //3
+    ClassID = pfile->readU8();      //4
+    MapCharID = pfile->readU8();    //5
+    EnemyCharID = pfile->readS16L(); //6
+    Tile.y = pfile->readS16L();     //8
+    Tile.x = pfile->readS16L();     //a
+    MoveTile.y = pfile->readS16L(); //c
+    MoveTile.x = pfile->readS16L(); //e
+    Frame = pfile->readU8();        //10
+    field15_0x11 = pfile->readU8(); //11
+    field_0x12 = pfile->readU8();   //12
+    for(auto &field : field17_0x13) //13
+        field = pfile->readU8();    //+20
+    Level = pfile->readU8();        //33
+    Gold = pfile->readS32L();       //34
+    FreePoints = pfile->readS32L(); //38
+    Exp = pfile->readS32L();        //3c
+    Fehtovanie = pfile->readS16L(); //40
+    Trading = pfile->readS16L();    //42
+    Metkost = pfile->readS16L();    //44
+    PlotnickoeDelo = pfile->readS16L(); //46
+    Medicine = pfile->readS16L();   //48
+    Identification = pfile->readS16L(); //4a
+    KuznechnoeDelo = pfile->readS16L(); //4c
+    Armor = pfile->readS16L();      //4e
+    Otravlenie = pfile->readS16L(); //50
+    field62_0x52 = pfile->readU8(); //52
+    field63_0x53 = pfile->readU8(); //53
+    CurrentLovkost = pfile->readS16L(); //54
+    BaseLovkost = pfile->readS16L();    //56
+    CurrentHarizm = pfile->readS16L();  //58
+    BaseHarizm = pfile->readS16L();     //5a
+    HP = pfile->readS16L();             //5c
+    CurrentSila = pfile->readS16L();    //5e
+    BaseSila = pfile->readS16L();       //60
+    CurrentVinoslivost = pfile->readS16L(); //62
+    BaseVinoslivost = pfile->readS16L();    //64
     
-    for (size_t i = 0; i < 6; ++i)
-        ArmorWeapons[i] = pfile->readS16L();
+    for (size_t i = 0; i < 6; ++i)      //66
+        ArmorWeapons[i] = pfile->readS16L(); //+c
     
-    for (size_t i = 0; i < 32; ++i)
-        field74_0x72[i] = pfile->readU16L();
+    for (size_t i = 0; i < 32; ++i)     //72
+        Inventory[i] = pfile->readU16L(); //+40
     
-    for (size_t i = 0; i < 5; ++i)
-        nnnn[i] = pfile->readU16L();
+    for (size_t i = 0; i < 5; ++i)      //b2
+        Accessories[i] = pfile->readU16L(); //+a
 
-    pfile->seek(20, 1);
-    field96_0xd0 = pfile->readS8();
-    pfile->seek(5, 1);
-    
-    CharacterBase = pfile->readU8();
-    FrameCount = pfile->readU8();
-    paletteOffset = pfile->readS32L() / 512;
-    pfile->seek(8, 1);
-    field107_0xe4 = pfile->readS32L();
-    POS.x = pfile->readS32L();
-    field109_0xec = pfile->readS32L();
-    POS.y = pfile->readS32L();
-    field111_0xf4 = pfile->readS16L();
-    field112_0xf6 = pfile->readS16L();
-    pfile->seek(8, 1);
+    field76_0xbc = pfile->readS16L(); //bc
+    field78_0xbe = pfile->readS16L(); //be
+    field80_0xc0 = pfile->readS16L(); //c0
+    field82_0xc2 = pfile->readS16L(); //c2
+    CurrentBrn = pfile->readS16L(); //c4
+    CurrentUdr = pfile->readS16L(); //c6
+    CurrentVer = pfile->readS16L(); //c8
+    field90_0xca = pfile->readS16L(); //ca
+    Arrows = pfile->readS16L();     //cc
+    field_0xce = pfile->readS16L(); //ce
+    field96_0xd0 = pfile->readS8(); //d0
+    Flags = pfile->readU8();        //d1
+    field98_0xd2 = pfile->readS8(); //d2
+    field99_0xd3 = pfile->readS8(); //d3
+    NameID = pfile->readU8();       //d4
+    NickID = pfile->readU8();       //d5    
+    CharacterBase = pfile->readU8();    //d6
+    FrameCount = pfile->readU8();       //d7
+    paletteOffset = pfile->readS32L() / 512;    //d8
+    pfile->seek(8, 1);                  //dc
+    ViewPos.x = pfile->readS32L();      //e4
+    POS.x = pfile->readS32L();          //e8
+    ViewPos.y = pfile->readS32L();      //ec
+    POS.y = pfile->readS32L();          //f0
+    imgSize.x = pfile->readS16L();  //f4
+    imgSize.y = pfile->readS16L();  //f6
+    pfile->seek(8, 1);                  //f8
 }
 
 int32_t Engine::Character::GetMaxPartySize()
@@ -113,8 +127,7 @@ void Engine::MapChar::Load(FSMgr::iFile* pfile)
 {
     CharacterIndex = pfile->readS16L(); //0
     field1_0x2 = pfile->readS32L();     //2
-    field5_0x6 = pfile->readU8();       //6
-    field6_0x7 = pfile->readU8();       //7
+    field2_0x6 = pfile->readS16L();     //6
     spwnTlRect.top = pfile->readS16L(); //8
     someRect.top = pfile->readS16L();   //a
     spwnTlRect.bottom = pfile->readS16L(); // c
@@ -140,13 +153,11 @@ void Engine::GS1::Load(FSMgr::iFile* pfile)
     Tile.y = pfile->readS16L();
     Tile.x = pfile->readS16L();
     ImgID = pfile->readS16L();
-    unk1 = pfile->readS16L();
+    LootID = pfile->readS16L();
     unk2 = pfile->readS16L();
     MapID = pfile->readS16L();
-    ItemID = pfile->readS16L();
-    
-    for(int16_t i = 0; i < 21; ++i)
-        unk3[i] = pfile->readS16L();
+    for(int16_t i = 0; i < 22; ++i)
+        ItemID[i] = pfile->readS16L();
 }
 
 void Engine::GS2::Load(FSMgr::iFile* pfile)
@@ -254,13 +265,17 @@ void Engine::GameState::Load(FSMgr::iFile *pfile)
         it.Load(pfile);
     }
     
-    for(GS2 &it : GS2ARRAY)
+    for(int32_t i = 0; i < GS2ARRAY.size(); ++i)
+    {
+        GS2 &it = GS2ARRAY.at(i);
+        it.Index = i;
         it.Load(pfile);
+    }
     
     for(int32_t i = 0; i < Characters.size(); ++i)
     {
         Character &it = Characters.at(i);
-        it.CharIndex = i;
+        it.Index = i;
         it.Load(pfile);
     }
 

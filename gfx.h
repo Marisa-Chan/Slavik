@@ -49,7 +49,7 @@ struct Image
 
 struct PalImage
 {
-    Common::PlaneVector<uint16_t> SW;;
+    Common::PlaneVector<uint16_t> SW;
     uint32_t HW = 0;
 };
 
@@ -101,6 +101,8 @@ public:
         int32_t DrawMode = 0;
 
         float Alpha = 1.0;
+        
+        bool AlphaLogic = false;
         
         uint32_t Prog = 0;
         
@@ -157,6 +159,7 @@ public:
     void DrawRect(uint32_t tex, Common::FRect out, float alpha = 1.0);
     void DrawRect(const Image *img, Common::FRect out);
     void Draw(const Image *img, Common::Point out);
+    void DrawFlame(const Image *img, Common::Point out);
     
     void Draw(const PalImage *img, int32_t pal, Common::Point out);
     void DrawShadow(const PalImage *img, Common::Point out);
@@ -173,6 +176,10 @@ public:
     void SetMode(Common::Point res, int windowed = 1);
     
     void SetScissor(bool mode, Common::Rect rect = Common::Rect());
+    
+    void SetLinearFilter(bool mode) { _state.LinearFilter = mode; };
+    
+    void SetAlphaLogic(bool mode) { _state.AlphaLogic = mode; };
     
     SDL_Surface *CreateSWSurface(Common::Point sz);
     
@@ -224,6 +231,7 @@ public:
     int32_t _stdTex2Loc = -1;
     int32_t _stdTex3Loc = -1;
     int32_t _stdAlphaLoc = -1;
+    int32_t _stdAlphaLogicLoc = -1;
    
     
     int32_t _activeBuffer = 0;

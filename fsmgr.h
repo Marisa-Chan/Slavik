@@ -223,8 +223,8 @@ public:
     virtual bool IsWritable() const { return true; };
     
     // If not exist, create FSFileNode 
-    virtual File AppendFile(const std::string &name, bool textMode = false);
-    virtual File WriteFile(const std::string &name, bool textMode = false);
+    virtual File AppendFile(const std::string &name, bool textMode = false) override;
+    virtual File WriteFile(const std::string &name, bool textMode = false) override;
     
 public:
     static iDirNode *ScanDir(const std::string &_name, const std::string &_path);

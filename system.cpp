@@ -142,6 +142,7 @@ bool ProcessEvents()
             case SDL_WINDOWEVENT_SIZE_CHANGED:
 
                 int w, h;
+                SDL_GL_MakeCurrent(window, cont);
                 SDL_GL_GetDrawableSize(window, &w, &h);
                 winRes = ResRatio(w, h);
                 break;

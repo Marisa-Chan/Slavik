@@ -32,6 +32,8 @@ constexpr const int32_t TILEMAXH = 160;
 
 constexpr const Common::Rect MAPRECT = Common::Rect(SCREENRESX - MAPVIEWW, 0, SCREENRESX, MAPVIEWH);
 
+constexpr const Common::Rect MSGRECT = Common::Rect(SCREENRESX - MAPVIEWW, MAPVIEWH, SCREENRESX, SCREENRESY);
+
 
 constexpr const float PX = 1.0 / (float) SCREENRESX;
 constexpr const float PY = 1.0 / (float) SCREENRESY;
@@ -40,6 +42,9 @@ constexpr const int32_t TXTHEIGHT = 15;
 
 extern const Common::Point GScrOff;
 
+constexpr const int32_t INVSIZE = 32;
+
+constexpr const int32_t MAXPATHITER = 0x4000;
 
 class Engine
 {
@@ -82,6 +87,10 @@ public:
     enum PLAYSCREEN
     {
         PLSCREEN_0   = 0,
+        PLSCREEN_1   = 1,
+        PLSCREEN_2   = 2,
+        PLSCREEN_3   = 3,
+        PLSCREEN_4   = 4,
         PLSCREEN_MAP = 5,
     };
     
@@ -119,6 +128,9 @@ public:
         KHAR_N4 = 4,
         KHAR_SILA = 5,
         KHAR_VINOSLIVOST = 6,
+        KHAR_ARMOR = 7,
+        KHAR_N8 = 8,
+        KHAR_N9 = 9,
     };
     
     enum CLASSID
@@ -193,7 +205,7 @@ public:
             
             
             int32_t ObjId = -1; //SimpleObject ID
-            std::array<uint8_t, 20> Flames; // Flame frame id
+            std::array<int16_t, 20> Flames; // Flame frame id
             int16_t FrameTimeLeft = 0;
             Common::Point Pos;
             uint8_t unk3 = 0;
@@ -238,52 +250,21 @@ public:
     
     struct Character
     {
-        int32_t CharIndex = -1;
+        int32_t Index = -1;
+        
         uint8_t State;
         int8_t Direction;
         uint8_t field2_0x2;
         uint8_t field_0x3;
         uint8_t ClassID;
         int32_t MapCharID;
-        int16_t field6_0x6;
+        int16_t EnemyCharID;
         Common::Point Tile;
-        int16_t _field_0xc;
-        int16_t _field_0xe;
+        Common::Point MoveTile;
         uint8_t Frame;
         uint8_t field15_0x11;
         uint8_t field_0x12;
         std::array<uint8_t, 32> field17_0x13;
-        uint8_t field18_0x14;
-        uint8_t field19_0x15;
-        uint8_t field20_0x16;
-        uint8_t field21_0x17;
-        uint8_t field22_0x18;
-        uint8_t field23_0x19;
-        uint8_t field24_0x1a;
-        uint8_t field25_0x1b;
-        uint8_t field26_0x1c;
-        uint8_t field27_0x1d;
-        uint8_t field28_0x1e;
-        uint8_t field29_0x1f;
-        uint8_t field30_0x20;
-        uint8_t field31_0x21;
-        uint8_t field32_0x22;
-        uint8_t field33_0x23;
-        uint8_t field34_0x24;
-        uint8_t field35_0x25;
-        uint8_t field36_0x26;
-        uint8_t field37_0x27;
-        uint8_t field38_0x28;
-        uint8_t field39_0x29;
-        uint8_t field40_0x2a;
-        uint8_t field41_0x2b;
-        uint8_t field42_0x2c;
-        uint8_t field43_0x2d;
-        uint8_t field44_0x2e;
-        uint8_t field45_0x2f;
-        uint8_t field46_0x30;
-        uint8_t field47_0x31;
-        uint8_t field48_0x32;
         uint8_t Level;
         int32_t Gold;
         int32_t FreePoints;
@@ -309,23 +290,17 @@ public:
         int16_t CurrentVinoslivost;
         int16_t BaseVinoslivost;
         std::array<int16_t, 6> ArmorWeapons;
-        std::array<uint16_t, 32> field74_0x72;
-        std::array<uint16_t, 5> nnnn;
-        uint8_t field76_0xbc;
-        uint8_t field77_0xbd;
-        uint8_t field78_0xbe;
-        uint8_t field79_0xbf;
-        uint8_t field80_0xc0;
-        uint8_t field81_0xc1;
-        uint8_t field82_0xc2;
-        uint8_t field83_0xc3;
+        std::array<uint16_t, INVSIZE> Inventory;
+        std::array<uint16_t, 5> Accessories;
+        int16_t field76_0xbc;
+        int16_t field78_0xbe;
+        int16_t field80_0xc0;
+        int16_t field82_0xc2;
         int16_t CurrentBrn;
         int16_t CurrentUdr;
         int16_t CurrentVer;
-        uint8_t field90_0xca;
-        uint8_t field91_0xcb;
-        uint8_t field92_0xcc;
-        uint8_t field93_0xcd;
+        int16_t field90_0xca;
+        int16_t Arrows;
         int16_t field_0xce;
         int8_t field96_0xd0;
         uint8_t Flags;
@@ -340,13 +315,16 @@ public:
         Common::Point shdOffset;
         Common::Point imgOffset;
         Common::Point wpnOffset;
-        int32_t field107_0xe4;
+        
+        Common::Point ViewPos;
+        //int32_t field107_0xe4;
         //int32_t xPOS;
         Common::Point POS;
-        int32_t field109_0xec;
+        //int32_t field109_0xec;
         //int32_t yPOS;
-        int16_t field111_0xf4;
-        int16_t field112_0xf6;
+        Common::Point imgSize;
+        //int16_t field111_0xf4;
+        //int16_t field112_0xf6;
         uint8_t field113_0xf8;
         uint8_t field114_0xf9;
         uint8_t field115_0xfa;
@@ -359,6 +337,9 @@ public:
         void Load(FSMgr::iFile *pfile);
         
         int32_t GetMaxPartySize();
+        
+        inline void RecalcViewPos(Common::Point offset)
+            { ViewPos = offset + POS + imgOffset; }
     };
     
     struct MapChar
@@ -366,8 +347,7 @@ public:
         int32_t Index = -1;
         int16_t CharacterIndex = 0;
         int32_t field1_0x2;
-        uint8_t field5_0x6;
-        uint8_t field6_0x7;
+        int16_t field2_0x6;
         Common::Rect spwnTlRect;
         Common::Rect someRect;
         uint8_t unk1;
@@ -402,6 +382,20 @@ public:
         uint8_t unk1 = 0;
         
         void Load(FSMgr::iFile *pfile);
+        
+        ItemInfo& operator=(const ItemInfo& b)
+        {
+            TypeID = b.TypeID;
+            BonusID = b.BonusID;
+            SpecialID = b.SpecialID;
+            InfoID = b.InfoID;
+            Concentration = b.Concentration;
+            Weight = b.Weight;
+            Poison = b.Poison;
+            Flags = b.Flags;
+            unk1 = b.unk1;
+            return *this;
+        }
     };
     
     struct GS1
@@ -411,17 +405,31 @@ public:
         Common::Point Pos;
         Common::Point Tile;
         int16_t ImgID = 0;
-        int16_t unk1 = 0;
+        int16_t LootID = 0; // Reference id to _state.LootArray index
         int16_t unk2 = -1;
         int16_t MapID = 0;
-        int16_t ItemID = 0;
-        int16_t unk3[21];
+        std::array<int16_t, 22> ItemID =  {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                            0, 0}};
         
         void Load(FSMgr::iFile *pfile);
+        GS1& operator=(const GS1& b)
+        {
+            Pos = b.Pos;
+            Tile = b.Tile;
+            ImgID = b.ImgID;
+            LootID = b.LootID;
+            unk2 = b.unk2;
+            MapID = b.MapID;
+            ItemID = b.ItemID;
+            return *this;
+        }
     };
     
     struct GS2
     {
+        int32_t Index = -1;
+        
         uint8_t field0_0x0;
         uint8_t field1_0x1;
         uint8_t field2_0x2;
@@ -533,6 +541,13 @@ public:
         int32_t LootImgID;
     };
     
+    struct SpecialDmg
+    {
+        int32_t ID;
+        int32_t Dmg;
+        int32_t ClassID;
+    };
+    
     struct BldInfo
     {
         int32_t ID;
@@ -615,6 +630,13 @@ public:
     };
     
 public:
+    
+    Engine()
+    {
+        for(int32_t i = 0; i < mapGS1.size(); ++i)
+            mapGS1[i].Index = i;
+    }
+    
     bool Process();
     bool Update();
     
@@ -718,15 +740,17 @@ public:
     Character *CalcMapChar(MapChar *pmchar);
     
     void FUN_0041c750(Character *param_1);
+    int32_t GetCurrentWeight(Character *pchar);
     
     int32_t CheckKharUp(Character &pchar, int32_t param);
     
     
+    int32_t FUN_0043976c(Common::Point my, Common::Point t);
     int32_t FUN_00411758(Character *ch1, Common::Point tilepos);
     bool FUN_0043ecba(Common::Point *out, Common::Point tilepos, int offset);
     void FUN_004143dc(Character *ch, int dir);
     
-    Common::Point FUN_00439ba0(Common::Point tilepos)
+    inline Common::Point FUN_00439ba0(Common::Point tilepos) const
     {
         return Common::Point(tilepos.x * TileWh + (2 - (tilepos.y & 1)) * TileWhh, tilepos.y * TileHh + TileHh);
     }
@@ -737,31 +761,114 @@ public:
     Common::Point FUN_00439bdc(Common::Point cam);
     Common::Point FUN_0043a000(Common::Point pos);
     
+    void FUN_0042f9b8(const std::string &txt);
+    bool FUN_00416700(Village *vlg);
+    
     void FUN_004292e4();
     void FUN_00429194(int32_t);
     
     void FUN_004118dc();
     void FUN_00436ad0(int32_t);
     void FUN_00436a00();
+    void FUN_00421170();
+    void FUN_00421da4();
+    void FUN_00439230(Character *pchar);
+    bool FUN_0041f258(Character *pchar);
+    void FUN_00421bb8(Character *pchar);
+    void FUN_004110ec(Character *pchar);
+    int FUN_00434c90(int32_t );    
+    void MapObjectsUpdateFrames();
+    void FUN_0042d574(Character *pchar);
+    void FUN_0042f50c(Character *pchar, int32_t);
+    void FUN_0041d0fc();
+    void FUN_0041733c(Village::BldState *state);
+    int32_t FUN_0041b70c(Character *pchar);
+    void FUN_0041bdf0(MapChar *mchar);
+    void FUN_00418510(Character *pchar, int32_t w, int32_t lvl);
+    bool FUN_00412c30(MapChar *pchar);
     void FUN_00414ab4(Character *pchar);
+    bool FUN_00416934(Character *pchar);
+    void FUN_004105a0(Character *pchar);
+    Character * FUN_004202a8(MapChar *mchar, Character *pchar);
+    bool FUN_00413a84(Character *pchar);
+    bool FUN_004142d4(Character *pchar, Common::Point pt, uint8_t p);
+    
+    bool FUN_00418364(Character *pchar, ItemInfo *pitm);
+    void FUN_00421d24(Character *pchar, int32_t itmID);
+    bool FUN_004104d4(Character *pchar, int32_t awid);
+    int32_t FUN_0041b244(Character *pchar, int charId);
+    int32_t GetArmor(Character *pchar);
+    int32_t FUN_0041af48(Character *pchar, int32_t classID);
+    int32_t FUN_0041b4cc(Character *pchar, int32_t fkt);
+    
+    int FUN_00413dc4(Character *pchar) { return 0; }
+    
+    int FUN_0043edb7(Character *pchar); //pathfind
     
     void FUN_00414078(Character *pchar);
+    
+    bool FUN_00413de4(Character *pchar);
+    bool SkipBecauseOfHardCompute(Character *chr);
+    bool FUN_0041f11c(MapChar *mchar, Character *pchar);
+    bool FUN_0041f5d8(MapChar *mchar, Character *pchar);
+    bool FUN_00410e84(Character *pchar);
+    int32_t FUN_0041ec0c(Character *pchar);
+    void FUN_0041ed8c(Character *pchar);
+    bool FUN_0041e384(Character *pchar);
+    Character * FUN_004203a0(MapChar *mchr1, MapChar *mchr2, Character *pchar);
+    MapChar * FUN_0041fd74(MapChar *mchar);
+    int32_t FUN_00439944(Common::Point p1, Common::Point p2);
+    int32_t FUN_00439aa4(Common::Point p1, Common::Point p2);
+    int32_t FUN_0041130c(Character *pchar, Common::Point t, int32_t chIndex);
+    
+    void FUN_004248a0(MapChar *mchr);
+    void FUN_00416058(MapChar *mchr);
+    int32_t FUN_0041b100(Character *ch1, Character *ch2);
+    int32_t FUN_0041c480(Character *chr1, Character *chr2, int32_t param_3);
+    void FUN_0041079c(Character *pchar, int32_t exp);
+    bool FUN_0041bff8(Character *pchar);
+    void FUN_00410728(Character *pchar);
+    bool FUN_00415cd0(Character *pchar);
+    bool FUN_004101e4(Character *pchar, Common::Point *ot);
+    void FUN_004123bc(MapChar *mchr);
+    
+    Character * FUN_00420178(MapChar *mchar);
+    void FUN_00410450(Character *pchar);
+    bool FUN_00411fd0(Character *pchar);
+    bool FUN_00412e00(Character *pchar);
+    
+    int FUN_0041165c(Common::Point p1, Common::Point p2);
+    int FUN_00410ffc(Common::Point *pout, Common::Point p);
+    void FUN_004391bc(Character *pchar, int dir);
     
     
     int32_t GetLootImage(const GS1 &loot) const;
     GS1* GetLootByTile(Common::Point tile);
+    void FUN_004170a0(GS1 *loot);
+    void FUN_0041093c(GS1 *loot);
     
     void DrawSettingsScreen(int32_t);
     
     void ShutdownWithMsg(const std::string &msg);
     
     void OnEnterVillageUpdateTrader(Village *vlg);
+    int32_t GetVillageCharacterJob(Character *pchar);
+    Village * FUN_0043a1f8(int32_t mapId);
+    
+    void UpdateVillageMedic(Village *vlg);
+    void UpdateVillageSmith(Village *vlg);
+    void UpdateVillageVoevoda(Village *vlg);
     
     
-    bool CheckMouseOnImage(GFX::Image *img, Common::Point drawPos);
+    bool CheckTraceImage(GFX::Image *img, Common::Point drawPos);
+    bool CheckTraceImage(GFX::PalImage *img, Common::Point drawPos);
+    
+    void DrawElmQueue();
+    void FUN_004290ac(int elmid, int imgid);
     
     
     ItemInfo *AllocItem();
+    int32_t GetItemWeight(const ItemInfo * ) const;
     
     int32_t FUN_00417170(int val) { return 2 - ((rand() % 2 + val + 1) % 3); }
     
@@ -797,6 +904,7 @@ public:
     Common::Point _mouseMove;
     
     Common::Point _mouseMapPos;
+    Common::Point _tracePos;
     
     uint32_t _mousePress = 0;
     uint32_t _mouseDown = 0;
@@ -870,12 +978,17 @@ public:
     
     Character *_camLockChar = nullptr;
     
-    int32_t DWORD_00a3e758 = 0;
+    bool DWORD_00a3e758 = false;
     
     int32_t DAT_00a3e704 = 0;
     int32_t DisplayInvOfCharID2 = 1;
     int32_t DisplayInvOfCharID = 1;
-    int32_t DAT_00a3e690 = 0;
+    
+    Character *HardComputeUnit = nullptr;
+    int32_t HardComputeCount = 0;
+    
+    int32_t int32_t_00a3e828 = 0;
+    
     int32_t DAT_00a3e84c = 0;
     uint32_t DAT_00a3e74c = 0;
     std::array<uint8_t, 56> DAT_00a3e0a8;
@@ -895,6 +1008,7 @@ public:
     
     std::array<int32_t, 512> MapObjUseCount;
     int32_t MapObjectsCount = 0;
+    int32_t MapObjects2Count = 0;
     
     std::array<Character *, 10> SelectedCharacters;
     
@@ -902,16 +1016,17 @@ public:
     MapChar *_mainMapChar = nullptr;
     
     
+    std::array<int8_t, 56> MapsOpened;
     
     int32_t _objectsToLoadCount = 0;
     std::array<int32_t, 512> _objectsToLoad;
     
     
     GameMap::Object *MouseOnObject = nullptr;
+    Character *MouseOnCharacter = nullptr;
     
     
     Common::Point ViewTiles;
-    int32_t ViewTilesHoriz = 0;
     
     std::vector<GFX::Image *> _menuImages;
     GFX::Image *_bkgImage = nullptr;
@@ -936,6 +1051,11 @@ public:
     static const Common::Point PlaceDOff[2][8][12];
     
     static const int FlameAnims[7][2];    
+    static const std::array<Common::Point, 8> O45ad30;
+    
+    static const std::array<SpecialDmg, 18> SpecialDamages;
+    
+    static const uint8_t PathGo[8][8];
     
     int32_t _saveMenuBtnID = -1;
     
@@ -945,6 +1065,8 @@ public:
     int32_t _imgQueue2Count = 0;
     std::array<TextPlace, 100> _textQueue;
     int32_t _textQueueCount = 0;
+    
+    std::array<uint8_t, 7> DrawElm;
     
     std::array<GFX::Font *, 4> _Fonts;
     

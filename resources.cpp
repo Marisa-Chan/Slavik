@@ -235,7 +235,10 @@ void Resources::SimpleObject::Load(FSMgr::iFile *pfile, const SDL_Color *palette
             Shadows[i] = LoadRL8BitShadow(pfile);
         }
         else
+        {
             Images[i] = nullptr;        
+            Shadows[i] = nullptr;
+        }
     }
     
     pfile->seek(spos + dataSize, 0);
@@ -403,7 +406,7 @@ bool Resources::LoadFlames()
         fobj->seek(4, 1);
         int32_t sz = fobj->readS32L();
         size_t pos = fobj->tell();
-        flame = LoadRL16BitImage(fobj.get()); 
+        flame = LoadFlameImage(fobj.get()); 
         fobj->seek(pos + sz, 0);
     }
     
@@ -471,7 +474,7 @@ GFX::PalImage *Resources::LoadRL8BitImage(FSMgr::iFile *pfile)
     
     for(int32_t y = 0; y < h; ++y)
     {
-        uint8_t *px = (uint8_t *)(img->SW.data() + img->SW.Width() * y);
+        uint16_t *px = (img->SW.data() + img->SW.Width() * y);
         while(true)
         {
             uint8_t n = pfile->readU8();
@@ -480,7 +483,7 @@ GFX::PalImage *Resources::LoadRL8BitImage(FSMgr::iFile *pfile)
                 break;
                         
             if (n & 0x80)
-                px += (n & 0x7F) * 2;
+                px += (n & 0x7F);
                 /*for (int32_t i = 0; i < n; ++i)
                     {
                         const SDL_Color &cl = Palettes[ palOffset + pfile->readU8() ];
@@ -491,9 +494,8 @@ GFX::PalImage *Resources::LoadRL8BitImage(FSMgr::iFile *pfile)
             {
                 for (int32_t i = 0; i < n; ++i)
                 {
-                    px[0] = pfile->readU8();
-                    px[1] = 255; 
-                    px += 2;
+                    *px = 0xFF00 | pfile->readU8();
+                    px++;
                 }
             }
         }
@@ -590,6 +592,57 @@ GFX::Image *Resources::LoadRL16BitImage(FSMgr::iFile *pfile)
                                                       , GFX::Lkp5To8[ (clr >> 5) & 0x1f ]
                                                       , GFX::Lkp5To8[ (clr >> 0) & 0x1f ]
                                                       , 255); 
+                    px++;
+                }
+            }
+        }
+    }
+    GFXDrawer.UnlockImage(img);
+    
+    return img;
+}
+
+GFX::Image *Resources::LoadFlameImage(FSMgr::iFile* pfile)
+{
+    short w = pfile->readS16L();
+    short h = pfile->readS16L();
+    
+    /*std::vector<short> linesLength(h);
+    for(int32_t i = 0; i < h; ++i)
+        linesLength.at(i) = pfile->readS16L();*/
+    pfile->seek(h * 2, 1); // skip
+    
+    GFX::Image *img = GFXDrawer.CreateImage({w, h});
+    
+    GFXDrawer.LockImage(img);
+    for(int32_t y = 0; y < h; ++y)
+    {
+        uint32_t *px = (uint32_t *)((char *)img->SW->pixels + img->SW->pitch * y);
+        while(true)
+        {
+            uint8_t n = pfile->readU8();
+            
+            if (n == 0)
+                break;
+            
+            if (n & 0x80)
+                px += n & 0x7F;
+                /*for (int32_t i = 0; i < n; ++i)
+                    {
+                        const SDL_Color &cl = Palettes[ palOffset + pfile->readU8() ];
+                        *px = SDL_MapRGBA(); 
+                        px++;
+                    }*/
+            else
+            {
+                for (int32_t i = 0; i < n; ++i)
+                {
+                    uint16_t clr = pfile->readU16L();
+                    int r = GFX::Lkp5To8[ (clr >> 10) & 0x1f ];
+                    int g = GFX::Lkp5To8[ (clr >> 5) & 0x1f ];
+                    int b = GFX::Lkp5To8[ (clr >> 0) & 0x1f ];
+                    int a = (2 * r + g + b) / 4;
+                    *px = SDL_MapRGBA(img->SW->format, r * a / 255, g * a / 255, b * a / 255, a);
                     px++;
                 }
             }

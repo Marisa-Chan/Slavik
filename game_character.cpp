@@ -136,8 +136,7 @@ void Engine::FUN_00414078(Character *pchar)
         
         pchar->pFrame = frmInfo.FrameID;
         pchar->imgOffset = frmInfo.ImgOffset;
-        pchar->field111_0xf4 = chbase.Images.at(pchar->pFrame)->SW.Width();
-        pchar->field112_0xf6 = chbase.Images.at(pchar->pFrame)->SW.Height();
+        pchar->imgSize = chbase.Images.at(pchar->pFrame)->SW.Size();
     }
     else 
     {
@@ -151,18 +150,11 @@ void Engine::FUN_00414078(Character *pchar)
         pchar->imgOffset = frmInfo.ImgOffset;
         
         if (!(pchar->field_0x3 & 0x80)) 
-        {
-            pchar->field111_0xf4 = obj.Images.at(pchar->pFrame)->SW.Width();
-            pchar->field112_0xf6 = obj.Images.at(pchar->pFrame)->SW.Height();
-        }
+            pchar->imgSize = obj.Images.at(pchar->pFrame)->SW.Size();
         else 
-        {
-            pchar->field112_0xf6 = 1;
-            pchar->field111_0xf4 = 1;
-        }
+            pchar->imgSize = Common::Point(1, 1);
     }
-    pchar->field107_0xe4 = pchar->POS.x + pchar->imgOffset.x + GScrOff.x;
-    pchar->field109_0xec = pchar->POS.y + pchar->imgOffset.y + GScrOff.y;
+    pchar->RecalcViewPos(GScrOff);
 }
 
 void Engine::DrawCharacterSprite(Character &ch)
@@ -335,8 +327,8 @@ Engine::Character *Engine::CalcMapChar(MapChar *mchar)
     
     lchar.ClassID = mchar->unk5;
     lchar.ArmorWeapons.fill(0);
-    lchar.field74_0x72.fill(0);
-    lchar.nnnn.fill(0);
+    lchar.Inventory.fill(0);
+    lchar.Accessories.fill(0);
     
     if (lchar.ClassID == 0x4c || lchar.ClassID == 0x46 || lchar.ClassID == 0x55)
         lchar.State = CHSTATE_4;
@@ -380,7 +372,7 @@ Engine::Character *Engine::CalcMapChar(MapChar *mchar)
 
 
 
-void Engine::FUN_0041c750(Character *param_1)
+void Engine::FUN_0041c750(Character *pchar)
 {    
     std::array<int32_t, 9> TempBonusValues;
     std::array<int, 9> TempBonusValueType;
@@ -390,7 +382,7 @@ void Engine::FUN_0041c750(Character *param_1)
     
     for (int32_t i = 0; i < 6; ++i) 
     {
-        int32_t itemID = param_1->ArmorWeapons.at(i);
+        int32_t itemID = pchar->ArmorWeapons.at(i);
         if (itemID)
         {
             ItemInfo &inf = _state.Items.at(itemID);
@@ -416,7 +408,7 @@ void Engine::FUN_0041c750(Character *param_1)
     
     for (int32_t i = 0; i < 5; ++i) 
     {
-        int32_t itemID = param_1->nnnn.at(i);
+        int32_t itemID = pchar->Accessories.at(i);
         if (itemID)
         {
             ItemInfo &inf = _state.Items.at(itemID);
@@ -440,12 +432,12 @@ void Engine::FUN_0041c750(Character *param_1)
         }
     }
     
-    int32_t iVar13 = param_1->field98_0xd2;
-    if (param_1->field98_0xd2 > -1) 
+    int32_t iVar13 = pchar->field98_0xd2;
+    if (pchar->field98_0xd2 > -1) 
     {
         for (int i = 0; i < 3; i++)
         {
-            const Bonus &pBonus = BonusesInfo.at(param_1->field98_0xd2).Bonuses[i];
+            const Bonus &pBonus = BonusesInfo.at(pchar->field98_0xd2).Bonuses[i];
             int32_t bnsID = pBonus.BonusID - 1;
             if (bnsID > -1 && TempBonusValueType[bnsID]) 
             {
@@ -459,11 +451,11 @@ void Engine::FUN_0041c750(Character *param_1)
         }
     }
     
-    if (param_1->field99_0xd3 > -1) 
+    if (pchar->field99_0xd3 > -1) 
     {
         for (int i = 0; i < 3; i++)
         {
-            const Bonus &pBonus = BonusesInfo.at(param_1->field99_0xd3).Bonuses[i];
+            const Bonus &pBonus = BonusesInfo.at(pchar->field99_0xd3).Bonuses[i];
             int32_t bnsID = pBonus.BonusID - 1;
             if (bnsID > -1 && TempBonusValueType[bnsID]) 
             {
@@ -480,86 +472,132 @@ void Engine::FUN_0041c750(Character *param_1)
     TempBonusValues[3] *= 16;
         
     if (TempBonusValues[1] == 0) 
-        param_1->CurrentLovkost  = param_1->BaseLovkost;
+        pchar->CurrentLovkost  = pchar->BaseLovkost;
     else 
     {
-        param_1->CurrentLovkost = TempBonusValues[1];
+        pchar->CurrentLovkost = TempBonusValues[1];
         
         if (TempBonusValueType[1] != 0) 
-            param_1->CurrentLovkost += param_1->BaseLovkost;
+            pchar->CurrentLovkost += pchar->BaseLovkost;
     }
     
-    if (param_1->CurrentLovkost < 0)
-        param_1->CurrentLovkost = 0;
+    if (pchar->CurrentLovkost < 0)
+        pchar->CurrentLovkost = 0;
     
     
     if (TempBonusValues[2] == 0) 
-        param_1->CurrentHarizm = param_1->BaseHarizm;
+        pchar->CurrentHarizm = pchar->BaseHarizm;
     else 
     {
-        param_1->CurrentHarizm = TempBonusValues[2];
+        pchar->CurrentHarizm = TempBonusValues[2];
         if (TempBonusValueType[2] != 0)
-            param_1->CurrentHarizm += param_1->BaseHarizm;
+            pchar->CurrentHarizm += pchar->BaseHarizm;
     }
 
-    if (param_1->CurrentHarizm < 0)
-        param_1->CurrentHarizm = 0;
+    if (pchar->CurrentHarizm < 0)
+        pchar->CurrentHarizm = 0;
     
     
     int16_t tmpHp = 0;
     if (TempBonusValues[3] == 0)
-        tmpHp = param_1->HP;
+        tmpHp = pchar->HP;
     else if (TempBonusValueType[3] == 0)
         tmpHp = TempBonusValues[3];
     else 
-        tmpHp = TempBonusValues[3] + param_1->HP;
+        tmpHp = TempBonusValues[3] + pchar->HP;
     
     if (tmpHp < 1600)
-        param_1->HP = tmpHp;
+        pchar->HP = tmpHp;
     else
-        param_1->HP = 1600;
+        pchar->HP = 1600;
 
     
     if (TempBonusValues[4] == 0)
-        param_1->CurrentSila = param_1->BaseSila;
+        pchar->CurrentSila = pchar->BaseSila;
     else 
     {
-        param_1->CurrentSila = TempBonusValues[4];
+        pchar->CurrentSila = TempBonusValues[4];
         if (TempBonusValueType[4] != 0) 
-            param_1->CurrentSila += param_1->BaseSila;
+            pchar->CurrentSila += pchar->BaseSila;
     }
     
-    if (param_1->CurrentSila < 0)
-        param_1->CurrentSila = 0;
+    if (pchar->CurrentSila < 0)
+        pchar->CurrentSila = 0;
     
     
     if (TempBonusValues[5] == 0)
-        param_1->CurrentVinoslivost = param_1->BaseVinoslivost;
+        pchar->CurrentVinoslivost = pchar->BaseVinoslivost;
     else 
     {
-        param_1->CurrentVinoslivost = TempBonusValues[5];
+        pchar->CurrentVinoslivost = TempBonusValues[5];
         if (TempBonusValueType[5] != 0)
-            param_1->CurrentVinoslivost += param_1->BaseVinoslivost;
+            pchar->CurrentVinoslivost += pchar->BaseVinoslivost;
     }
     
-    if (param_1->CurrentVinoslivost < 1)
-        param_1->CurrentVinoslivost = 1;
+    if (pchar->CurrentVinoslivost < 1)
+        pchar->CurrentVinoslivost = 1;
     
-    param_1->CurrentBrn = TempBonusValues[6];
-    param_1->CurrentUdr = TempBonusValues[7];
-    param_1->CurrentVer = TempBonusValues[8];
-    param_1->Flags = 0;
+    pchar->CurrentBrn = TempBonusValues[6];
+    pchar->CurrentUdr = TempBonusValues[7];
+    pchar->CurrentVer = TempBonusValues[8];
+    pchar->Flags = 0;
     
     if (TempBonusValueType[6] != 0)
-        param_1->Flags |= 1;
+        pchar->Flags |= 1;
     
     if (TempBonusValueType[7] != 0)
-        param_1->Flags |= 2;
+        pchar->Flags |= 2;
     
     if (TempBonusValueType[8] != 0)
-        param_1->Flags |= 4;
+        pchar->Flags |= 4;
 }
 
+
+
+int32_t Engine::GetCurrentWeight(Character *pchar)
+{
+    int32_t weight = 0;
+    for (int32_t i = 0; i < 6; ++i)
+    {
+        int32_t id = pchar->ArmorWeapons[i];
+        if (id != 0)
+            weight += ArmorWeaponInfo[_state.Items.at(id).InfoID].unk6;
+    }
+    
+    for (int32_t i = 0; i < 5; ++i)
+    {
+        int32_t id = pchar->Accessories[i];
+        if (id != 0)
+            weight += AcessoriesInfo[_state.Items.at(id).InfoID].Weight;
+    }
+    
+    for (int32_t i = 0; i < 32; ++i)
+    {
+        int32_t id = pchar->Inventory[i];
+        if (id != 0)
+        {
+            ItemInfo &itm = _state.Items.at(id);
+            if (itm.TypeID < 6)
+                weight += ArmorWeaponInfo[itm.InfoID].unk6;
+            else if (itm.TypeID < 9)
+                weight += AcessoriesInfo[itm.InfoID].Weight;
+            else if (itm.TypeID == 9)
+                weight += AlchemiesInfo[itm.InfoID].Weight;
+            else if (itm.TypeID == 11)
+                weight += MiscItemsInfo[itm.InfoID].Weight;
+            else if (itm.TypeID == 12)
+                weight += ArmorWeaponInfo[itm.InfoID].unk6 * itm.Concentration;
+        }
+    }
+    
+    if (pchar->Arrows != 0)
+    {
+        ItemInfo &itm = _state.Items.at(pchar->Arrows);
+        weight += ArmorWeaponInfo[itm.InfoID].unk6 * itm.Concentration;
+    }
+    
+    return weight;
+}
 
 
 

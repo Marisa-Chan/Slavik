@@ -99,6 +99,17 @@ struct TPoint
     __Point operator/(R val) const { return TPoint(x / val, y / val); }
     
     
+    template <typename R> const
+    __Point Add(R dx, R dy) const { return TPoint(x + dx, y + dy); }
+    
+    template <typename R> const
+    __Point Add(const TPoint<R> &d) const { return TPoint(x + d.x, y + d.y); }
+    
+    
+    template <typename R>
+    operator TPoint<R>() const { return TPoint<R>(x, y); }
+    
+    
     
     __Point operator-() const { return __Point(-x, -y); } // -Point
 

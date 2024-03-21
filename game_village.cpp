@@ -167,7 +167,7 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
     {
         int32_t id = vlg->TraderItems[i];
         if (id != 0)
-            _state.Items[id].TypeID = 0xff;
+            _state.Items[id].TypeID = -1;
     }
     
     
@@ -503,6 +503,51 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
         itm->BonusID = ((rand() % 4) + 1) * 10 + (rand() % 2);
     else
         itm->BonusID = ((rand() % 4) + 1) * 10 + (rand() % (_mainCharacter->Level / 8 + 1)) * 3 + (rand() % 2);
+}
+
+
+Engine::Village * Engine::FUN_0043a1f8(int32_t mapId)
+{
+    for(Village &vlg : _state.VillageState)
+    {
+        if (vlg.MapID == mapId)
+            return &vlg;
+    }
+    return nullptr;
+}
+
+
+
+int32_t Engine::GetVillageCharacterJob(Character *pchar)
+{
+    MapChar &mchar = _state.MapChar_ARRAY.at(pchar->MapCharID);
+    Village *vlg = FUN_0043a1f8(mchar.MapID);
+    if (!vlg)
+        return 0;
+    
+    for (int32_t i = 0; i < vlg->Jobs.size(); ++i)
+    {
+        Village::Job &job = vlg->Jobs.at(i);
+        if (job.CharID == pchar->Index)
+            return i + 1;
+    }
+    return 0;
+}
+
+
+void Engine::UpdateVillageMedic(Village *vlg)
+{
+    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
+}
+
+void Engine::UpdateVillageSmith(Village *vlg)
+{
+    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
+}
+
+void Engine::UpdateVillageVoevoda(Village *vlg)
+{
+    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
 }
 
 
