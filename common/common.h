@@ -319,7 +319,7 @@ struct TPointRect
     TPointRect(int x1, int y1) : x(x1), y(y1), w(0), h(0) {};
     TPointRect(TPoint<T> p) : x(p.x), y(p.y), w(0), h(0) {};
     TPointRect(TPoint<T> p, T w_, T h_) : x(p.x), y(p.y), w(w_), h(h_) {};
-    TPointRect(T x_, T y_, T w_, T h_) : x(x_), y(y_), w(w_), h(h_) {};
+    constexpr TPointRect(T x_, T y_, T w_, T h_) : x(x_), y(y_), w(w_), h(h_) {};
     TPointRect(const SDL_Rect &r) : x(r.x), y(r.y), w(r.w), h(r.h) {};
     
     T Right() const { return x + w; }

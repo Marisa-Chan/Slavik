@@ -43,14 +43,19 @@ OBJECTFILES= \
 	${OBJECTDIR}/game.o \
 	${OBJECTDIR}/game_character.o \
 	${OBJECTDIR}/game_data.o \
+	${OBJECTDIR}/game_input.o \
 	${OBJECTDIR}/game_item.o \
 	${OBJECTDIR}/game_locale.o \
 	${OBJECTDIR}/game_loot.o \
+	${OBJECTDIR}/game_mixture_info.o \
 	${OBJECTDIR}/game_newgame.o \
 	${OBJECTDIR}/game_pathfind.o \
 	${OBJECTDIR}/game_placeoff.o \
 	${OBJECTDIR}/game_play.o \
+	${OBJECTDIR}/game_quest.o \
+	${OBJECTDIR}/game_soundres.o \
 	${OBJECTDIR}/game_state.o \
+	${OBJECTDIR}/game_ui.o \
 	${OBJECTDIR}/game_village.o \
 	${OBJECTDIR}/gfx.o \
 	${OBJECTDIR}/glfuncs.o \
@@ -73,7 +78,7 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=`pkg-config --libs sdl2` `pkg-config --libs opengl`  
+LDLIBSOPTIONS=`pkg-config --libs sdl2` `pkg-config --libs opengl` `pkg-config --libs SDL2_image`  
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
@@ -86,112 +91,137 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/slavik: ${OBJECTFILES}
 ${OBJECTDIR}/common/strutils.o: common/strutils.cpp
 	${MKDIR} -p ${OBJECTDIR}/common
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/common/strutils.o common/strutils.cpp
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/common/strutils.o common/strutils.cpp
 
 ${OBJECTDIR}/fmt/format.o: fmt/format.cc
 	${MKDIR} -p ${OBJECTDIR}/fmt
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/fmt/format.o fmt/format.cc
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/fmt/format.o fmt/format.cc
 
 ${OBJECTDIR}/fmt/os.o: fmt/os.cc
 	${MKDIR} -p ${OBJECTDIR}/fmt
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/fmt/os.o fmt/os.cc
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/fmt/os.o fmt/os.cc
 
 ${OBJECTDIR}/font.o: font.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/font.o font.cpp
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/font.o font.cpp
 
 ${OBJECTDIR}/fsmgr.o: fsmgr.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/fsmgr.o fsmgr.cpp
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/fsmgr.o fsmgr.cpp
 
 ${OBJECTDIR}/game.o: game.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game.o game.cpp
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game.o game.cpp
 
 ${OBJECTDIR}/game_character.o: game_character.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_character.o game_character.cpp
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_character.o game_character.cpp
 
 ${OBJECTDIR}/game_data.o: game_data.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_data.o game_data.cpp
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_data.o game_data.cpp
+
+${OBJECTDIR}/game_input.o: game_input.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_input.o game_input.cpp
 
 ${OBJECTDIR}/game_item.o: game_item.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_item.o game_item.cpp
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_item.o game_item.cpp
 
 ${OBJECTDIR}/game_locale.o: game_locale.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_locale.o game_locale.cpp
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_locale.o game_locale.cpp
 
 ${OBJECTDIR}/game_loot.o: game_loot.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_loot.o game_loot.cpp
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_loot.o game_loot.cpp
+
+${OBJECTDIR}/game_mixture_info.o: game_mixture_info.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_mixture_info.o game_mixture_info.cpp
 
 ${OBJECTDIR}/game_newgame.o: game_newgame.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_newgame.o game_newgame.cpp
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_newgame.o game_newgame.cpp
 
 ${OBJECTDIR}/game_pathfind.o: game_pathfind.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_pathfind.o game_pathfind.cpp
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_pathfind.o game_pathfind.cpp
 
 ${OBJECTDIR}/game_placeoff.o: game_placeoff.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_placeoff.o game_placeoff.cpp
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_placeoff.o game_placeoff.cpp
 
 ${OBJECTDIR}/game_play.o: game_play.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_play.o game_play.cpp
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_play.o game_play.cpp
+
+${OBJECTDIR}/game_quest.o: game_quest.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_quest.o game_quest.cpp
+
+${OBJECTDIR}/game_soundres.o: game_soundres.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_soundres.o game_soundres.cpp
 
 ${OBJECTDIR}/game_state.o: game_state.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_state.o game_state.cpp
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_state.o game_state.cpp
+
+${OBJECTDIR}/game_ui.o: game_ui.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_ui.o game_ui.cpp
 
 ${OBJECTDIR}/game_village.o: game_village.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_village.o game_village.cpp
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_village.o game_village.cpp
 
 ${OBJECTDIR}/gfx.o: gfx.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/gfx.o gfx.cpp
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/gfx.o gfx.cpp
 
 ${OBJECTDIR}/glfuncs.o: glfuncs.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/glfuncs.o glfuncs.cpp
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/glfuncs.o glfuncs.cpp
 
 ${OBJECTDIR}/main.o: main.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.cpp
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.cpp
 
 ${OBJECTDIR}/resources.o: resources.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/resources.o resources.cpp
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/resources.o resources.cpp
 
 ${OBJECTDIR}/system.o: system.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/system.o system.cpp
+	$(COMPILE.cc) -O2 `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/system.o system.cpp
 
 # Subprojects
 .build-subprojects:

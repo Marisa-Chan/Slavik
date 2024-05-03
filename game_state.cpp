@@ -166,13 +166,13 @@ void Engine::GS2::Load(FSMgr::iFile* pfile)
     field1_0x1 = pfile->readU8();
     field2_0x2 = pfile->readU8();
     MapID = pfile->readS8();
-    field4_0x4 = pfile->readU8();
+    TargetMapID = pfile->readU8();
     field5_0x5 = pfile->readS16L();
     field6_0x7 = pfile->readS16L();
-    left = pfile->readS16L();
-    up = pfile->readS16L();
-    right = pfile->readS16L();
-    bottom = pfile->readS16L();
+    WarpZone.top = pfile->readS16L();
+    WarpZone.left = pfile->readS16L();
+    WarpZone.bottom = pfile->readS16L();
+    WarpZone.right = pfile->readS16L();
 }
 
 
@@ -309,7 +309,7 @@ void Engine::LoadGameState(int32_t stateID)
     _state.GS2ARRAYCount = 0;
     for ( GS2 &obj : _state.GS2ARRAY )
     {
-        if (obj.field4_0x4 == 0)
+        if (obj.TargetMapID == 0)
             break;
         
         _state.GS2ARRAYCount++;

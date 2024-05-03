@@ -106,12 +106,14 @@ public:
     bool LoadLightsRes();
     bool LoadObjectsRes();
     bool LoadFlames();
+    bool LoadMask();
     
     static GFX::Image *LoadRL8BitImage(FSMgr::iFile *pfile, const SDL_Color *pal);
     static GFX::PalImage *LoadRL8BitImage(FSMgr::iFile *pfile);
     static GFX::PalImage *LoadRL8BitShadow(FSMgr::iFile *pfile);
     static GFX::Image *LoadRL16BitImage(FSMgr::iFile *pfile);
     static GFX::Image *LoadFlameImage(FSMgr::iFile *pfile);
+    static Common::PlaneVector<uint8_t> *LoadMask(FSMgr::File *pfile);
    
     
 public:
@@ -133,6 +135,9 @@ public:
     std::array<SimpleObject, 482> SimpleObjects;
     
     std::array<GFX::Image *,74> Flames;
+    
+    Common::PlaneVector<uint8_t> *ScreenMask = nullptr;
+    Common::PlaneVector<uint8_t> *MapMask = nullptr;
     
 public:
     static Resources Res;

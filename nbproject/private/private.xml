@@ -19,14 +19,17 @@
             <file>file:/home/marisa/git/slavik/system.cpp</file>
             <file>file:/home/marisa/git/slavik/game_state.cpp</file>
             <file>file:/home/marisa/git/slavik/game.h</file>
+            <file>file:/home/marisa/git/slavik/vectors.h</file>
             <file>file:/home/marisa/git/slavik/game.cpp</file>
             <file>file:/home/marisa/git/slavik/fsmgr.cpp</file>
+            <file>file:/home/marisa/git/slavik/game_input.cpp</file>
             <file>file:/home/marisa/git/slavik/game_data.cpp</file>
             <file>file:/home/marisa/git/slavik/game_locale.cpp</file>
             <file>file:/home/marisa/git/slavik/main.cpp</file>
             <file>file:/home/marisa/git/slavik/game_pathfind.cpp</file>
             <file>file:/home/marisa/git/slavik/game_character.cpp</file>
             <file>file:/home/marisa/git/slavik/fsmgr.h</file>
+            <file>file:/home/marisa/git/slavik/game_ui.cpp</file>
             <file>file:/home/marisa/git/slavik/resources.cpp</file>
             <file>file:/home/marisa/git/slavik/common/common.h</file>
             <file>file:/home/marisa/git/slavik/game_newgame.cpp</file>

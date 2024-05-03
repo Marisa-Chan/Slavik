@@ -12,7 +12,7 @@ namespace Game
     
 bool Engine::LoadINTR()
 {
-    DAT_00a3e74c |= 1;
+    DWORD_00a3e74c |= 1;
     
     _textQueueCount = 0;
     _imgQueue2Count = 0;
@@ -53,14 +53,14 @@ bool Engine::LoadINTR()
         f->seek(pos + sprHdr[i * 2], 0);
         _menuImages.push_back( Resources::LoadRL8BitImage(f.get(), Res.Palettes.data() + sprHdr[i * 2 + 1]) );
     }
-    /*
-    DAT_00a3e860 = *(ushort *)(ImgSprite_ARRAY_006304b8[17].pData + (int)_bkgImage) - 1;
-    DAT_00a3e864 = (uint)*(ushort *)(ImgSprite_ARRAY_006304b8[18].pData + (int)_bkgImage);
-    DAT_00a3e784 = (uint)*(ushort *)((int)(ImgSprite_ARRAY_006304b8[18].pData + (int)_bkgImage) + 2);
-    iVar1 = (DAT_00a3e880 - GScrOff.x) + 2 + DAT_00a3e864 * -2;
-    DAT_00a3e870 = GScrOff.x + -1 + DAT_00a3e864 + (iVar1 - (iVar1 / DAT_00a3e860) * DAT_00a3e860) / 2;
-    DAT_00a3e88c = (BottomPanelY - DAT_00a3e784) + 1;
-    */
+    
+    ItemInvSlotWidth = _menuImages[17]->SW->w - 1;
+    ScrlBtnWidth = _menuImages[18]->SW->w;
+    ScrlBtnHeight = _menuImages[18]->SW->h;
+    int32_t iVar1 = (SCREENRESX - 1 - GScrOff.x) + 2 - ScrlBtnWidth * 2;
+    DAT_00a3e870 = MSGRECT.left - 1 + ScrlBtnWidth + (iVar1 - (iVar1 / ItemInvSlotWidth) * ItemInvSlotWidth) / 2;
+    DAT_00a3e88c = (MSGRECT.top - ScrlBtnHeight) + 1;
+    
     return true;
 }
 
@@ -89,14 +89,8 @@ void Engine::UpdateGame()
     if ( MAPRECT.IsIn( ppoint ) )
         _mouseMapPos = _mousePos - (MAPRECT.Pos() * _screenSize / SCREENRES);
         
-    
-    //if (DAT_00a3e84c)
-    {
-        //DAT_00a3e84c--;
-        //if (DAT_00a3e84c == 0) 
-            ImgQueue1(_menuImages[3], Common::Point(), Common::Rect());        
-    }
-    
+    //Draw gameplay UI
+    ImgQueue1(_menuImages[3], Common::Point(), Common::Rect());
     
     if (_nextMapID > 0)
     {
@@ -121,7 +115,7 @@ void Engine::UpdateGame()
         
         FUN_00428f90( _mainCharacter->ViewPos );
         FUN_004290d8();
-        PlayChangeScreen(-1);
+        PlayChangeScreen(PLSCREEN_0);
     }
     
     
@@ -131,46 +125,66 @@ void Engine::UpdateGame()
         FUN_00421da4();
         MapObjectsUpdateFrames();
         FUN_0041d0fc();
-        /*for (local_1c = 0; local_1c < Speed; local_1c += 1) {
-            _counter += 1;
+        
+        for (int32_t cnt = 0; cnt < _speed; cnt++)
+        {
+            _counter++;
             FUN_00421170();
             FUN_00421da4();
-            FUN_0042480c();
+            MapObjectsUpdateFrames();
             FUN_0041d0fc();
-            if ((System::_isPlayingVideo != 0) || ((_mainCharacter->ClassID & 0x80) != 0)) break;
+            
+            if (_isPlayingVideo || (_mainCharacter->ClassID & 0x80)) break;
         }
-        if (0 < _objectsToLoadCount) {
-            UsedObjectsLoad();
-        }
-        if (0 < DAT_00a3e814) {
+        
+        if (_objectsToLoadCount > 0)
+            LoadUsedObjects();
+        
+        if (DAT_00a3e814 > 0)
             FUN_0043d1d0();
-        }
-        if ((DAT_00a3e74c & 4) == 0) {
-            if (((DAT_00a3e74c & 8) != 0) && (DAT_00a3e74c ^= 8, _playScreenID == 7)) {
-                FUN_00431d70(0);
-            }
-        }
-        else {
-            DAT_00a3e74c ^= 4;
+        
+        if (DWORD_00a3e74c & 4)
+        {
+            DWORD_00a3e74c ^= 4;
             FUN_0042f50c(CharInfoCharacter,0);
         }
-        if ((DAT_00a3e74c & 1) == 0) {
-            if (keyCode != 0) {
-                PlayHandleKey(keyCode);
-            }
-            FUN_00422864();
+        else if (DWORD_00a3e74c & 8)
+        {
+            DWORD_00a3e74c &= ~8;
+            if (_playScreenID == 7)
+                FUN_00431d70(0);
         }
-        else {
-            DAT_00a3e74c ^= 1;
-            if (keyCode != 0) {
-                PlayHandleKey(keyCode);
-            }
-            FUN_00422864();
-            if ((DAT_00a3e74c & 1) == 0) {
+        
+        
+        if (DWORD_00a3e74c & 1)
+        {
+            DWORD_00a3e74c &= ~1;
+            
+            if (_KeyCode)
+                PlayHandleKey(_KeyCode);
+            
+            PlayProcessMouse();
+            
+            if ((DWORD_00a3e74c & 1) == 0)
                 FUN_004290d8();
-            }
         }
-    */
+        else
+        {
+            if (_KeyCode) 
+                PlayHandleKey(_KeyCode);
+            
+            PlayProcessMouse();
+        }
+    
+    if (MsgTextTimeout)
+    {
+        MsgTextTimeout--;
+        
+        Common::Point outPos(MSGRECT.left + 10, MSGRECT.top + 5);
+        TextQueue(MsgText, _Fonts[3], outPos, MSGRECT);
+    }
+        
+    DrawElmQueue();
 }
 
 void Engine::FUN_004118dc()
@@ -401,17 +415,18 @@ void Engine::FUN_00421bb8(Character *pchar)
             GS2 &g = _state.GS2ARRAY.at(local_14);
             
             if (g.MapID == _mainMapChar->MapID && 
-                pchar->Tile.y >= g.left && 
-                pchar->Tile.y <= g.right &&
-                pchar->Tile.x >= g.up &&
-                pchar->Tile.x <= g.bottom)
+                pchar->Tile.y >= g.WarpZone.top && 
+                pchar->Tile.y <= g.WarpZone.bottom &&
+                pchar->Tile.x >= g.WarpZone.left &&
+                pchar->Tile.x <= g.WarpZone.right)
             {
                 if (CurrentVillage && CurrentVillage->Index == local_14 &&
                         CurrentVillage->BuildingState[5].BuildInfoID > -1 &&
                         CurrentVillage->BuildingState[5].State != 3)
                     return;
                 
-                _objectsToLoadCount = -g.field4_0x4;
+                //_objectsToLoadCount = -g.field4_0x4;
+                _nextMapID = g.TargetMapID;
                 _mainMapChar->spwnTlRect.top = g.field5_0x5;
                 _mainMapChar->spwnTlRect.left = g.field6_0x7;
                 _mainMapChar->spwnTlRect.bottom = g.field2_0x2;
@@ -936,9 +951,107 @@ void Engine::FUN_0042d574(Character *pchar)
     printf("Incomplete %s\n", __PRETTY_FUNCTION__);
 }
 
-void Engine::FUN_0042f50c(Character *pchar, int32_t)
+vec3f Engine::FUN_0042c914(Character *pchar, ItemInfo *itm)
 {
-    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
+    int32_t val = FUN_00418364(pchar, itm);
+    if (val == 0)
+        return vec3f(24, 0, 0);
+    else if (itm->Flags & 1)
+        return vec3f(15, 15, 0);
+    else if (itm->BonusID >= 0)
+        return vec3f(0, 12, 0);
+    return vec3f();
+}
+
+
+int32_t Engine::FUN_0042c870(ItemInfo *itm)
+{
+    switch(itm->TypeID)
+    {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 12:
+            return ArmorWeaponInfo.at(itm->InfoID).unk7;
+        
+        case 6:
+        case 7:
+        case 8:
+            return AcessoriesInfo.at(itm->InfoID).ImgID;
+            
+        case 9:
+            return AlchemiesInfo.at(itm->InfoID).ImgID;
+        
+            
+        case -1:
+            return 0;
+            
+        default:
+            return MiscItemsInfo.at(itm->InfoID).ImgID;
+    }
+}
+
+void Engine::DrawInventory(Character *pchar, int btn, bool bkg)
+{
+    GFX::Image *bk = _menuImages.at(17);
+    Common::Point bksz = bk->GetSize();
+    
+    int32_t iVar4 = InvPos + ((SCREENRESX - 1 - MSGRECT.left) + 2 - ScrlBtnWidth * 2) / ItemInvSlotWidth;
+    
+    /*if (bkg)
+        FillBkgRect({MSGRECT.left, DAT_00a3e88c, MSGRECT.right, MSGRECT.top});//GScrOff.x,DAT_00a3e88c,DAT_00a3e880,Game::BottomPanelY);
+    */
+    int32_t imgid = 18;
+    if (btn < 0)
+        imgid = 19;
+    
+    ImgQueue2(_menuImages.at(imgid), {MSGRECT.left, DAT_00a3e88c}, Common::Rect());
+    
+    imgid = 20;
+    if (btn > 0)
+        imgid = 21;
+    
+    ImgQueue2(_menuImages.at(imgid), {SCREENRESX - ScrlBtnWidth, DAT_00a3e88c}, Common::Rect());
+    
+    int32_t local_24 = DAT_00a3e870;
+    int32_t y = DAT_00a3e88c + (ScrlBtnHeight - bksz.x) / 2;
+    for (int32_t i = InvPos; i < iVar4; ++i)
+    {
+        int32_t iVar2 = pchar->Inventory.at(i & 0x1f);
+        vec3f clr;
+        if (iVar2 && iVar2 != DAT_00a3e7a0)
+            clr = FUN_0042c914(pchar, &(_state.Items.at(iVar2)));
+        
+        ImgQueue2(bk, {local_24, y}, Common::Rect(), clr);
+        
+        if (iVar2 && iVar2 != DAT_00a3e7a0)
+        {
+            int32_t itemId = FUN_0042c870( &_state.Items.at(iVar2) );
+            if (itemId)
+            {
+                GFX::Image *img = _menuImages.at(itemId);
+                ImgQueue2(img, {local_24 + (ItemInvSlotWidth + 1 - img->GetSize().x) / 2, y + (ScrlBtnHeight + 1 - img->GetSize().y) / 2}, Common::Rect(), clr);
+            }
+        }
+        local_24 += ItemInvSlotWidth;
+    }
+}
+
+void Engine::FUN_0042f50c(Character *pchar, int32_t p)
+{
+    if (_playScreenID == PLSCREEN_3)
+        DisplayInvOfCharID = pchar->Index + 1;
+    else
+    {
+        DisplayInvOfCharID = pchar->Index + 1;
+        DisplayInvOfCharID2 = pchar->Index + 1;
+    }
+    
+    if (p != 0)
+        DWORD_00a3e74c |= 4;
 }
 
 
@@ -969,12 +1082,13 @@ int32_t Engine::FUN_0041b70c(Character *pchar)
 
 void Engine::FUN_0042f9b8(const std::string &txt)
 {
-    ImgQueue1(_menuImages.at(3), Common::Point(), MSGRECT);
     if (!txt.empty())
     {
-        DAT_00a3e84c = 12;
-        Common::Point outPos(MSGRECT.left + 10, MSGRECT.top + 5);
-        TextQueue(txt, _Fonts[3], outPos, MSGRECT);
+        MsgTextTimeout = 12;
+        MsgText = txt;
+        
+        //Common::Point outPos(MSGRECT.left + 10, MSGRECT.top + 5);
+        //TextQueue(txt, _Fonts[3], outPos, MSGRECT);
     }
 }
 
@@ -1036,7 +1150,6 @@ void Engine::FUN_0041733c(Village::BldState *state)
 
 void Engine::FUN_0041d0fc()
 {
-    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
     if ( (_counter & 0xf) == 0 )
     {
         for(MapChar &mchar : _state.MapChar_ARRAY)
@@ -1050,58 +1163,58 @@ void Engine::FUN_0041d0fc()
                     FUN_00412c30(&mchar);
                 
                 FUN_0041bdf0(&mchar);
+                continue;
             }
-            else
+            
+            for (int32_t i = 0; i < mchar.GroupSize; ++i)
             {
-                for (int32_t i = 0; i < mchar.GroupSize; ++i)
+                Character &ch = _state.Characters.at(mchar.CharacterIndex + i);
+                if ((ch.ClassID & CLASS_BIT80) || ch.State == CHSTATE_9 || ch.State == CHSTATE_3)
+                    continue;
+                
+                if (ch.Otravlenie != 0) 
                 {
-                    Character &ch = _state.Characters.at(mchar.CharacterIndex + i);
-                    if ((ch.ClassID & CLASS_BIT80) == 0 && ch.State != CHSTATE_9 && ch.State != CHSTATE_3)
-                    {
-                        if (ch.Otravlenie != 0) 
-                        {
-                            ch.HP -= ch.Otravlenie;
-                            FUN_0041c750(&ch);
-                            
-                            if (ch.HP < 1)
-                            {
-                                ch.field2_0x2 = 0;
-                                ch.HP = 0;
+                    ch.HP -= ch.Otravlenie;
+                    FUN_0041c750(&ch);
 
-                                if (mchar.MapID == _currentMapID) 
-                                {
-                                    if ((ch.field_0x3 & 4) == 0) 
-                                        FUN_004143dc(&ch, CHSTATE_9);
-                                    else 
-                                        FUN_004143dc(&ch, CHSTATE_3);
-                                    
-                                    FUN_00418510(&ch, 0, _mainCharacter->Level);
-                                }
-                            }
-                            if (ch.MapCharID == _mainCharacter->MapCharID) 
-                                FUN_0042d574(&ch);
-                        }
-                        if (ch.field_0xce)
+                    if (ch.HP < 1)
+                    {
+                        ch.field2_0x2 = 0;
+                        ch.HP = 0;
+
+                        if (mchar.MapID == _currentMapID) 
                         {
-                            ch.field_0xce--;
-                            if (ch.field_0xce == 0)
-                            {
-                                ch.field90_0xca = 0;
-                                ch.BaseLovkost = ch.field76_0xbc;
-                                ch.BaseHarizm = ch.field78_0xbe;
-                                ch.BaseSila = ch.field80_0xc0;
-                                ch.BaseVinoslivost = ch.field82_0xc2;
-                                
-                                if (ch.MapCharID == _mainMapChar->Index)
-                                {
-                                    FUN_0042d574(&ch);
-                                    if (_playScreenID == PLSCREEN_3)
-                                        PlayChangeScreen(PLSCREEN_2);
-                                    
-                                    if (DisplayInvOfCharID != 0)
-                                        FUN_0042f50c(CharInfoCharacter, 0);
-                                }
-                            }
+                            if ((ch.field_0x3 & 4) == 0) 
+                                FUN_004143dc(&ch, CHSTATE_9);
+                            else 
+                                FUN_004143dc(&ch, CHSTATE_3);
+
+                            FUN_00418510(&ch, 0, _mainCharacter->Level);
+                        }
+                    }
+                    if (ch.MapCharID == _mainCharacter->MapCharID) 
+                        FUN_0042d574(&ch);
+                }
+                
+                if (ch.field_0xce)
+                {
+                    ch.field_0xce--;
+                    if (ch.field_0xce == 0)
+                    {
+                        ch.field90_0xca = 0;
+                        ch.BaseLovkost = ch.field76_0xbc;
+                        ch.BaseHarizm = ch.field78_0xbe;
+                        ch.BaseSila = ch.field80_0xc0;
+                        ch.BaseVinoslivost = ch.field82_0xc2;
+
+                        if (ch.MapCharID == _mainMapChar->Index)
+                        {
+                            FUN_0042d574(&ch);
+                            if (_playScreenID == PLSCREEN_3)
+                                PlayChangeScreen(PLSCREEN_3);
+
+                            if (DisplayInvOfCharID != 0)
+                                FUN_0042f50c(CharInfoCharacter, 0);
                         }
                     }
                 }
@@ -1241,45 +1354,7 @@ void Engine::FUN_0041d0fc()
             for(int32_t i = 0; i < vlg.Bld2Num + vlg.Bld1Num + 7; ++i)
             {
                 Village::BldState &bst = vlg.BuildingState.at(i);
-                if (bst.BuildInfoID < 0 || bst.BldLeft > 0 || bst.State != 6 || local_24 < 1)
-                {
-                    if (bst.BuildInfoID > -1 && bst.BldLeft > 0)
-                    {
-                        if (bst.State < 3 && local_24 > 0)
-                        {
-                            bst.BldLeft--;
-                            
-                            if (bst.BldLeft <= 0)
-                            {
-                                bst.State++;
-                                if (bst.State != 3)
-                                {
-                                    local_30 = true;
-                                    
-                                    bst.BldLeft = (BuildingInfo.at(bst.BuildInfoID).BuildPeriod * 60) / local_24;
-                                }
-                                
-                                if (vlg.MapID == _currentMapID)
-                                    FUN_0041733c(&bst);
-                            }
-                        }
-                        else
-                        {
-                            bst.BldLeft--;
-                            if (bst.BldLeft <= 0)
-                            {
-                                bst.State++;
-                                if (bst.State != 6)
-                                    bst.BldLeft = BuildingInfo[bst.BuildInfoID].BurnPeriod2;
-                                
-                                if (vlg.MapID == _currentMapID) {
-                                    FUN_0041733c(&bst);
-                                }
-                            }
-                        }
-                    }
-                }
-                else
+                if (bst.BuildInfoID >= 0 && bst.BldLeft <= 0 && bst.State == 6 && local_24 >= 1)
                 {
                     local_30 = true;
                     
@@ -1288,6 +1363,44 @@ void Engine::FUN_0041d0fc()
                     bst.BldLeft = (BuildingInfo.at(bst.BuildInfoID).BuildPeriod * 60) / local_24;
                     if (vlg.MapID == _currentMapID)
                         FUN_0041733c(&bst);
+                    
+                    continue;
+                }
+                
+                if (bst.BuildInfoID <= -1 || bst.BldLeft <= 0)
+                    continue;
+                
+                if (bst.State < 3 && local_24 > 0)
+                {
+                    bst.BldLeft--;
+
+                    if (bst.BldLeft <= 0)
+                    {
+                        bst.State++;
+                        if (bst.State != 3)
+                        {
+                            local_30 = true;
+
+                            bst.BldLeft = (BuildingInfo.at(bst.BuildInfoID).BuildPeriod * 60) / local_24;
+                        }
+
+                        if (vlg.MapID == _currentMapID)
+                            FUN_0041733c(&bst);
+                    }
+                }
+                else
+                {
+                    bst.BldLeft--;
+                    if (bst.BldLeft <= 0)
+                    {
+                        bst.State++;
+                        if (bst.State != 6)
+                            bst.BldLeft = BuildingInfo[bst.BuildInfoID].BurnPeriod2;
+
+                        if (vlg.MapID == _currentMapID) {
+                            FUN_0041733c(&bst);
+                        }
+                    }
                 }
             }
             
@@ -2227,7 +2340,7 @@ void Engine::FUN_0041079c(Character *pchar, int32_t exp)
         if (pchar->Index + 1 == DisplayInvOfCharID)
         {
             if (_playScreenID == PLSCREEN_3)
-                PlayChangeScreen(PLSCREEN_2);
+                PlayChangeScreen(PLSCREEN_3);
             FUN_0042f50c(pchar, 0);
         }
     }
@@ -2481,7 +2594,7 @@ bool Engine::FUN_00411fd0(Character *pchar)
         if (FUN_00411758(pchar, pchar->MoveTile))
             return false;
         
-        Character &enm = _state.Characters.at(pchar->EnemyCharID + 1);
+        Character &enm = _state.Characters.at(pchar->EnemyCharID - 1);
         if ((enm.ClassID & CLASS_BIT80) || enm.State == CHSTATE_9 || enm.State == CHSTATE_3)
             pchar->EnemyCharID = 0;
                     
@@ -2492,7 +2605,7 @@ bool Engine::FUN_00411fd0(Character *pchar)
     if ((pchar->field2_0x2 & 1) == 0 || pchar->State != CHSTATE_1)
         return false;
 
-    Character &enm = _state.Characters.at(pchar->EnemyCharID + 1);
+    Character &enm = _state.Characters.at(pchar->EnemyCharID - 1);
     if ((enm.ClassID & CLASS_BIT80) || enm.State == CHSTATE_9 || enm.State == CHSTATE_3)
     {
         pchar->EnemyCharID = 0;
@@ -3078,7 +3191,7 @@ void Engine::FUN_004123bc(MapChar *mchr)
                 if (FUN_00413de4(&chr))
                     continue;
                 
-                Character &enm = _state.Characters.at(chr.EnemyCharID + 1);
+                Character &enm = _state.Characters.at(chr.EnemyCharID - 1);
                 if ((enm.ClassID & CLASS_BIT80) || enm.State == CHSTATE_9 || enm.State == CHSTATE_3)
                 {
                     chr.EnemyCharID = 0;
@@ -3681,7 +3794,7 @@ void Engine::DrawElmQueue()
       //{56, 411}, 
       {70, 514} };
     
-    ImgQueue1(_menuImages.at(3), Common::Point(), Common::Rect(0, ElmBox[0].y - 2, MAPRECT.left - 1, SCREENRESY));
+    //ImgQueue1(_menuImages.at(3), Common::Point(), Common::Rect(0, ElmBox[0].y - 2, MAPRECT.left - 1, SCREENRESY));
     
     for (int32_t i = 0; i < 7; ++i)
     {
@@ -3695,8 +3808,7 @@ void Engine::DrawElmQueue()
 void Engine::FUN_004290ac(int elmid, int imgid)
 {
     DrawElm[elmid] = imgid | 0x80;
-    DAT_00a3e74c |= 1;
-    DrawElmQueue();
+    DWORD_00a3e74c |= 1;
 }
 
 
@@ -3830,6 +3942,221 @@ bool Engine::FUN_0041f5d8(MapChar *mchar, Character *pchar)
         }
     }
     return false;
+}
+
+
+void Engine::ChangeWeapon(int32_t wpnId)
+{
+    PlaySound(4, 0, 0, 0);
+    FUN_00429194(true);
+    
+    int32_t num = 1;
+    if (_KeyState[KEYFN_SHIFT])
+        num = 10;
+    
+    for(int32_t i = 0; i < num; ++i) 
+    {
+        Character *pchar = SelectedCharacters[i];
+        if (!pchar)
+            break;
+        
+        if ((pchar->ClassID & CLASS_BIT80) || pchar->State == CHSTATE_9 || pchar->State == CHSTATE_3)
+            continue;
+
+        switch(wpnId)
+        {
+            case 0:
+                if (pchar->ArmorWeapons[ESLT_0])
+                    pchar->field_0x12 = ESLT_0;
+                break;
+                
+            case 1:
+                if (pchar->ArmorWeapons[ESLT_1])
+                    pchar->field_0x12 = ESLT_1;
+                break;
+            
+            case 2:
+                if (pchar->ArmorWeapons[ESLT_2])
+                    pchar->field_0x12 = ESLT_2;
+                break;
+            
+            default:
+                if (pchar->ArmorWeapons[ESLT_0] || pchar->ArmorWeapons[ESLT_1] || pchar->ArmorWeapons[ESLT_2])
+                {
+                    switch(pchar->field_0x12)
+                    {
+                        case ESLT_0:
+                            if (pchar->ArmorWeapons[ESLT_1])
+                                pchar->field_0x12 = ESLT_1;
+                            else if (pchar->ArmorWeapons[ESLT_2])
+                                pchar->field_0x12 = ESLT_2;
+                            break;
+                        
+                        case ESLT_1:
+                            if (pchar->ArmorWeapons[ESLT_2])
+                                pchar->field_0x12 = ESLT_2;
+                            else if (pchar->ArmorWeapons[ESLT_0])
+                                pchar->field_0x12 = ESLT_0;
+                            break;
+                            
+                        case ESLT_2:
+                            if (pchar->ArmorWeapons[ESLT_0])
+                                pchar->field_0x12 = ESLT_0;
+                            else if (pchar->ArmorWeapons[ESLT_1])
+                                pchar->field_0x12 = ESLT_1;
+                            break;
+                    }
+                }
+            break;
+        }
+        
+        if (pchar->field_0x12 != ESLT_1 && (pchar->field2_0x2 & 4))
+        {
+            pchar->field2_0x2 &= ~4;
+            FUN_00414ab4(pchar);
+        }
+    }
+
+    if (_playScreenID == PLSCREEN_3)
+    {
+        PlayChangeScreen(PLSCREEN_3);
+        FUN_0042f50c(CharInfoCharacter, 0);
+    }
+    else if (DisplayInvOfCharID != 0) {
+        FUN_0042f50c(&_state.Characters.at(DisplayInvOfCharID - 1), 0);
+    }
+    
+    FUN_004290ac(0, DrawElm[0]);
+}
+
+
+
+void Engine::FUN_0042179c()
+{
+    PlaySound(4, 0, 0, 0);
+    FUN_00429194(true);
+    
+    if (!SelectedCharacters[0])
+        return;
+    
+    for (int32_t i = 0; i < 10; ++i)
+    {
+        Character *pchar = SelectedCharacters[i];
+        if (!pchar)
+            break;
+        
+        if ((pchar->ClassID & CLASS_BIT80) || pchar->State == CHSTATE_9 || pchar->State == CHSTATE_3)
+            continue;
+
+        if ((SelectedCharacters[0]->field_0x3 & 4) == 0)
+        {
+            if ((pchar->field_0x3 & 4) == 0)
+            {
+                pchar->State -= 6;
+                pchar->field_0x3 |= 4;
+
+                if (pchar->State == CHSTATE_7 || pchar->State == CHSTATE_1)
+                    FUN_00414078(pchar);
+                else
+                    FUN_004143dc(pchar, pchar->State);
+            }
+        }
+        else if (pchar->field_0x3 & 4)
+        {
+            if (pchar->State < CHSTATE_4)
+                pchar->State += 6;
+            else
+                pchar->State = CHSTATE_6;
+            
+            pchar->field2_0x2 &= 0xfa;
+            
+            if (pchar->field2_0x2 == 0)
+                pchar->field2_0x2 = 0x40;
+            
+            pchar->field_0x3 &= ~4;
+            
+            if (pchar->State == CHSTATE_7 || pchar->State == CHSTATE_1)
+                FUN_00414078(pchar);
+            else
+                FUN_004143dc(pchar, pchar->State);
+        }
+    }
+    
+    if (SelectedCharacters[0]->field_0x3 & 4)
+        FUN_004290ac(1, 10);
+    else
+        FUN_004290ac(1, 15);    
+}
+
+
+
+void Engine::FUN_004226c0()
+{
+    PlaySound(4, 0, 0, 0);
+    FUN_00429194(true);
+    FUN_004290ac(3, 11);
+    
+    for (int32_t i = 1; i < _mainMapChar->GroupSize; ++i)
+    {
+        Character &chr = _state.Characters.at(_mainCharacter->Index + i);
+        if ((chr.ClassID & CLASS_BIT80) == 0 && chr.State != CHSTATE_9 && chr.State != CHSTATE_3)
+        {
+            chr.field2_0x2 = 0x60;
+            chr.field17_0x13[1] = 0xff;
+        }
+    }
+}
+
+
+
+void Engine::FUN_00421698()
+{
+    PlaySound(4, 0, 0, 0);
+    DrawElm[1] = 10;
+    FUN_00429194(true);
+    FUN_004290ac(4, 7);
+    
+    for (int32_t i = 1; i < _mainMapChar->GroupSize; ++i)
+    {
+        Character &chr = _state.Characters.at(_mainCharacter->Index + i);
+        if ((chr.ClassID & CLASS_BIT80) == 0 && chr.State != CHSTATE_9 && chr.State != CHSTATE_3)
+        {
+            chr.EnemyCharID = 0;
+            if (chr.field_0x12 == 1)
+                chr.field2_0x2 = 0x44;
+            else
+                chr.field2_0x2 = 0x41;
+            
+            chr.field17_0x13[1] = 0xff;
+            if ((chr.field_0x3 & 4) == 0)
+            {
+                chr.State -= 6;
+                chr.field_0x3 |= 4;
+                FUN_00414078(&chr);
+            }
+        }
+    }
+}
+
+
+void Engine::FUN_0042459c()
+{
+    if (_playScreenID == PLSCREEN_0 || _playScreenID == PLSCREEN_2)
+    {
+        PlaySound(4, 0, 0, 0);
+        FUN_004290ac(5, 12);
+        
+        if (_playScreenID == PLSCREEN_2)
+        {
+            _playScreenID = 0;
+            FUN_004292e4();
+        }
+        else
+        {
+            DWORD_00a3e7b4 = 0;
+            PlayChangeScreen(PLSCREEN_2);
+        }
+    }
 }
 
 

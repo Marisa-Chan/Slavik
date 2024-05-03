@@ -3,7 +3,8 @@
 #include "fmt/printf.h"
 #include <vector>
 #include <SDL2/SDL_video.h>
-
+#include <SDL2/SDL_rwops.h>
+#include <SDL2/SDL_image.h>
 
 namespace Game {
 
@@ -250,7 +251,8 @@ bool Resources::Load()
     if ( LoadGraphRes() &&
          LoadLightsRes() &&
          LoadObjectsRes() &&
-         LoadFlames())
+         LoadFlames() &&
+         LoadMask() )
         return true;
     
     return false;
@@ -655,5 +657,135 @@ GFX::Image *Resources::LoadFlameImage(FSMgr::iFile* pfile)
 
 
 
+
+static Sint64 mysizefunc(SDL_RWops * context)
+{
+    FSMgr::File *fil = (FSMgr::File *)context->hidden.unknown.data2;
+
+    size_t curr = (*fil)->tell();
+    (*fil)->seek(0, SEEK_END);
+    size_t sz = (*fil)->tell();
+    (*fil)->seek(curr, SEEK_SET);
+    return sz;
+}
+
+static Sint64 myseekfunc(SDL_RWops *context, Sint64 offset, int whence)
+{
+    FSMgr::File *fil = (FSMgr::File *)context->hidden.unknown.data2;
+    switch (whence)
+    {
+    case RW_SEEK_SET:
+        if ( (*fil)->seek(offset, SEEK_SET) != 0 )
+            return -1;
+        break;
+    case RW_SEEK_CUR:
+        if ( (*fil)->seek(offset, SEEK_CUR) != 0 )
+            return -1;
+        break;
+    case RW_SEEK_END:
+        if ( (*fil)->seek(offset, SEEK_END) != 0 )
+            return -1;
+        break;
+    default:
+        SDL_SetError("Can't seek of this kind of whence");
+        return -1;
+    }
+    return (*fil)->tell();
+}
+
+static size_t myreadfunc(SDL_RWops *context, void *ptr, size_t size, size_t maxnum)
+{
+    FSMgr::File *fil = (FSMgr::File *)context->hidden.unknown.data2;
+    return (*fil)->read(ptr, size * maxnum) / size;
+}
+
+static size_t mywritefunc(SDL_RWops *context, const void *ptr, size_t size, size_t num)
+{
+    FSMgr::File *fil = (FSMgr::File *)context->hidden.unknown.data2;
+    return (*fil)->write(ptr, size * num) / size;
+}
+
+static int myclosefunc(SDL_RWops *context)
+{
+    //FSMgr::File *fil = (FSMgr::File *)context->hidden.unknown.data2;
+    //delete fil;
+
+    SDL_FreeRW(context);
+    return 0;
+}
+
+static SDL_RWops * MyCustomRWop(FSMgr::File *fil)
+{
+    SDL_RWops *c = SDL_AllocRW();
+
+    if (c == NULL)
+        return NULL;
+
+    c->size = mysizefunc;
+    c->seek = myseekfunc;
+    c->read = myreadfunc;
+    c->write = mywritefunc;
+    c->close = myclosefunc;
+    c->type = 0xF00BA91;
+    c->hidden.unknown.data2 = fil;
+    return c;
+}
+
+Common::PlaneVector<uint8_t>* Resources::LoadMask(FSMgr::File *pfile)
+{
+    SDL_RWops *rwops = MyCustomRWop(pfile);
+    if (!rwops)
+        return nullptr;
+    
+    SDL_Surface *loaded = IMG_Load_RW(rwops, 1);
+    
+    if (!loaded)
+    {
+        printf("%s\n", SDL_GetError());
+        return nullptr;
+    }
+    
+    if (loaded->format->BytesPerPixel != 1)
+    {
+        SDL_FreeSurface(loaded);
+        return nullptr;
+    }
+    
+    SDL_LockSurface(loaded);
+
+    Common::PlaneVector<uint8_t> *mask = new Common::PlaneVector<uint8_t>(loaded->w, loaded->h);
+    
+    for(int32_t y = 0; y < loaded->h; ++y)
+    {
+        for(int32_t x = 0; x < loaded->w; ++x)
+            mask->At(x, y) = *((uint8_t *)loaded->pixels + y * loaded->pitch + x);
+    }
+
+    SDL_UnlockSurface(loaded);
+    SDL_FreeSurface(loaded);
+    
+    return mask;
+}
+
+bool Resources::LoadMask()
+{
+    FSMgr::File f = FSMgr::Mgr::ReadFile("res/mask.png");
+    if (!f)
+        return false;
+    
+    ScreenMask = LoadMask(&f);
+    if (!ScreenMask)
+        return false;
+    
+    f = FSMgr::Mgr::ReadFile("res/mapmask.png");
+    if (!f)
+        return false;
+    
+    MapMask = LoadMask(&f);
+    if (!MapMask)
+        return false;
+    
+    return true;
+}
 
 }

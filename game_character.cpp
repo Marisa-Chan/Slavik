@@ -3,6 +3,7 @@
 #include "fmt/core.h"
 #include "fmt/printf.h"
 #include "system.h"
+#include "game_locale.h"
 
 namespace Game
 {
@@ -597,6 +598,82 @@ int32_t Engine::GetCurrentWeight(Character *pchar)
     }
     
     return weight;
+}
+
+
+std::string Engine::Character::FmtCharName()
+{
+    if ((ClassID & CLASS_BIT40) && (ClassID & (~CLASS_BIT80)) <= 0x50)
+        return Locale::MonsterNames[ (ClassID & (~(CLASS_BIT40 | CLASS_BIT80))) - 1 ];
+    
+    return fmt::sprintf("%s %s", Locale::PeopleNames.at(NameID), Locale::PeopleNicks.at(NickID));
+}
+
+std::string Engine::Character::FmtLvlHP()
+{
+    return fmt::sprintf(Locale::CharHints[Locale::CHAR_HP_LVL], Level, (HP + 15) / 16);
+}
+
+
+std::string Engine::Character::GetCharHint()
+{   
+    uint32_t local_18 = ClassID & (~CLASS_BIT80);
+    
+    if (local_18 & CLASS_BIT40)
+    {
+        if (local_18 <= 0x50)
+            return /*std::to_string(Index) + " " + */FmtCharName() + FmtLvlHP();
+        
+        return /*std::to_string(Index) + " " + */FmtCharName();
+    }
+    
+    std::string tmpstr = /*std::to_string(Index) + " " + */FmtCharName() + ", " + Locale::CharacterSpeciality.at( (local_18 & 7) - 1 ) + FmtLvlHP();
+    if (MapCharID == Instance._mainMapChar->Index)
+    {
+        tmpstr.append(Locale::CharHints[Locale::CHAR_SQUAD_UNIT]);
+        
+        if (Otravlenie)
+            tmpstr.append(Locale::CharHints[Locale::CHAR_POISONED]);
+        
+        tmpstr.append(Locale::BonusName[BONUS_KHAR2]);
+        tmpstr.append(":");
+        tmpstr.append(std::to_string(CurrentHarizm));
+        tmpstr.append(Locale::BonusName[BONUS_SIL]);
+        tmpstr.append(":");
+        tmpstr.append(std::to_string(CurrentSila));
+        tmpstr.append(Locale::BonusName[BONUS_LOV]);
+        tmpstr.append(":");
+        tmpstr.append(std::to_string(CurrentLovkost));
+        tmpstr.append(Locale::BonusName[BONUS_VIN]);
+        tmpstr.append(":");
+        tmpstr.append(std::to_string(CurrentVinoslivost));
+    }
+    else
+    {
+        //local_1c = _state.MapChar_ARRAY + (byte)this->MapCharID;
+        if ((Instance._state.MapChar_ARRAY[MapCharID].unk4 & 1) == 0)
+        {
+            if (Instance.GetVillageCharacterJob(this))
+                tmpstr.append(Locale::Jobs[local_18]);
+            else
+            {
+                if (Medicine > 100)
+                    tmpstr.append(Locale::CharHints[Locale::CHAR_KNOW_MEDICINE]);
+                if (KuznechnoeDelo > 4)
+                    tmpstr.append(Locale::CharHints[Locale::CHAR_KNOW_BLACKSM]);
+                if (Trading > 30)
+                    tmpstr.append(Locale::CharHints[Locale::CHAR_KNOW_TRADING]);
+                if (PlotnickoeDelo > 4)
+                    tmpstr.append(Locale::CharHints[Locale::CHAR_KNOW_CONSTRUCT]);
+                if (Identification > 10)
+                    tmpstr.append(Locale::CharHints[Locale::CHAR_KNOW_IDENTIFY]);
+            }
+        }
+        else
+            tmpstr.append(Locale::CharHints[Locale::CHAR_ENEMY]);
+    }
+    
+    return tmpstr;
 }
 
 

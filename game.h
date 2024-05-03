@@ -34,6 +34,9 @@ constexpr const Common::Rect MAPRECT = Common::Rect(SCREENRESX - MAPVIEWW, 0, SC
 
 constexpr const Common::Rect MSGRECT = Common::Rect(SCREENRESX - MAPVIEWW, MAPVIEWH, SCREENRESX, SCREENRESY);
 
+//constexpr const Common::PointRect SRect_ARRAY_0046280c = Common::Rect(13, 13, 502, 361);
+constexpr const Common::PointRect SRect_ARRAY_0046280c = Common::PointRect(80, 60, 502, 361);
+
 
 constexpr const float PX = 1.0 / (float) SCREENRESX;
 constexpr const float PY = 1.0 / (float) SCREENRESY;
@@ -92,6 +95,8 @@ public:
         PLSCREEN_3   = 3,
         PLSCREEN_4   = 4,
         PLSCREEN_MAP = 5,
+        PLSCREEN_6   = 6,
+        PLSCREEN_7   = 7,
     };
     
     enum MAINBTN
@@ -155,6 +160,8 @@ public:
         ESLT_3 = 3,
         ESLT_4 = 4,
         ESLT_5 = 5,
+        
+        ESLT_ARROWS = 12,
                 
         EQSLOT_UNK = -1,
     };
@@ -226,7 +233,7 @@ public:
         std::vector<Object> MapObjects;
         
         Common::PlaneArray<uint8_t, 80, 160> LightMap;
-        Common::PlaneArray<uint8_t, 80, 160> LightMap2;
+        Common::PlaneArray<uint8_t, 160, 320> LightMap2;
         
         Common::Point MapLimits;
     };
@@ -237,6 +244,7 @@ public:
         GFX::PalImage *PalImg = nullptr;
         Common::Point DrawPlace;
         Common::Rect Limits;
+        vec3f Fade;
         int32_t Pal = -1;
     };
     
@@ -290,8 +298,8 @@ public:
         int16_t CurrentVinoslivost;
         int16_t BaseVinoslivost;
         std::array<int16_t, 6> ArmorWeapons;
-        std::array<uint16_t, INVSIZE> Inventory;
-        std::array<uint16_t, 5> Accessories;
+        std::array<int16_t, INVSIZE> Inventory;
+        std::array<int16_t, 5> Accessories;
         int16_t field76_0xbc;
         int16_t field78_0xbe;
         int16_t field80_0xc0;
@@ -337,6 +345,10 @@ public:
         void Load(FSMgr::iFile *pfile);
         
         int32_t GetMaxPartySize();
+        
+        std::string FmtCharName();
+        std::string FmtLvlHP();
+        std::string GetCharHint();
         
         inline void RecalcViewPos(Common::Point offset)
             { ViewPos = offset + POS + imgOffset; }
@@ -434,13 +446,10 @@ public:
         uint8_t field1_0x1;
         uint8_t field2_0x2;
         int8_t MapID;
-        uint8_t field4_0x4;
+        uint8_t TargetMapID;
         int16_t field5_0x5;
         int16_t field6_0x7;
-        int16_t left;
-        int16_t up;
-        int16_t right;
-        int16_t bottom;
+        Common::Rect WarpZone;
         
         void Load(FSMgr::iFile *pfile);
     };
@@ -579,6 +588,16 @@ public:
         void Load(FSMgr::iFile *pfile);
     };
     
+    struct MixInfo
+    {
+        int16_t Potion1id;
+        int16_t Potion2id;
+        int16_t Result1id;
+        int16_t Result2id;
+        int16_t ExpPoints;
+        int8_t MixType;
+    };
+    
 
     struct MapObject2
     {
@@ -629,6 +648,21 @@ public:
         Bonus Bonuses[3];
     };
     
+    struct DlgTxt
+    {
+        int32_t Q1ID = -1;
+        int32_t qsel = -1;
+        int32_t q1txtid = -1;
+        int32_t SoundID = -1;
+        Common::Rect Rect;
+    };
+    
+    struct TQuestState
+    {
+        int32_t State = 0;
+        int32_t QuestID = -1;
+    };
+    
 public:
     
     Engine()
@@ -667,10 +701,10 @@ public:
     
     int32_t GetMouseOnScreenBox(Common::Point point, const std::vector<Common::Rect> &boxes);
     
-    void ImgQueue1(GFX::Image *img, Common::Point pos, Common::Rect limits);
-    void ImgQueue2(GFX::Image *img, Common::Point pos, Common::Rect limits);
-    void ImgQueue1(GFX::PalImage *img, int32_t Pal, Common::Point pos, Common::Rect limits);
-    void ImgQueue2(GFX::PalImage *img, int32_t Pal, Common::Point pos, Common::Rect limits);
+    void ImgQueue1(GFX::Image *img, Common::Point pos, Common::Rect limits, vec3f fade = vec3f());
+    void ImgQueue2(GFX::Image *img, Common::Point pos, Common::Rect limits, vec3f fade = vec3f());
+    void ImgQueue1(GFX::PalImage *img, int32_t Pal, Common::Point pos, Common::Rect limits, vec3f fade = vec3f());
+    void ImgQueue2(GFX::PalImage *img, int32_t Pal, Common::Point pos, Common::Rect limits, vec3f fade = vec3f());
     void TextQueue(const std::string &text, GFX::Font *font, Common::Point pos, Common::Rect limits);
     int32_t PlaceTextWidth(const std::string &text, GFX::Font *font, Common::Point pos, int32_t width);
     std::string GetStrToken(const std::string &text);
@@ -755,6 +789,15 @@ public:
         return Common::Point(tilepos.x * TileWh + (2 - (tilepos.y & 1)) * TileWhh, tilepos.y * TileHh + TileHh);
     }
     
+    void GoToMapPos(int32_t mapid, int32_t x, int32_t y, int32_t p4)
+    {
+        _nextMapID = mapid;
+        _mainMapChar->spwnTlRect.top = x;
+        _mainMapChar->spwnTlRect.left = y;
+        _mainMapChar->spwnTlRect.bottom = p4;
+    }
+
+    
     void FUN_004290d8();
     
     void FUN_00428f90(Common::Point pos);
@@ -766,6 +809,7 @@ public:
     
     void FUN_004292e4();
     void FUN_00429194(int32_t);
+    bool FUN_0041e96c();
     
     void FUN_004118dc();
     void FUN_00436ad0(int32_t);
@@ -779,6 +823,8 @@ public:
     int FUN_00434c90(int32_t );    
     void MapObjectsUpdateFrames();
     void FUN_0042d574(Character *pchar);
+    vec3f FUN_0042c914(Character *pchar, ItemInfo *itm);
+    int32_t FUN_0042c870(ItemInfo *itm);
     void FUN_0042f50c(Character *pchar, int32_t);
     void FUN_0041d0fc();
     void FUN_0041733c(Village::BldState *state);
@@ -870,6 +916,15 @@ public:
     ItemInfo *AllocItem();
     int32_t GetItemWeight(const ItemInfo * ) const;
     
+    std::string GetItemHint(const ItemInfo * ) const;
+    std::string GetBonusValueString(const Bonus *b) const;
+    bool FUN_0041db64(Character *pchar, ItemInfo *itm1, ItemInfo *itm2);
+    bool FUN_00414e64(Character *pchar, ItemInfo *itm1, ItemInfo *itm2);
+    bool FUN_00410010(Character *pchar, ItemInfo *itm1, ItemInfo *itm2);
+    void MixPotions(Character *pchar, ItemInfo *itm1, ItemInfo *itm2);
+    bool FUN_00414b3c(Character *pchar);
+    void IdentifyCharacterItems(Character *pchar);
+    
     int32_t FUN_00417170(int val) { return 2 - ((rand() % 2 + val + 1) % 3); }
     
     int32_t FUN_004171d4(int val) 
@@ -896,12 +951,48 @@ public:
         }
         return 0;
     }
+    
+    
+    //Input
+    void PlayHandleKey(int16_t keyCode);    
+    void PlayProcessMouse();
+    int32_t FUN_004392f4();
+    int32_t FUN_00439a28(Common::Point pt, const Common::PlaneVector<uint8_t> *mask);
+    bool FUN_0041e500(int32_t slot);
+    
+    
+    //UI
+    void FUN_00431d70(int p);
+    void FillBkgRect(Common::Rect rect);
+    void DrawMap();
+    void UpdateMapImage();
+    void DrawInventory(Character *chr, int btn, bool bkg = true);
+    void DrawCharInfo();
+    void DrawJournal();
+    
+    void FUN_00425104(const ItemInfo *inf);
+    void FUN_0041e210(Character *pchar, int32_t typ, int32_t itemid);
+    bool FUN_00424918(Character *pchar, int32_t itemid);
+    bool FUN_0041e778(int aidx);
+    
+    
+    //Sound
+    void FUN_0043d1d0();
 
+    
+    void ChangeWeapon(int32_t wpnId);
+    void FUN_0042179c();
+    void FUN_004226c0();
+    void FUN_00421698();
+    void FUN_0042459c();
+    void ShowHideCharInfo();
     
 public:
     std::string _langLiter;
     Common::Point _mousePos;
     Common::Point _mouseMove;
+    
+    Common::Point _uiMousePos;
     
     Common::Point _mouseMapPos;
     Common::Point _tracePos;
@@ -934,6 +1025,8 @@ public:
     
     std::map<int16_t, int8_t> _KeyMap;
     std::array<int8_t, KEYFN_MAX> _KeyState;
+    std::deque<int16_t> _KeyQueue;
+    int16_t _KeyCode = 0;
     
     Village *CurrentVillage = nullptr;
     
@@ -954,6 +1047,7 @@ public:
     bool _bConfMusic = true;
     bool _bConfShadows = true;
     bool _bConfSound = true;
+    bool _bTransparentMenu = true;
     
     bool _svTransparency;
     bool _svDayNight;
@@ -962,13 +1056,16 @@ public:
     bool _svShadows;
     bool _svSound;
     
-    static const std::map<uint8_t, vec3i> _mapsLights;
+    
+    
+    static const std::map<uint8_t, vec3i> _dungeonMaps;
     static const std::array<int32_t, 13> _lightPhazes;
     
     bool _bLightEff = false;
     bool _bLightGround = false;
     
     int32_t _counter = 0;
+    int32_t _speed = 0;
     
     
     Character *_mainCharacter = nullptr;
@@ -989,11 +1086,18 @@ public:
     
     int32_t int32_t_00a3e828 = 0;
     
-    int32_t DAT_00a3e84c = 0;
-    uint32_t DAT_00a3e74c = 0;
+    int32_t MsgTextTimeout = 0;
+    std::string MsgText;
+    
+    uint32_t DWORD_00a3e74c = 0;
     std::array<uint8_t, 56> DAT_00a3e0a8;
     
     void *DAT_00a3e6a8 = nullptr;
+    
+    
+    std::vector<DlgTxt> qOut1; 
+    std::vector<DlgTxt> qOut2;
+    
     
     
     int32_t mapGS1Count = 0;
@@ -1016,24 +1120,55 @@ public:
     MapChar *_mainMapChar = nullptr;
     
     
-    std::array<int8_t, 56> MapsOpened;
+    std::array<int8_t, 56> MapsOpened; //Remake it to bitfield and update map image only change
     
     int32_t _objectsToLoadCount = 0;
     std::array<int32_t, 512> _objectsToLoad;
+    
+    int32_t DAT_00a3e814 = 0;
     
     
     GameMap::Object *MouseOnObject = nullptr;
     Character *MouseOnCharacter = nullptr;
     
+    Character *InfPchar = nullptr;
+    int32_t InfTyp = -1;
+    int32_t InfItemID = 0;
+    std::array<int16_t, 6> InfSvArmrWpn;
+    std::array<int16_t, INVSIZE> InfSvInv;
+    std::array<int16_t, 5> InfSvAccess;
+    
+    
     
     Common::Point ViewTiles;
+    
+    int32_t ItemInvSlotWidth = 1;
+    int32_t ScrlBtnWidth = 0;
+    int32_t DAT_00a3e870 = 0;
+    int32_t DAT_00a3e88c = 0;
+    int32_t ScrlBtnHeight = 0;
+    
+    int32_t InvPos = 0;
+    
+    int32_t DAT_00a3e790 = 0;
+    
+    int32_t DAT_00a3e7a0 = -1;
+    
+    int32_t DWORD_00a3e7b4 = 0;
     
     std::vector<GFX::Image *> _menuImages;
     GFX::Image *_bkgImage = nullptr;
     
+    GFX::Image *_mapImage = nullptr;
+    
     static const std::vector<Common::Rect> _mainMenuBoxes;
     static const std::vector<Common::Rect> _saveMenuBoxes; 
     static const std::vector<Common::Rect> _newGameMenuBoxes; 
+    
+    static const std::vector<Common::Rect> tagRECT_ARRAY_00465ab4;
+    static const std::vector<Common::Rect> tagRECT_ARRAY_00465a54;
+    static const std::vector<Common::Rect> ScreenBox_ARRAY_0045b0ac;
+    
     
     static const int8_t EqLookUp1[8][6];
     static const int8_t EqLookUp2[4][8][6];
@@ -1057,6 +1192,8 @@ public:
     
     static const uint8_t PathGo[8][8];
     
+    static const std::array<MixInfo, 33> MixPotionsInfo;
+    
     int32_t _saveMenuBtnID = -1;
     
     std::array<ImagePlace, 100> _imgQueue1;
@@ -1069,6 +1206,8 @@ public:
     std::array<uint8_t, 7> DrawElm;
     
     std::array<GFX::Font *, 4> _Fonts;
+    
+    std::array<TQuestState, 300> QuestsState;
     
     bool _doQuit = false;
     

@@ -72,6 +72,11 @@ public:
         return this->at(p.x + p.y * _w);
     }
     
+    const T& At(const Point &p) const
+    {
+        return this->at(p.x + p.y * _w);
+    }
+    
     T& At(size_t n)
     {
         return this->at(n);

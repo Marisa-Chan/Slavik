@@ -20,12 +20,17 @@ Engine Engine::Instance;
     
 bool Engine::Process()
 {
-    _screenSize = System::GetResolution();
-    Common::Point bufsz((_screenSize.x * MAPVIEWW) / SCREENRESX, (_screenSize.y * MAPVIEWH) / SCREENRESY);
+    if (_screenSize != System::GetResolution())
+    {
+        Common::Point screensz = System::GetResolution();
+        Common::Point bufsz((screensz.x * MAPVIEWW) / SCREENRESX, (screensz.y * MAPVIEWH) / SCREENRESY);
 
-    GFXDrawer.SetBufferSize(GFX::BUF_0, bufsz);
-    GFXDrawer.SetBufferSize(GFX::BUF_1, bufsz);
-    GFXDrawer.SetBufferSize(GFX::BUF_2, bufsz);
+        GFXDrawer.SetBufferSize(GFX::BUF_0, bufsz);
+        GFXDrawer.SetBufferSize(GFX::BUF_1, bufsz);
+        GFXDrawer.SetBufferSize(GFX::BUF_2, bufsz);
+    }
+    
+    _screenSize = System::GetResolution();
     
     uint32_t start = SDL_GetTicks();
     if (Update())
@@ -56,6 +61,14 @@ bool Engine::Update()
         _camera.y -= 10;
     if (_KeyState[KEYFN_MAPDOWN])
         _camera.y += 10;
+    
+    if (_KeyQueue.empty())
+        _KeyCode = 0;
+    else
+    {
+        _KeyCode = _KeyQueue.front();
+        _KeyQueue.pop_front();
+    }
     
     if (_mouseDownPrev == 0)
         _mouseDownPrev = _mousePress;
@@ -88,6 +101,8 @@ bool Engine::Update()
     
     _mousePos = _mouseCurPos;
     _mouseMapPos = Common::Point(-1, -1);
+    
+    _uiMousePos = _mousePos * SCREENRES / _screenSize;
     
     
     
@@ -179,6 +194,8 @@ void Engine::Init(int gfxmode)
     
     _stateMode = STATEMD_MODE9;
     
+    DAT_00a3e790 = 4;
+    
     _mainMapChar = &_state.MapChar_ARRAY[0];
     _mainCharacter = & _state.Characters.at(_state.MapChar_ARRAY[0].CharacterIndex);
     
@@ -201,6 +218,8 @@ int Engine::EventsWatcher(void *, SDL_Event *event)
             auto it = Instance._KeyMap.find(event->key.keysym.scancode);
             if (it != Instance._KeyMap.end())
                 Instance._KeyState[it->second] = 1;
+            
+            Instance._KeyQueue.push_back(event->key.keysym.scancode);
         }
         break;
 
@@ -285,124 +304,51 @@ static bool incr = false;
 
 void Engine::Draw()
 {
+    MouseOnCharacter = nullptr;
+    MouseOnObject = nullptr;
     
+    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
+    //FUN_00429a94();
     
     GFXDrawer.Begin();
     
     GFXDrawer.SetOutBuffer(GFX::BUF_OFF);
     GFXDrawer.Clear();
     
-    //if (_stateMode == STATEMD_PLAY)
-    //{
-        GFXDrawer.SetVirtResolution();
-    GFXDrawer.SetModelViewMatrix(mat4x4f());
+    if ( _stateMode == STATEMD_PLAY )
+    {
+        if (_playScreenID == PLSCREEN_0 || _bTransparentMenu == 0)
+        {
+            GFXDrawer.SetVirtResolution();
+            GFXDrawer.SetModelViewMatrix(mat4x4f());
 
-    GFXDrawer.SetOutBuffer(GFX::BUF_2);
-    GFXDrawer.Clear();
-    GFXDrawer.SetOutBuffer(GFX::BUF_1);
-    GFXDrawer.Clear();
-    GFXDrawer.SetOutBuffer(GFX::BUF_0);
-    GFXDrawer.Clear();
-    
-    
-    //_counter+=5;
-    //printf("%d %d \n", winSize.x, winSize.y);
+            GFXDrawer.SetOutBuffer(GFX::BUF_2);
+            GFXDrawer.Clear();
+            GFXDrawer.SetOutBuffer(GFX::BUF_1);
+            GFXDrawer.Clear();
+            GFXDrawer.SetOutBuffer(GFX::BUF_0);
+            GFXDrawer.Clear();
 
-    DrawGame();
+            DrawGame();
+        }
+        
+        if (_playScreenID == PLSCREEN_MAP)
+            FillBkgRect(MAPRECT);
+        else if (_playScreenID == PLSCREEN_3)
+            DrawCharInfo();
+        else if (_playScreenID == PLSCREEN_7)
+            FUN_00431d70(0);
+        
+        if (_playScreenID == PLSCREEN_0 || _playScreenID == PLSCREEN_3)
+        {
+            if (DisplayInvOfCharID)
+                DrawInventory(&_state.Characters.at(DisplayInvOfCharID - 1), 0, !_bTransparentMenu);
+        }
+        
+        TextQueue(fmt::sprintf("Screen %d", _playScreenID), _Fonts[0], {0,0}, Common::Rect());
+    }
     
     GFXDrawer.SetFade(false);
-#if 0
-    static int k = 0, j = 0, i = 0;
-                
-    Common::Point pnt(700, 700);
-    int32_t si = Res.CharacterBases[0].Seq[k][j].FrameData[i].FrameID;
-    /*GFXDrawer.SetOutBuffer(1);
-    GFXDrawer.Clear();
-    GFXDrawer.DrawShadow( Res.CharacterBases[0].Shadows[si], pnt);
-    GFXDrawer.SetOutBuffer(0);
-    GFXDrawer.DrawOutBuffer(1);
-    mat4x4f Translate;
-    Translate.setTranslate(vec3f(-_camera.x, -_camera.y, 0));
-    GFXDrawer.SetModelViewMatrix(Translate);*/
-    GFXDrawer.SetOutBuffer(GFX::BUF_1);
-    GFXDrawer.DrawShadow( Res.CharacterBases[0].Shadows[si], pnt + Res.CharacterBases[0].Seq[k][j].FrameData[i].ShdOffset);
-    
-    GFXDrawer.SetOutBuffer(GFX::BUF_2);
-
-    GFXDrawer.Draw( Res.CharacterBases[0].Images[si], Res.CharBasePal[0], pnt + Res.CharacterBases[0].Seq[k][j].FrameData[i].ImgOffset);
-
-    pnt += Res.CharacterBases[0].Seq[k][j].FrameData[i].WpnOffset;
-    si = Res.CharacterEquip[4].Seq[k][j].FrameData[i].FrameID;
-    
-    GFXDrawer.SetOutBuffer(GFX::BUF_1);
-    GFXDrawer.DrawShadow( Res.CharacterEquip[4].Shadows[si], pnt + Res.CharacterEquip[4].Seq[k][j].FrameData[i].ShdOffset);
-    
-    GFXDrawer.SetOutBuffer(GFX::BUF_2);
-    GFXDrawer.Draw( Res.CharacterEquip[4].Images[si], Res.CharEquipPal[4], pnt + Res.CharacterEquip[4].Seq[k][j].FrameData[i].ImgOffset);
-    
-    i++;
-    if (i == Res.CharacterBases[0].Seq[k][j].FrmCount)
-    {
-        i = 0;
-        j++;
-        if (j == 8)
-        {
-            j = 0;
-            k++;
-            if (k == 10)
-            {
-                k = 0;
-                
-            }
-        }
-    }
-    
-    pnt.x = 200;
-    pnt.y = 200;
-    
-    static int k2 = 0, j2 = 0, i2 = 0;
-    static int aa = 0;
-    
-    i2++;
-    if (i2 == Res.DynObjects[14].Seq[k2][j2].FrmCount)
-    {
-        i2 = 0;
-        j2++;
-        if (j2 == 8)
-        {
-            j2 = 0;
-            k2++;
-            if (k2 == 6)
-            {
-                k2 = 0;
-                
-            }
-        }
-    }
-    
-    aa = (aa + 1) & 0xFF;
-    
-    si = Res.DynObjects[14].Seq[k2][j2].FrameData[i2].FrameID;
-    if (si > 0)
-    GFXDrawer.Draw( Res.DynObjects[14].Images[si], aa, pnt);
-    
-    for(auto &obj: _state.MapChar_ARRAY)
-    {
-        if ( obj.MapID == _currentMapID )
-        {
-            Character &ch = _state.Characters.at(obj.CharacterIndex);
-            if (ch.ClassID & CLASS_BIT40)
-            {
-                auto &dynobj = Res.DynObjects[ch.CharacterBase];
-                si = dynobj.Seq[ch.State][ch.Direction].FrameData[0].FrameID;
-                pnt.x = obj.field_0x14 * TileWh + (2 - (obj.field_0xc & 1)) * TileWhh;
-                pnt.y = obj.field_0xc * TileHh + TileHh;
-                GFXDrawer.Draw(dynobj.Images[si], ch.paletteOffset, pnt);
-            }
-        }
-    }
-    
-#endif
     GFXDrawer.SetOutBuffer(GFX::BUF_OFF);
     
     GFXDrawer.SetVirtResolution(Common::Point(SCREENRESX, SCREENRESY));
@@ -419,82 +365,100 @@ void Engine::Draw()
     GFXDrawer.DrawRect(GFXDrawer.GetBufferTex(GFX::BUF_2), outpos );
 
     
-    //else
+    
+    GFXDrawer.SetOutBuffer(GFX::BUF_OFF);
+    GFXDrawer.SetVirtResolution(Common::Point(SCREENRESX, SCREENRESY));
+    GFXDrawer.SetModelViewMatrix( mat4x4f() );
+
+    GFXDrawer.SetLinearFilter(true);
+
+    for(int32_t i = 0; i < _imgQueue1Count; ++i)
     {
-        
-        GFXDrawer.SetOutBuffer(GFX::BUF_OFF);
-        GFXDrawer.SetVirtResolution(Common::Point(SCREENRESX, SCREENRESY));
-        GFXDrawer.SetModelViewMatrix( mat4x4f() );
-        
-        GFXDrawer.SetLinearFilter(true);
-        
-        for(int32_t i = 0; i < _imgQueue1Count; ++i)
+        ImagePlace &im = _imgQueue1.at(i);
+        if (im.Img || im.PalImg)
         {
-            ImagePlace &im = _imgQueue1.at(i);
-            if (im.Img || im.PalImg)
+            if (im.Fade != vec3f())
+                GFXDrawer.SetFade(true, im.Fade);
+            else
+                GFXDrawer.SetFade(false);
+            
+            if (!im.Limits.IsEmpty())
             {
-                if (!im.Limits.IsEmpty())
-                {
-                    GFXDrawer.SetScissor(true, im.Limits);
-                    if (im.Pal != -1)
-                        GFXDrawer.Draw(im.PalImg, im.Pal, im.DrawPlace);
-                    else
-                        GFXDrawer.Draw(im.Img, im.DrawPlace);
-                    GFXDrawer.SetScissor(false);
-                }
+                GFXDrawer.SetScissor(true, im.Limits);
+                if (im.Pal != -1)
+                    GFXDrawer.Draw(im.PalImg, im.Pal, im.DrawPlace);
                 else
-                {
-                    if (im.Pal != -1)
-                        GFXDrawer.Draw(im.PalImg, im.Pal, im.DrawPlace);
-                    else
-                        GFXDrawer.Draw(im.Img, im.DrawPlace);
-                }
+                    GFXDrawer.Draw(im.Img, im.DrawPlace);
+                GFXDrawer.SetScissor(false);
+            }
+            else
+            {
+                if (im.Pal != -1)
+                    GFXDrawer.Draw(im.PalImg, im.Pal, im.DrawPlace);
+                else
+                    GFXDrawer.Draw(im.Img, im.DrawPlace);
             }
         }
-        
-        for(int32_t i = 0; i < _imgQueue2Count; ++i)
+    }
+
+    for(int32_t i = 0; i < _imgQueue2Count; ++i)
+    {
+        ImagePlace &im = _imgQueue2.at(i);
+        if (im.Img || im.PalImg)
         {
-            ImagePlace &im = _imgQueue2.at(i);
-            if (im.Img || im.PalImg)
+            if (im.Fade != vec3f())
+                GFXDrawer.SetFade(true, im.Fade);
+            else
+                GFXDrawer.SetFade(false);
+            
+            if (!im.Limits.IsEmpty())
             {
-                if (!im.Limits.IsEmpty())
-                {
-                    GFXDrawer.SetScissor(true, im.Limits);
-                    if (im.Pal != -1)
-                        GFXDrawer.Draw(im.PalImg, im.Pal, im.DrawPlace);
-                    else
-                        GFXDrawer.Draw(im.Img, im.DrawPlace);
-                    GFXDrawer.SetScissor(false);
-                }
+                GFXDrawer.SetScissor(true, im.Limits);
+                if (im.Pal != -1)
+                    GFXDrawer.Draw(im.PalImg, im.Pal, im.DrawPlace);
                 else
-                {
-                    if (im.Pal != -1)
-                        GFXDrawer.Draw(im.PalImg, im.Pal, im.DrawPlace);
-                    else
-                        GFXDrawer.Draw(im.Img, im.DrawPlace);
-                }
+                    GFXDrawer.Draw(im.Img, im.DrawPlace);
+                GFXDrawer.SetScissor(false);
+            }
+            else
+            {
+                if (im.Pal != -1)
+                    GFXDrawer.Draw(im.PalImg, im.Pal, im.DrawPlace);
+                else
+                    GFXDrawer.Draw(im.Img, im.DrawPlace);
             }
         }
-        
-        for(int32_t i = 0; i < _textQueueCount; ++i)
+    }
+    
+    GFXDrawer.SetFade(false);
+
+    for(int32_t i = 0; i < _textQueueCount; ++i)
+    {
+        TextPlace &tx = _textQueue.at(i);
+        if (!tx.Text.empty() && tx.Font)
         {
-            TextPlace &tx = _textQueue.at(i);
-            if (!tx.Text.empty() && tx.Font)
+            if (!tx.Limits.IsEmpty())
             {
-                if (!tx.Limits.IsEmpty())
-                {
-                    GFXDrawer.SetScissor(true, tx.Limits);
-                    GFXDrawer.DrawText(tx.Text, tx.Font, tx.DrawPlace);
-                    GFXDrawer.SetScissor(false);
-                }
-                else
-                    GFXDrawer.DrawText(tx.Text, tx.Font, tx.DrawPlace);
+                GFXDrawer.SetScissor(true, tx.Limits);
+                GFXDrawer.DrawText(tx.Text, tx.Font, tx.DrawPlace);
+                GFXDrawer.SetScissor(false);
             }
+            else
+                GFXDrawer.DrawText(tx.Text, tx.Font, tx.DrawPlace);
         }
-        
-        _imgQueue1Count = 0;
-        _imgQueue2Count = 0;
-        _textQueueCount = 0;
+    }
+
+    _imgQueue1Count = 0;
+    _imgQueue2Count = 0;
+    _textQueueCount = 0;
+    
+    if ( _stateMode == STATEMD_PLAY )
+    {
+        if (_playScreenID == PLSCREEN_MAP /*&& (DWORD_00a3e74c & 2)*/)
+        {
+            DWORD_00a3e74c &= ~2;
+            DrawMap(); //Draw map
+        }
     }
     
 
@@ -509,7 +473,7 @@ bool Engine::LoadMap(int32_t mapID, int32_t param)
     _objectsToLoadCount = 0;
     
     if (_playScreenID == PLSCREEN_MAP)
-        PlayChangeScreen(PLSCREEN_4);
+        PlayChangeScreen(PLSCREEN_MAP);
     
     printf("Incomplete %s\n", __PRETTY_FUNCTION__);
     if (_currentMap)
@@ -816,15 +780,15 @@ bool Engine::LoadMap(int32_t mapID, int32_t param)
 //    }
     
     
-    for (int32_t local_20 = 0; local_20 < _state.GS2ARRAYCount; ++local_20)
+    for (int32_t j = 0; j < _state.GS2ARRAYCount; ++j)
     {
-        GS2 &local_4c = _state.GS2ARRAY.at(local_20);
-        if (local_4c.MapID == _currentMapID) 
+        GS2 &warp = _state.GS2ARRAY.at(j);
+        if (warp.MapID == _currentMapID) 
         {
-            for (int32_t local_28 = local_4c.left; local_28 <= local_4c.right; ++local_28)
+            for (int32_t y = warp.WarpZone.top; y <= warp.WarpZone.bottom; ++y)
             {
-                for (int32_t local_24 = local_4c.up; local_24 <= local_4c.bottom; ++local_24)
-                    _currentMap->FootMap.At(local_28, local_24).Flags |= 0x1;
+                for (int32_t x = warp.WarpZone.left; x <= warp.WarpZone.right; ++x)
+                    _currentMap->FootMap.At(x, y).Flags |= 0x1;
             }
         }
     }
@@ -1624,9 +1588,9 @@ Engine::GameMap *Engine::LoadGameMap(int32_t mapID)
                 map->LightMap(i, j) = l->readU8();
         }
         
-        for(size_t i = 0; i < 80; ++i)
+        for(size_t j = 0; j < 320; ++j)
         {
-            for(size_t j = 0; j < 160; ++j)
+            for(size_t i = 0; i < 160; ++i)
                 map->LightMap2(i, j) = l->readU8();
         }
     }
@@ -1648,9 +1612,9 @@ vec3f Engine::CalculateLight()
     if (dayTime == 0) 
       _bLightEff = (System::rand() % 100) < 90;
     
-    auto mapLight = _mapsLights.find(_currentMapID);
+    auto mapLight = _dungeonMaps.find(_currentMapID);
     
-    if (mapLight != _mapsLights.end())
+    if (mapLight != _dungeonMaps.end())
         return mapLight->second;
     
     
@@ -1813,11 +1777,23 @@ void Engine::SetMusicOn(bool en)
 void Engine::PlayChangeScreen(int32_t screen)
 {
     printf("Incomplete %s\n", __PRETTY_FUNCTION__);
+    switch(screen)
+    {
+        case PLSCREEN_MAP:
+            UpdateMapImage();
+            break;
+    }
+    _playScreenID = screen;
 }
 
 void Engine::FUN_004292e4()
 {
-    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
+    DisplayInvOfCharID = DisplayInvOfCharID2;
+    if (DisplayInvOfCharID2 != 0)
+    {
+        CharInfoCharacter = &_state.Characters.at(DisplayInvOfCharID2 - 1);
+        FUN_0042f50c(CharInfoCharacter, 0);
+    }
 }
 
 void Engine::LoadUsedObjects()
@@ -2047,7 +2023,36 @@ Common::Point Engine::FUN_0043a000(Common::Point pos)
 
 void Engine::FUN_004290d8()
 {
-    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
+    DWORD_00a3e74c &= 0xfe;
+    
+    Character *chr = nullptr;
+    
+    if (_playScreenID == PLSCREEN_3)
+        chr = CharInfoCharacter;
+    else
+    {
+        chr = SelectedCharacters[0];
+        if (!SelectedCharacters[0])
+            chr = _mainCharacter;
+    }
+    
+    if (chr->field_0x12 == 0)
+        DrawElm[0] = 8;
+    else if (chr->field_0x12 == 1)
+        DrawElm[0] = 9;
+    else
+        DrawElm[0] = 16;
+    
+    if ((chr->field_0x3 & 4) == 0)
+        DrawElm[1] = 15;
+    else
+        DrawElm[1] = 10;
+    
+    DrawElm[2] = 14;
+    DrawElm[3] = 11;
+    DrawElm[4] = 7;
+    DrawElm[5] = 12;
+    DrawElm[6] = 13;
 }
 
 void Engine::UpdateMainMenu()
@@ -2056,7 +2061,7 @@ void Engine::UpdateMainMenu()
     
     ImgQueue1(_bkgImage, Common::Point(), Common::Rect(_screenSize));
             
-    int32_t id = GetMouseOnScreenBox(_mousePos, _mainMenuBoxes);
+    int32_t id = GetMouseOnScreenBox(_uiMousePos, _mainMenuBoxes);
     
     if (!_isGameStarted && (id < 2))
         id = -1;
@@ -2074,7 +2079,7 @@ void Engine::UpdateMainMenu()
                 _stateMode = STATEMD_PLAY;
                 _imgQueue2Count = 0;
                 LoadINTR();
-                PlayChangeScreen(-1);
+                PlayChangeScreen(PLSCREEN_0);
                 FUN_004292e4();
                 break;
                 
@@ -2097,14 +2102,14 @@ void Engine::UpdateMainMenu()
                 iVar8 = strlen(&System::TempString);
                 (&DAT_00a3e11f)[iVar8] = 0;
                 strcat(&DAT_0083df5c,&System::TempString);*/
-                _saveMenuBtnID = GetMouseOnScreenBox(_mousePos, _saveMenuBoxes);
+                _saveMenuBtnID = GetMouseOnScreenBox(_uiMousePos, _saveMenuBoxes);
                 SaveLoadMenuDraw(true);
                 break;
                 
             case MAINBTN_LOAD:
                 _stateMode = STATEMD_MODE4;
                 LoadSAVE();
-                _saveMenuBtnID = GetMouseOnScreenBox(_mousePos, _saveMenuBoxes);
+                _saveMenuBtnID = GetMouseOnScreenBox(_uiMousePos, _saveMenuBoxes);
                 SaveLoadMenuDraw(false);
                 break;
                 
@@ -2209,7 +2214,7 @@ void Engine::Update7()
     
     FUN_00429194(1);
     
-    int32_t boxid = GetMouseOnScreenBox(_mouseMove, _mainMenuBoxes);
+    int32_t boxid = GetMouseOnScreenBox(_uiMousePos, _mainMenuBoxes);
     
     if (!_isGameStarted && (boxid < 2))
         boxid = -1;
@@ -2251,7 +2256,7 @@ void Engine::Update8()
     DisplayInvOfCharID2 = 1;
     DisplayInvOfCharID = 1;
     HardComputeUnit = nullptr;
-    DAT_00a3e84c = 0;
+    MsgTextTimeout = 0;
     
     _counter = 0;
     
@@ -2302,7 +2307,7 @@ void Engine::Update8()
         _stateMode = STATEMD_PLAY;
         
         FUN_004290d8();
-        PlayChangeScreen(-1);
+        PlayChangeScreen(PLSCREEN_0);
         FUN_004292e4();
     }
 }
@@ -2336,15 +2341,114 @@ void Engine::OnMovieEnd()
 
 void Engine::FUN_00429194(int32_t)
 {
-    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
+    if (DAT_00a3e790 != 4)
+    {
+        DAT_00a3e790 = 4;
+        
+        if (InfTyp == 6)
+            InfPchar->ArmorWeapons = InfSvArmrWpn;
+        else if (InfTyp == 5)
+            InfPchar->Accessories = InfSvAccess;
+        else if (InfTyp == 32)
+        {
+            for(int32_t i = InfSvInv.size() - 1; i >= 0; --i)
+            {
+                if (i == 0 || InfSvInv[i])
+                {
+                    InfSvInv[i] = 0;
+                    
+                    for(int32_t j = 0; j < InfSvInv.size() - 1; ++j)
+                        InfPchar->Inventory[j + 1] = InfSvInv[j];
+                    
+                    InfPchar->Inventory[0] = InfItemID;
+                    break;
+                }
+            }
+        }
+        else
+            InfPchar->Arrows = InfItemID;
+        
+//        if ((param_1 != 0) && (Game::_stateMode == 0)) {
+//            if (Game::_playScreenID == 3) {
+//                Game::PlayChangeScreen(2);
+//            }
+//            if (Game::DisplayInvOfCharID != 0) {
+//                FUN_0042f50c(_state.Characters + Game::DisplayInvOfCharID + -1,0);
+//            }
+//        }
+    }
+}
+
+bool Engine::FUN_0041e96c()
+{
+    if (DAT_00a3e790 == 4)
+    {
+        if (DAT_00a3e7a0 == 0)
+            return false;
+        
+        FUN_00425104(&_state.Items[DAT_00a3e7a0]);
+        
+        if (CharInfoCharacter->Arrows == DAT_00a3e7a0)
+            FUN_0041e210(CharInfoCharacter, 1, DAT_00a3e7a0);
+        else
+        {
+            bool fnext = true;
+            for(int32_t i = 0; CharInfoCharacter->ArmorWeapons.size(); ++i)
+            {
+                if (CharInfoCharacter->ArmorWeapons[i] == DAT_00a3e7a0)
+                {
+                    FUN_0041e210(CharInfoCharacter, 6, DAT_00a3e7a0);
+                    fnext = false;
+                    break;
+                }
+            }
+            
+            if (fnext)
+            {
+                for(int32_t i = 0; CharInfoCharacter->Accessories.size(); ++i)
+                {
+                    if (CharInfoCharacter->Accessories[i] == DAT_00a3e7a0)
+                    {
+                        FUN_0041e210(CharInfoCharacter, 5, DAT_00a3e7a0);
+                        fnext = false;
+                        break;
+                    }
+                }
+            }
+            
+            if (fnext)
+                FUN_0041e210(CharInfoCharacter, 32, DAT_00a3e7a0);
+        }
+        
+        DAT_00a3e7a0 = 0;
+    }
+    else
+    {
+        DAT_00a3e790 = 4;
+        
+        if (InfTyp == 6)
+            InfPchar->ArmorWeapons = InfSvArmrWpn;
+        else if (InfTyp == 5)
+            InfPchar->Accessories = InfSvAccess;
+        else if (InfTyp == 32)
+            InfPchar->Inventory = InfSvInv;
+        else
+            InfPchar->Arrows = InfItemID;
+        
+        DAT_00a3e7a0 = InfItemID;
+    }
+    
+    PlayChangeScreen(PLSCREEN_3);
+    FUN_0042f50c(CharInfoCharacter, 0);
+    PlaySound(4, 0, 0, 0);
+    return true;
 }
 
 int32_t Engine::GetMouseOnScreenBox(Common::Point point, const std::vector<Common::Rect> &boxes)
 {
-    Common::Point ppoint(point.x * SCREENRESX / _screenSize.x, point.y * SCREENRESY / _screenSize.y);
     for(uint32_t i = 0; i < boxes.size(); ++i)
     {
-        if (boxes.at(i).IsIn(ppoint))
+        if (boxes.at(i).IsIn(point))
             return i;
     }
     return -1;
@@ -2363,7 +2467,7 @@ void Engine::MainMenuDraw(int32_t highlight)
     }
 }
 
-void Engine::ImgQueue1(GFX::Image *img, Common::Point pos, Common::Rect limits)
+void Engine::ImgQueue1(GFX::Image *img, Common::Point pos, Common::Rect limits, vec3f fade)
 {
     if (_imgQueue1Count < _imgQueue1.size())
     {
@@ -2373,12 +2477,13 @@ void Engine::ImgQueue1(GFX::Image *img, Common::Point pos, Common::Rect limits)
         place.DrawPlace = pos;
         place.Limits = limits;
         place.Pal = -1;
+        place.Fade = fade;
         
         _imgQueue1Count++;
     }
 }
 
-void Engine::ImgQueue2(GFX::Image *img, Common::Point pos, Common::Rect limits)
+void Engine::ImgQueue2(GFX::Image *img, Common::Point pos, Common::Rect limits, vec3f fade)
 {
     if (_imgQueue2Count < _imgQueue2.size())
     {
@@ -2388,12 +2493,13 @@ void Engine::ImgQueue2(GFX::Image *img, Common::Point pos, Common::Rect limits)
         place.DrawPlace = pos;
         place.Limits = limits;
         place.Pal = -1;
+        place.Fade = fade;
         
         _imgQueue2Count++;
     }
 }
 
-void Engine::ImgQueue1(GFX::PalImage *img, int32_t Pal, Common::Point pos, Common::Rect limits)
+void Engine::ImgQueue1(GFX::PalImage *img, int32_t Pal, Common::Point pos, Common::Rect limits, vec3f fade)
 {
     if (_imgQueue1Count < _imgQueue1.size())
     {
@@ -2403,12 +2509,13 @@ void Engine::ImgQueue1(GFX::PalImage *img, int32_t Pal, Common::Point pos, Commo
         place.DrawPlace = pos;
         place.Limits = limits;
         place.Pal = Pal;
+        place.Fade = fade;
         
         _imgQueue1Count++;
     }
 }
 
-void Engine::ImgQueue2(GFX::PalImage *img, int32_t Pal, Common::Point pos, Common::Rect limits)
+void Engine::ImgQueue2(GFX::PalImage *img, int32_t Pal, Common::Point pos, Common::Rect limits, vec3f fade)
 {
     if (_imgQueue2Count < _imgQueue2.size())
     {
@@ -2418,6 +2525,7 @@ void Engine::ImgQueue2(GFX::PalImage *img, int32_t Pal, Common::Point pos, Commo
         place.DrawPlace = pos;
         place.Limits = limits;
         place.Pal = Pal;
+        place.Fade = fade;
         
         _imgQueue2Count++;
     }

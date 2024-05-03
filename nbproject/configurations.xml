@@ -13,14 +13,19 @@
       <itemPath>game.cpp</itemPath>
       <itemPath>game_character.cpp</itemPath>
       <itemPath>game_data.cpp</itemPath>
+      <itemPath>game_input.cpp</itemPath>
       <itemPath>game_item.cpp</itemPath>
       <itemPath>game_locale.cpp</itemPath>
       <itemPath>game_loot.cpp</itemPath>
+      <itemPath>game_mixture_info.cpp</itemPath>
       <itemPath>game_newgame.cpp</itemPath>
       <itemPath>game_pathfind.cpp</itemPath>
       <itemPath>game_placeoff.cpp</itemPath>
       <itemPath>game_play.cpp</itemPath>
+      <itemPath>game_quest.cpp</itemPath>
+      <itemPath>game_soundres.cpp</itemPath>
       <itemPath>game_state.cpp</itemPath>
+      <itemPath>game_ui.cpp</itemPath>
       <itemPath>game_village.cpp</itemPath>
       <itemPath>gfx.cpp</itemPath>
       <itemPath>glfuncs.cpp</itemPath>
@@ -104,6 +109,7 @@
           <linkerLibItems>
             <linkerOptionItem>`pkg-config --libs sdl2`</linkerOptionItem>
             <linkerOptionItem>`pkg-config --libs opengl`</linkerOptionItem>
+            <linkerOptionItem>`pkg-config --libs SDL2_image`</linkerOptionItem>
           </linkerLibItems>
           <commandLine>-fsanitize=address</commandLine>
         </linkerTool>
@@ -162,6 +168,8 @@
       </item>
       <item path="game_data.cpp" ex="false" tool="1" flavor2="0">
       </item>
+      <item path="game_input.cpp" ex="false" tool="1" flavor2="0">
+      </item>
       <item path="game_item.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game_locale.cpp" ex="false" tool="1" flavor2="0">
@@ -169,6 +177,8 @@
       <item path="game_locale.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="game_loot.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_mixture_info.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game_newgame.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -178,7 +188,13 @@
       </item>
       <item path="game_play.cpp" ex="false" tool="1" flavor2="0">
       </item>
+      <item path="game_quest.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_soundres.cpp" ex="false" tool="1" flavor2="0">
+      </item>
       <item path="game_state.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_ui.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game_village.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -229,6 +245,7 @@
           <linkerLibItems>
             <linkerOptionItem>`pkg-config --libs sdl2`</linkerOptionItem>
             <linkerOptionItem>`pkg-config --libs opengl`</linkerOptionItem>
+            <linkerOptionItem>`pkg-config --libs SDL2_image`</linkerOptionItem>
           </linkerLibItems>
         </linkerTool>
       </compileType>
@@ -286,6 +303,8 @@
       </item>
       <item path="game_data.cpp" ex="false" tool="1" flavor2="0">
       </item>
+      <item path="game_input.cpp" ex="false" tool="1" flavor2="0">
+      </item>
       <item path="game_item.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game_locale.cpp" ex="false" tool="1" flavor2="0">
@@ -293,6 +312,8 @@
       <item path="game_locale.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="game_loot.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_mixture_info.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game_newgame.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -302,7 +323,13 @@
       </item>
       <item path="game_play.cpp" ex="false" tool="1" flavor2="0">
       </item>
+      <item path="game_quest.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_soundres.cpp" ex="false" tool="1" flavor2="0">
+      </item>
       <item path="game_state.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_ui.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game_village.cpp" ex="false" tool="1" flavor2="0">
       </item>

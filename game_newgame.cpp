@@ -276,7 +276,7 @@ void Engine::DrawNewGameChar()
 
 void Engine::UpdateNewGameMenu()
 {
-    int32_t id = GetMouseOnScreenBox(_mousePos, _newGameMenuBoxes);
+    int32_t id = GetMouseOnScreenBox(_uiMousePos, _newGameMenuBoxes);
     int32_t drawID = 0;
     int32_t drawTextID = -1;
     
@@ -433,7 +433,7 @@ void Engine::UpdateNewGameMenu()
             _mainCharacter->Metkost = 100;
             _mainCharacter->PlotnickoeDelo = 2;
             _mainCharacter->KuznechnoeDelo = 5;
-            _mainCharacter->field_0x12 = 1;
+            _mainCharacter->field_0x12 = ESLT_1;
             drawTextID = id;
             break;
             
