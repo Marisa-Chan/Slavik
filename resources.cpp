@@ -282,7 +282,7 @@ bool Resources::LoadGraphRes()
         uint32_t nextOff = graph->readU32L();
         nextOff += graph->tell();
         
-        Cursors.at(j) = LoadRL16BitImage(graph.get());
+        CursorImages.at(j) = LoadRL16BitImage(graph.get());
         
         graph->seek(nextOff, 0);
     }

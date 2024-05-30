@@ -94,7 +94,7 @@ int32_t Engine::FUN_004392f4()
         if (id > 119)
             return id;
         
-        if (DAT_00a3e870 < _uiMousePos.x && DAT_00a3e88c < _uiMousePos.y && _uiMousePos.y < MSGRECT.top)
+        if (_uiMousePos.x > DAT_00a3e870 && _uiMousePos.y > DAT_00a3e88c && _uiMousePos.y < MSGRECT.top)
             return ((_uiMousePos.x - DAT_00a3e870) / ItemInvSlotWidth) * 0x100 + 50;
     }
     
@@ -129,11 +129,19 @@ int32_t Engine::FUN_004392f4()
 
 void Engine::PlayProcessMouse()
 {
-    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
     int32_t retval = FUN_004392f4();
     
     if (DAT_00a3e704)
     {
+        int32_t id = retval >> 8;
+        if ( ((_mousePress & MOUSEB_L) && (retval & 0xff) == 100 && DAT_00a3e704 - 1 == qOut2[id].Q1ID) ||
+             SpeechBufferIndex == -1 ||
+             FUN_00429c28(SpeechBufferIndex) == 0 )
+        {
+                DAT_00a3e704 = 0;
+                qwsel1 = qOut2[id].Q1ID;
+                FUN_0041f18c(&quest_1.at(qwsel1), id);
+        }
         return;
     }
     
@@ -168,7 +176,7 @@ void Engine::PlayProcessMouse()
                     else
                     {
                         DAT_00a3e790 = 4;
-                        //FUN_004138c8((uint)DAT_00a3e520->Tile.y,(uint)DAT_00a3e520->Tile.x,DWORD_00a3e528);
+                        FUN_004138c8(InfPchar->Tile, InfItemID);
                     }
                 }
             }
@@ -222,7 +230,7 @@ void Engine::PlayProcessMouse()
                     FUN_004290ac(2, 14);
                     if (_playScreenID == PLSCREEN_MAP)
                     {
-                        _playScreenID = 0;
+                        _playScreenID = PLSCREEN_0;
                         FUN_004292e4();
                     }
                     else
@@ -311,13 +319,562 @@ void Engine::PlayProcessMouse()
             break;
             
             case 30:
-                
+            {
+                Character &pCVar13 = _state.Characters.at((retval >> 8) + _mainMapChar->CharacterIndex);
+                if (DAT_00a3e790 == 4)
+                {
+                    if ((pCVar13.ClassID & CLASS_BIT80) == 0 && pCVar13.State != CHSTATE_9 && pCVar13.State != CHSTATE_3)
+                    {
+                        if (_playScreenID != PLSCREEN_MAP && _playScreenID != PLSCREEN_2 && _playScreenID != PLSCREEN_1)
+                        {
+                            if (_playScreenID == PLSCREEN_7)
+                            {
+                                if (CharInfoCharacter != &pCVar13)
+                                {
+                                    for (int32_t itmId : int16_t_ARRAY_0083dc4c[1])
+                                    {
+                                        if (itmId)
+                                            FUN_00421d24(CharInfoCharacter, itmId);
+                                    }
+                                    
+                                    CharInfoCharacter = &pCVar13;
+                                    int16_t_ARRAY_0083dc4c[1] = pCVar13.Inventory;
+                                    int16_t_ARRAY_0083dd4c[0] = 0;
+                                    FUN_00431d70(0);
+                                }
+                            }
+                            else if (_playScreenID == PLSCREEN_3)
+                            {
+                                InvPos = 0;
+                                DAT_00a3e7a0 = 0;
+                                CharInfoCharacter = &pCVar13;
+                                PlayChangeScreen(PLSCREEN_3);
+                                FUN_0042f50c(CharInfoCharacter, 0);
+                                if (!IsSelectedCharacter(&pCVar13))
+                                {
+                                    SelectCharacter(&pCVar13);
+                                    PlayChangeScreen(PLSCREEN_0);
+                                }
+                                FUN_004290d8();
+                            }
+                            else
+                            {
+                                if (!IsSelectedCharacter(&pCVar13))
+                                {
+                                    SelectCharacter(&pCVar13);
+                                    if (DisplayInvOfCharID)
+                                    {
+                                        InvPos = 0;
+                                        DAT_00a3e7a0 = 0;
+                                        CharInfoCharacter = &pCVar13;
+                                        FUN_0042f50c(&pCVar13, 0);
+                                    }
+                                    PlayChangeScreen(PLSCREEN_0);
+                                    FUN_004290d8();
+                                }
+                                else
+                                {
+                                    if (pCVar13.Index + 1 == DisplayInvOfCharID)
+                                    {
+                                        DisplayInvOfCharID2 = 0;
+                                        DisplayInvOfCharID = 0;
+                                    }
+                                    else
+                                    {
+                                        InvPos = 0;
+                                        DAT_00a3e7a0 = 0;
+                                        CharInfoCharacter = &pCVar13;
+                                        FUN_0042f50c(&pCVar13, 0);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else if ((pCVar13.ClassID & CLASS_BIT80) == 0)
+                {
+                    if (InfPchar == &pCVar13)
+                        FUN_0042054c(&pCVar13);
+                    else
+                        FUN_004246f8(&pCVar13);
+                }
+                else
+                    FUN_0042054c(&pCVar13);
+            }
             break;
+            
+            case 40:
+            {
+                if (CheckKharUp(*CharInfoCharacter, KHAR_LEVEL))
+                {
+                    CharInfoCharacter->Level++;
+                    
+                    PlayChangeScreen(PLSCREEN_3);
+                    FUN_0042f50c(CharInfoCharacter, 0);
+                }
+                
+            }
+            break;
+            
+            case 41:
+            {
+                int32_t points = CheckKharUp(*CharInfoCharacter, KHAR_HARIZMA);
+                if (points)
+                {
+                    CharInfoCharacter->FreePoints -= points;
+                    CharInfoCharacter->Exp += points;
+                    CharInfoCharacter->BaseHarizm++;
+                    
+                    PlayChangeScreen(PLSCREEN_3);
+                    FUN_0042f50c(CharInfoCharacter, 0);
+                }
+            }
+            break;
+            
+            case 42:
+            {
+                int32_t points = CheckKharUp(*CharInfoCharacter, KHAR_SILA);
+                if (points)
+                {
+                    CharInfoCharacter->FreePoints -= points;
+                    CharInfoCharacter->Exp += points;
+                    CharInfoCharacter->BaseSila++;
+                    
+                    PlayChangeScreen(PLSCREEN_3);
+                    FUN_0042f50c(CharInfoCharacter, 0);
+                }
+            }
+            break;
+            
+            case 43:
+            {
+                int32_t points = CheckKharUp(*CharInfoCharacter, KHAR_LOVKOST);
+                if (points)
+                {
+                    CharInfoCharacter->FreePoints -= points;
+                    CharInfoCharacter->Exp += points;
+                    CharInfoCharacter->BaseLovkost++;
+                    
+                    PlayChangeScreen(PLSCREEN_3);
+                    FUN_0042f50c(CharInfoCharacter, 0);
+                }
+            }
+            break;
+            
+            case 44:
+            {
+                int32_t points = CheckKharUp(*CharInfoCharacter, KHAR_VINOSLIVOST);
+                if (points)
+                {
+                    CharInfoCharacter->FreePoints -= points;
+                    CharInfoCharacter->Exp += points;
+                    CharInfoCharacter->BaseVinoslivost++;
+                    
+                    PlayChangeScreen(PLSCREEN_3);
+                    FUN_0042f50c(CharInfoCharacter, 0);
+                }
+            }
+            break;
+            
+            case 45:
+            {
+                if ((CharInfoCharacter->field_0x3 & 2) == 0)
+                {
+                    CharInfoCharacter->field_0x3 |= 2;
+                    FUN_0041079c(CharInfoCharacter, 0);
+                }
+                else
+                {
+                    CharInfoCharacter->field_0x3 &= ~2;
+                }
+                
+                PlayChangeScreen(PLSCREEN_3);
+                FUN_0042f50c(CharInfoCharacter, 0);
+            }
+            break;
+            
+            case 50:
+            {
+                if (_playScreenID == PLSCREEN_7)
+                {
+                    int32_t fromPanel = retval >> 0x10;
+                    int32_t itmFromPos = (((retval >> 8) & 0xff) + int16_t_ARRAY_0083dd4c[fromPanel]) & 0x1f;
+                    if (int16_t_ARRAY_0083dc4c[fromPanel].at(itmFromPos) != 0)
+                    {
+                        int32_t to_panel = 0;
+                        
+                        if (fromPanel < 2)
+                            to_panel = 1 - fromPanel;
+                        else
+                            to_panel = 5 - fromPanel;
+                        
+                        for (int32_t itmToPos = 0; itmToPos < INVSIZE; itmToPos++)
+                        {
+                            if ( int16_t_ARRAY_0083dc4c[to_panel].at(itmToPos) == 0 )
+                            {
+                                int16_t_ARRAY_0083dc4c[to_panel].at(itmToPos) = int16_t_ARRAY_0083dc4c[fromPanel].at(itmFromPos);
+                                int16_t_ARRAY_0083dc4c[fromPanel].at(itmFromPos) = 0;
+
+                                for (to_panel = itmFromPos; to_panel < INVSIZE - 1; to_panel++)
+                                    int16_t_ARRAY_0083dc4c[fromPanel].at(to_panel) = int16_t_ARRAY_0083dc4c[fromPanel].at(to_panel + 1);
+
+                                int16_t_ARRAY_0083dc4c[fromPanel].back() = 0;
+                                FUN_00431d70(0);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if (DAT_00a3e790 == 7)
+                    {
+                        DAT_00a3e790 = 4;
+                    }
+                    else if (DAT_00a3e790 == 4)
+                    {
+                        int32_t idx = (_uiMousePos.x - DAT_00a3e870) / ItemInvSlotWidth + InvPos & 0x1f;
+                        int32_t itemId = CharInfoCharacter->Inventory.at(idx);
+                        if (itemId != 0 && itemId != DAT_00a3e7a0)
+                        {
+                            FUN_00425104(&_state.Items[itemId]);
+
+                            FUN_0041e210(CharInfoCharacter, 32, itemId);
+
+                            if (_playScreenID == PLSCREEN_3)
+                                PlayChangeScreen(PLSCREEN_3);
+                            FUN_0042f50c(CharInfoCharacter, 0);
+                        }
+                    }
+                    else
+                        FUN_004246f8(&_state.Characters.at(DisplayInvOfCharID - 1));
+                }
+            }
+            break;
+            
+            case 100:
+            {
+                int32_t questTxtId = retval >> 8;
+                qwsel1 = qOut2[questTxtId].Q1ID;
+                
+                if (quest_1[qwsel1].SoundId == -1)
+                {
+                    DAT_00a3e704 = 0;
+                    FUN_0041f18c(&quest_1.at(qwsel1), questTxtId);
+                }
+                else
+                {
+                    DAT_00a3e704 = qwsel1 + 1;
+                    SoundPlaySpeech(quest_1[qwsel1].SoundId);
+                }
+            }
+            break;
+            
+            case 120:
+            {
+                if (_playScreenID == PLSCREEN_7)
+                {
+                    int32_t invid = retval >> 8;
+                    int16_t_ARRAY_0083dd4c[invid]--;
+                    if (int16_t_ARRAY_0083dd4c[invid] < 0)
+                        int16_t_ARRAY_0083dd4c[invid] = 0;
+                    
+                    FUN_00431d70(-(invid + 1));
+                }
+                else
+                {
+                    InvPos--;
+                    if (InvPos < 0)
+                        InvPos = 0;
+                    
+                    FUN_0042f50c(CharInfoCharacter, -1);
+                }
+            }
+            break;
+            
+            case 121:
+            {
+                if (_playScreenID == PLSCREEN_7)
+                {
+                    int32_t local_20 = retval >> 8;
+                    
+                    if (FUN_0041eb9c(&int16_t_ARRAY_0083dc4c[local_20], 6, int16_t_ARRAY_0083dd4c[local_20]))
+                    {
+                        int16_t_ARRAY_0083dd4c[local_20]++;
+                        FUN_00431d70(local_20 + 1);
+                    }
+                }
+                else
+                {
+                    if (FUN_0041eb9c(&CharInfoCharacter->Inventory, (MAPVIEWW + 2 + ScrlBtnWidth * -2) / ItemInvSlotWidth, InvPos))
+                        InvPos++;
+                    
+                    FUN_0042f50c(CharInfoCharacter, 1);
+                }
+            }
+            break;
+            
+            case 200:
+            {
+                if (FUN_00420634(false))
+                {
+                    _playScreenID = PLSCREEN_0;
+                    FUN_004292e4();
+                }
+            }
+            break;
+            
+            case 201:
+            {
+                if (FUN_00420634(true))
+                {
+                    if (!PInteractChar)
+                    {
+                        if (DAT_00a3e76c == 0)
+                        {
+                            _playScreenID = PLSCREEN_0;
+                            FUN_004292e4();
+                        }
+                        else
+                            FUN_004170a0(&mapGS1.at(DAT_00a3e76c));
+                    }
+                    else
+                        FUN_00432fd0();
+                }
+            }
+            break;
+            
+            case 202:
+            {
+                if (retval > 202)
+                {
+                    if (DAT_00a3e7c4 - 1 <= DWORD_00a3e7b4)
+                        return;
+                    
+                    DWORD_00a3e7b4++;
+                }
+                else
+                {
+                    if (DWORD_00a3e7b4 == 0)
+                        return;
+                    
+                    DWORD_00a3e7b4--;
+                }
+                
+                PlayChangeScreen(PLSCREEN_2);
+            }
+            break;
+            
         }
     }
     else if (_mousePress & MOUSEB_R)
     {
+        if (DAT_00a3e790 == 7)
+            DAT_00a3e790 = 4;
+        else if (DAT_00a3e790 != 4)
+        {
+            FUN_00429194(1);
+            return;
+        }
         
+        switch(retval & 0xff)
+        {
+            case 0:
+            {
+                if (_playScreenID == PLSCREEN_0)
+                {
+                    Common::Point pnt = FUN_00439bdc(_mouseMapPos + _camera);
+                    
+                    if (!MouseOnCharacter && !MouseOnObject)
+                    {
+                        for (Character *chr : SelectedCharacters)
+                        {
+                            if (!chr)
+                                break;
+                            
+                            chr->MoveTile = pnt;
+                            chr->field2_0x2 = 0x48;
+                            chr->field17_0x13[1] = 0xff;
+                            chr->field_0x3 |= 0x40;
+                        }
+                    }
+                    else if (!MouseOnCharacter || MouseOnCharacter->MapCharID != _mainCharacter->MapCharID)
+                    {
+                        if (!MouseOnCharacter || 
+                             MouseOnCharacter->field96_0xd0 == -1 || 
+                             _KeyState[KEYFN_SHIFT] ||
+                            (_mainCharacter->field_0x3 & 4) != 0 )
+                        {
+                            for (Character *chr : SelectedCharacters)
+                            {
+                                if (!chr)
+                                    break;
+
+                                if (chr->field_0x12 == ESLT_1 &&
+                                    chr->ArmorWeapons[ESLT_1] &&
+                                    chr->Arrows != 0 && 
+                                   (chr->field_0x3 & 4) != 0 )
+                                {
+                                    if (!MouseOnCharacter)
+                                    {
+                                        if (_state.Items.at(chr->Arrows).SpecialID == 0)
+                                        {
+                                            chr->EnemyCharID = -(MouseOnObject->Index + 1);
+                                            chr->MoveTile = pnt;
+                                            chr->field2_0x2 = 0x44;
+                                            chr->field17_0x13[1] = 0xff;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        chr->EnemyCharID = MouseOnCharacter->Index + 1;
+                                        chr->field2_0x2 = 0x44;
+                                        chr->field17_0x13[1] = 0xff;
+                                    }
+                                }
+                                else if (!MouseOnCharacter)
+                                {
+                                    chr->MoveTile.y = pnt;
+                                    chr->field2_0x2 = 0x48;
+                                    chr->field17_0x13[1] = 0xff;
+                                    chr->field_0x3 |= 0x40;
+                                }
+                                else if ((chr->field_0x3 & 4) != 0)
+                                {
+                                    chr->EnemyCharID = MouseOnCharacter->Index + 1;
+                                    chr->field2_0x2 = 0x41;
+                                    chr->field17_0x13[1] = 0xff;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            DisplayInvOfCharID = 0;
+                            
+                            if (FUN_004364f0(MouseOnCharacter))
+                                PlayChangeScreen(PLSCREEN_1);
+                        }
+                    }
+                    else if (_KeyState[KEYFN_CTRL] == 0 || MouseOnCharacter->field96_0xd0 == -1)
+                    {
+                        if (_KeyState[KEYFN_SHIFT] == 0)
+                            SelectCharacter(MouseOnCharacter);
+                        else
+                        {
+                            if (IsSelectedCharacter(MouseOnCharacter))
+                                FUN_00439230(MouseOnCharacter);
+                            else
+                                SelectCharacter(MouseOnCharacter);
+                        }
+                        
+                        PlayChangeScreen(PLSCREEN_0);
+                        
+                        if (DisplayInvOfCharID2)
+                        {
+                            if (IsSelectedCharacter(MouseOnCharacter))
+                            {
+                                CharInfoCharacter = MouseOnCharacter;
+                                FUN_0042f50c(MouseOnCharacter, 0);
+                            }
+                            else
+                            {
+                                CharInfoCharacter = SelectedCharacters[0];
+                                if (SelectedCharacters[0])
+                                    FUN_0042f50c(SelectedCharacters[0], 0);
+                                else
+                                {
+                                    DisplayInvOfCharID2 = 0;
+                                    DisplayInvOfCharID = 0;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        DisplayInvOfCharID = 0;
+                        
+                        if (FUN_004364f0(MouseOnCharacter))
+                            PlayChangeScreen(PLSCREEN_1);
+                    }
+                }
+            }
+            break;
+            
+            case 30:
+            {
+                Character &chr = _state.Characters.at(_mainMapChar->CharacterIndex + (retval >> 8));
+                if ((chr.ClassID & CLASS_BIT80) == 0 && chr.State != CHSTATE_9 && chr.State != CHSTATE_3)
+                {
+                    if (_KeyState[KEYFN_CTRL] == 0 || chr.field96_0xd0 == -1)
+                    {
+                        FUN_00439230(&chr);
+                        
+                        if (chr.Index + 1 == DisplayInvOfCharID)
+                        {
+                            CharInfoCharacter = SelectedCharacters[0];
+                            if (CharInfoCharacter)
+                            {
+                                InvPos = 0;
+                                DAT_00a3e7a0 = 0;
+                                FUN_0042f50c(CharInfoCharacter, 0);
+                                FUN_004290d8();
+                            }
+                        }
+                        
+                        PlayChangeScreen(PLSCREEN_0);
+                    }
+                    else
+                    {
+                        DisplayInvOfCharID = 0;
+                        if (FUN_004364f0(&chr))
+                            PlayChangeScreen(PLSCREEN_1);
+                    }
+                }
+            }
+            break;
+            
+            case 50:
+            {
+                if (_playScreenID != PLSCREEN_7)
+                {
+                    int32_t itmIndex = ((_uiMousePos.x - DAT_00a3e870) / ItemInvSlotWidth + InvPos) & 0x1f;
+                    int32_t itmId = CharInfoCharacter->Inventory.at(itmIndex);
+                    
+                    if (itmId != 0)
+                    {
+                        ItemInfo &itm = _state.Items.at(itmId);
+                        switch(itm.TypeID)
+                        {
+                            case 0:
+                            case 1:
+                            case 2:
+                            case 3:
+                            case 4:
+                            case 5:
+                            case 12:
+                                FUN_00425104(&itm);
+                                FUN_0041e210(CharInfoCharacter, 32, itmId);
+                                FUN_0041e500(itm.TypeID);
+                                break;
+                                
+                            case 6:
+                                FUN_00425104(&itm);
+                                FUN_0041e210(CharInfoCharacter, 32, itmId);
+                                FUN_0041e778(0);
+                                break;
+                                
+                            case 9:
+                                FUN_0041db64(CharInfoCharacter, nullptr, &itm);
+                                break;
+                                
+                            case 11:
+                                FUN_00414e64(CharInfoCharacter, nullptr, &itm);
+                                break;
+                        }
+                    }
+                }
+            }
+            break;
+        }
     }
     else
     {
@@ -462,13 +1019,11 @@ void Engine::PlayProcessMouse()
             {
                 if (_playScreenID == PLSCREEN_7)
                 {
-    //                        iVar12 = (int)((uVar9 + iVar12 * -0x10000) - (uint)(iVar12 << 0xf < 0)) >> 0x10;
-    //                        local_1c = ((int)(uVar9 & 0xffff) >> 8) + (*(int *)(&DAT_0083dd4a + iVar12 * 2) >> 0x10) & 0x1f;
-    //                        local_20 = *(int *)(&DAT_0083dc4a + local_1c * 2 + iVar12 * 0x40) >> 0x10;
-    //                        if (local_20 == 0) {
-    //                            return;
-    //                        }
-    //                        PrintItemHint(_state.Items + local_20);
+                    int32_t fromPanel = retval >> 0x10;
+                    int32_t itmFromPos = (((retval >> 8) & 0xff) + int16_t_ARRAY_0083dd4c[fromPanel]) & 0x1f;
+                    int32_t itmId = int16_t_ARRAY_0083dc4c[fromPanel].at(itmFromPos);
+                    if (itmId)
+                        FUN_0042f9b8(GetItemHint( &_state.Items.at(itmId) ));
                     return;
                 }
                 
@@ -496,6 +1051,14 @@ void Engine::PlayProcessMouse()
         }
     }
 }
+
+
+bool Engine::FUN_00420634(bool p)
+{
+    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
+    return false;
+}
     
+
     
 }

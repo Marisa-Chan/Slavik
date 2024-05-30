@@ -678,4 +678,53 @@ std::string Engine::Character::GetCharHint()
 
 
 
+bool Engine::IsSelectedCharacter(Character *pchar)
+{
+    for(Character *chr : SelectedCharacters)
+    {
+        if (pchar == chr)
+            return true;
+    }
+    return false;
+}
+
+
+void Engine::SelectCharacter(Character *pchar)
+{    
+    if (_KeyState[KEYFN_SHIFT] == 0)
+    {
+        SelectedCharacters.fill(nullptr);
+        SelectedCharacters[0] = pchar;
+    }
+    else
+    {
+        for (int32_t i = 0; i < 10; ++i)
+        {
+            if (!SelectedCharacters[i])
+            {
+                SelectedCharacters[i] = pchar;
+                break;
+            }     
+        }
+    }
+    if (pchar == SelectedCharacters[0])
+        FUN_004290d8();
+}
+
+
+
+int32_t Engine::GetGroupMaxPlotnicLevel(MapChar *mchr)
+{
+    int32_t plotniclvl = 0;
+    for (int32_t i = 0; i < mchr->GroupSize; ++i)
+    {
+        Character &local_1c = _state.Characters.at(mchr->CharacterIndex + i);
+        
+        if (plotniclvl < local_1c.PlotnickoeDelo)
+            plotniclvl = local_1c.PlotnickoeDelo;
+    }
+    return plotniclvl;
+}
+
+
 }

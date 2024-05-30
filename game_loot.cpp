@@ -95,5 +95,48 @@ void Engine::FUN_0041093c(GS1 *loot)
 }
 
 
+bool Engine::FUN_004138c8(Common::Point tile, int32_t itemId)
+{
+    int32_t itmSlot = 0;
+    GS1 *gs = nullptr;
+    
+    if (_currentMap->FootMap.At(tile).Flags & 2)
+        gs = GetLootByTile(tile);
+    
+    if (gs)
+    {
+        for (itmSlot = 0; itmSlot < 20; ++itmSlot)
+        {
+            if ( gs->ItemID[itmSlot] != 0 )
+                break;
+        }
+        
+        if (itmSlot == 20)
+            return false;
+    }
+    else
+    {
+        if (mapGS1Count >= mapGS1.size())
+            return false;
+        
+        itmSlot = 0;
+        gs = &mapGS1.at(mapGS1Count);
+        
+        mapGS1Count++;
+        
+        *gs = GS1();
+        gs->Tile = tile;
+        gs->LootID = -1;
+        
+        _currentMap->FootMap.At(tile).Flags |= 2;
+    }
+    
+    gs->ItemID[itmSlot] = itemId;
+    gs->ImgID = GetLootImage(*gs);
+    gs->Pos = FUN_00439ba0(gs->Tile) - _menuImages.at(gs->ImgID)->GetSize() / 2;
+    return true;
+}
+
+
 
 };

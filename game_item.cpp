@@ -1042,6 +1042,65 @@ bool Engine::FUN_00414e64(Character *pchar, ItemInfo *itm1, ItemInfo *itm2)
     return true;
 }
 
+bool Engine::FUN_0042054c(Character *pchar)
+{
+    ItemInfo &itm2 = _state.Items.at(InfItemID);
+    
+    if (DAT_00a3e790 == 8)
+    {
+        if (FUN_0041db64(pchar, nullptr, &itm2))
+        {
+            if (itm2.TypeID != -1)
+                FUN_00429194(1);
+            
+            DAT_00a3e790 = 4;
+            return true;
+        }
+    }
+    else if (DAT_00a3e790 == 9 && itm2.TypeID == 11 && FUN_00414e64(pchar, nullptr, &itm2))
+    {
+        if (itm2.TypeID != -1)
+            FUN_00429194(1);
+        
+        DAT_00a3e790 = 4;
+        return true;
+    }
+    
+    FUN_0042f9b8(Locale::GameMessages[Locale::GMSM_UNUSABLE]);
+    FUN_00429194(1);
+    return false;
+}
+
+
+bool Engine::FUN_004246f8(Character *pchar)
+{
+    if ((pchar->CurrentVinoslivost * 1000) / 3 + 10000 < GetItemWeight(&_state.Items.at(InfItemID)) + GetCurrentWeight(pchar))
+    {
+        FUN_0042f9b8(Locale::GameMessages[Locale::GMSG_INV_OVERLOAD]);
+        FUN_00429194(1);
+        return false;
+    }
+    
+    if (!FUN_00424918(pchar, InfItemID))
+    {
+        FUN_0042f9b8(Locale::GameMessages[Locale::GMSG_INV_FULL]);
+        FUN_00429194(1);
+        return false;
+    }
+        
+    DAT_00a3e790 = 4;
+    if (_playScreenID == PLSCREEN_3)
+    {
+        PlayChangeScreen(PLSCREEN_3);
+    }
+    if (DisplayInvOfCharID != 0)
+    {
+        FUN_0042f50c(&_state.Characters.at(DisplayInvOfCharID - 1), 0);
+    }
+
+    return true;
+}
+
 
 
 

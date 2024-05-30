@@ -31,12 +31,16 @@ bool Engine::Process()
     }
     
     _screenSize = System::GetResolution();
+    _gameViewport = (MAPVIEW * _screenSize) / SCREENRES;
     
     uint32_t start = SDL_GetTicks();
     if (Update())
         return true;
     
     Draw();
+    
+    UpdateCursor();
+    
     
     uint32_t frmTime = SDL_GetTicks() - start;
     
@@ -159,8 +163,20 @@ void Engine::ShutdownWithMsg(const std::string &str)
     _doQuit = true;
 }
 
-void Engine::Init(int gfxmode)
+void Engine::CreateCursors()
 {
+    for(int32_t i = 0; i < 11; ++i)
+    {
+        
+        if (_cursors[i])
+            SDL_FreeCursor(_cursors[i]);
+        
+        _cursors[i] = SDL_CreateColorCursor(Res.CursorImages[i]->SW, 0, 0);
+    }
+}
+
+void Engine::Init(int gfxmode)
+{    
     _KeyMap.clear();
     _KeyMap[SDL_SCANCODE_LEFT] = KEYFN_MAPLEFT;
     _KeyMap[SDL_SCANCODE_RIGHT] = KEYFN_MAPRIGHT;
@@ -178,6 +194,8 @@ void Engine::Init(int gfxmode)
     Res.Load();
     
     GFXDrawer.SetPalettes(Res.Palettes);
+    
+    CreateCursors();
     
     for(int32_t i = 0; i < 4; ++i)
     {
@@ -332,7 +350,11 @@ void Engine::Draw()
             DrawGame();
         }
         
-        if (_playScreenID == PLSCREEN_MAP)
+        if (_playScreenID == PLSCREEN_1)
+            DrawQuestScreen();
+        else if (_playScreenID == PLSCREEN_2)
+            DrawJournal();
+        else if (_playScreenID == PLSCREEN_MAP)
             FillBkgRect(MAPRECT);
         else if (_playScreenID == PLSCREEN_3)
             DrawCharInfo();
@@ -342,7 +364,7 @@ void Engine::Draw()
         if (_playScreenID == PLSCREEN_0 || _playScreenID == PLSCREEN_3)
         {
             if (DisplayInvOfCharID)
-                DrawInventory(&_state.Characters.at(DisplayInvOfCharID - 1), 0, !_bTransparentMenu);
+                DrawInventory(&_state.Characters.at(DisplayInvOfCharID - 1), _invButton, !_bTransparentMenu);
         }
         
         TextQueue(fmt::sprintf("Screen %d", _playScreenID), _Fonts[0], {0,0}, Common::Rect());
@@ -798,10 +820,7 @@ bool Engine::LoadMap(int32_t mapID, int32_t param)
 
 
 void Engine::DrawGame()
-{
-    _gameViewport.x = (MAPVIEWW * _screenSize.x) / SCREENRESX;
-    _gameViewport.y = (MAPVIEWH * _screenSize.y) / SCREENRESY;
-    
+{    
     GFXDrawer.SetVirtResolution(_gameViewport);
     
     _outOff = -_camera;
@@ -2253,8 +2272,8 @@ void Engine::Update8()
     _ambientColor = 0;
     
     DAT_00a3e704 = 0;
-    DisplayInvOfCharID2 = 1;
-    DisplayInvOfCharID = 1;
+    DisplayInvOfCharID2 = _mainCharacter->Index + 1;
+    DisplayInvOfCharID = _mainCharacter->Index + 1;
     HardComputeUnit = nullptr;
     MsgTextTimeout = 0;
     
@@ -2393,7 +2412,7 @@ bool Engine::FUN_0041e96c()
         else
         {
             bool fnext = true;
-            for(int32_t i = 0; CharInfoCharacter->ArmorWeapons.size(); ++i)
+            for(int32_t i = 0; i < CharInfoCharacter->ArmorWeapons.size(); ++i)
             {
                 if (CharInfoCharacter->ArmorWeapons[i] == DAT_00a3e7a0)
                 {
@@ -2405,7 +2424,7 @@ bool Engine::FUN_0041e96c()
             
             if (fnext)
             {
-                for(int32_t i = 0; CharInfoCharacter->Accessories.size(); ++i)
+                for(int32_t i = 0; i < CharInfoCharacter->Accessories.size(); ++i)
                 {
                     if (CharInfoCharacter->Accessories[i] == DAT_00a3e7a0)
                     {
@@ -2878,6 +2897,108 @@ bool Engine::CheckTraceImage(GFX::PalImage *img, Common::Point drawPos)
         return false;
     
     return img->SW.At(imgPos) != 0;
+}
+
+void Engine::UpdateCursor()
+{
+    int32_t newCursor = DAT_00a3e790;
+
+    if ( _stateMode == STATEMD_PLAY &&
+        !_isPlayingVideo && 
+         _playScreenID == PLSCREEN_0 &&
+         DAT_00a3e790 == 4 &&
+         MAPRECT.IsInIncl(_uiMousePos) )
+    {
+        if (!DisplayInvOfCharID == 0 || _uiMousePos.y < DAT_00a3e88c - 1)
+        {
+            if (MouseOnObject != nullptr && 
+                CurrentVillage != nullptr &&
+                (MouseOnObject->unk3 & 1) != 0)
+            {
+                for (Character *chr : SelectedCharacters)
+                {
+                    if (!chr)
+                        break;
+                    
+                    if ((chr->ClassID & CLASS_BIT80) == 0 && chr->State != CHSTATE_9 && chr->State != CHSTATE_3)
+                    {
+                        if ((chr->field_0x3 & 4) != 0 && 
+                             chr->field_0x12 == ESLT_1 &&
+                             chr->ArmorWeapons[ESLT_1] != 0 && 
+                             chr->Arrows != 0 &&
+                             _state.Items.at(chr->Arrows).SpecialID == 0)
+                        {
+                            newCursor = 6;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            if (newCursor == DAT_00a3e790)
+            {
+                if (!MouseOnCharacter && _currentMap)
+                {
+                    Common::Point pnt = FUN_00439bdc(_mouseMapPos + _camera);
+                    GameMap::Cell &cell = _currentMap->FootMap.At(pnt);
+                    if ( (cell.Flags & 2) == 0 || cell.ID ||
+                         GetLootByTile(pnt)->unk2 < 0 )
+                    {
+                        if (cell.ID == 0)
+                            newCursor = DAT_00a3e790;
+                        else
+                            newCursor = 3;
+                    }
+                    else
+                        newCursor = 7;
+                }
+                else if (MouseOnCharacter->MapCharID == _mainCharacter->MapCharID)
+                {
+                    if (_KeyState[KEYFN_CTRL] == 0)
+                        newCursor = DAT_00a3e790;
+                    else
+                        newCursor = 5;
+                }
+                else
+                {
+                    for (Character *chr : SelectedCharacters)
+                    {
+                        if (!chr)
+                            break;
+
+                        if ((chr->ClassID & CLASS_BIT80) == 0 && chr->State != CHSTATE_9 && chr->State != CHSTATE_3)
+                        {
+                            if ((chr->field_0x3 & 4) != 0)
+                            {
+                                newCursor = 1;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (newCursor == DAT_00a3e790)
+                    {
+                        if ( MouseOnCharacter->field96_0xd0 == -1 || 
+                             _KeyState[KEYFN_SHIFT] || 
+                            (_mainCharacter->field_0x3 & 4) != 0 )
+                            newCursor = 3;
+                        else
+                            newCursor = 5;
+                    }
+                }
+            }
+        }
+        else
+            newCursor = DAT_00a3e790;
+    }
+    else
+        newCursor = DAT_00a3e790;
+    
+    if (newCursor != _curCursor)
+    {
+        _curCursor = newCursor;
+        SDL_SetCursor(_cursors.at(newCursor));
+    }
 }
 
 

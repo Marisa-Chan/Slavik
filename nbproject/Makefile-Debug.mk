@@ -36,6 +36,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/common/strutils.o \
+	${OBJECTDIR}/cp866.o \
 	${OBJECTDIR}/fmt/format.o \
 	${OBJECTDIR}/fmt/os.o \
 	${OBJECTDIR}/font.o \
@@ -53,6 +54,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/game_placeoff.o \
 	${OBJECTDIR}/game_play.o \
 	${OBJECTDIR}/game_quest.o \
+	${OBJECTDIR}/game_sound.o \
 	${OBJECTDIR}/game_soundres.o \
 	${OBJECTDIR}/game_state.o \
 	${OBJECTDIR}/game_ui.o \
@@ -92,6 +94,11 @@ ${OBJECTDIR}/common/strutils.o: common/strutils.cpp
 	${MKDIR} -p ${OBJECTDIR}/common
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I/usr/include -I/usr/include/c++/13.2.1 -I/usr/include/c++/13.2.1/x86_64-pc-linux-gnu -I. `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/common/strutils.o common/strutils.cpp
+
+${OBJECTDIR}/cp866.o: cp866.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I/usr/include -I/usr/include/c++/13.2.1 -I/usr/include/c++/13.2.1/x86_64-pc-linux-gnu -I. `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/cp866.o cp866.cpp
 
 ${OBJECTDIR}/fmt/format.o: fmt/format.cc
 	${MKDIR} -p ${OBJECTDIR}/fmt
@@ -177,6 +184,11 @@ ${OBJECTDIR}/game_quest.o: game_quest.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I/usr/include -I/usr/include/c++/13.2.1 -I/usr/include/c++/13.2.1/x86_64-pc-linux-gnu -I. `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_quest.o game_quest.cpp
+
+${OBJECTDIR}/game_sound.o: game_sound.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I/usr/include -I/usr/include/c++/13.2.1 -I/usr/include/c++/13.2.1/x86_64-pc-linux-gnu -I. `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_sound.o game_sound.cpp
 
 ${OBJECTDIR}/game_soundres.o: game_soundres.cpp
 	${MKDIR} -p ${OBJECTDIR}

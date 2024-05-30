@@ -114,12 +114,12 @@ public:
     static GFX::Image *LoadRL16BitImage(FSMgr::iFile *pfile);
     static GFX::Image *LoadFlameImage(FSMgr::iFile *pfile);
     static Common::PlaneVector<uint8_t> *LoadMask(FSMgr::File *pfile);
-   
+       
     
 public:
     Common::PlaneArray<SDL_Color, 256, 256> Palettes;
     
-    std::array<GFX::Image *, 11> Cursors;
+    std::array<GFX::Image *, 11> CursorImages;
     
     std::array<GFX::Image *, 512> Tiles;
     
@@ -138,6 +138,7 @@ public:
     
     Common::PlaneVector<uint8_t> *ScreenMask = nullptr;
     Common::PlaneVector<uint8_t> *MapMask = nullptr;
+    
     
 public:
     static Resources Res;

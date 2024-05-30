@@ -225,6 +225,22 @@ struct TRect
         
         return (left <= r.left) && (right >= r.right) && (top <= r.top) && (bottom >= r.bottom);
     }
+    
+    
+    template <typename K>
+    bool IsInIncl(K x, K y) const {
+        if( IsEmpty() )
+            return false;
+        
+        return (x >= left) && (x <= right) && (y >= top) && (y <= bottom);
+    }
+    
+    template <typename K>
+    bool IsInIncl(const TPoint<K> &p) const {
+            return IsInIncl(p.x, p.y);
+    }
+    
+    
 
     bool IsIntersects(const TRect &r) const {
         return (left < r.right) && (r.left < right) && (top < r.bottom) && (r.top < bottom);

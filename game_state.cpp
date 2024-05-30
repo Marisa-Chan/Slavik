@@ -1,6 +1,7 @@
 #include "game.h"
 #include "resources.h"
 #include "fmt/core.h"
+#include "cp866.h"
 
 namespace Game
 {
@@ -68,7 +69,7 @@ void Engine::Character::Load(FSMgr::iFile* pfile)
     field90_0xca = pfile->readS16L(); //ca
     Arrows = pfile->readS16L();     //cc
     field_0xce = pfile->readS16L(); //ce
-    field96_0xd0 = pfile->readS8(); //d0
+    field96_0xd0 = pfile->readU8(); //d0
     Flags = pfile->readU8();        //d1
     field98_0xd2 = pfile->readS8(); //d2
     field99_0xd3 = pfile->readS8(); //d3
@@ -84,7 +85,84 @@ void Engine::Character::Load(FSMgr::iFile* pfile)
     POS.y = pfile->readS32L();          //f0
     imgSize.x = pfile->readS16L();  //f4
     imgSize.y = pfile->readS16L();  //f6
-    pfile->seek(8, 1);                  //f8
+    field113_0xf8 = pfile->readS16L();  //f8
+    pfile->seek(6, 1);                  //fa
+    
+    if (field96_0xd0 == 0xff)
+        field96_0xd0 = -1;
+}
+
+void Engine::Character::CopyDataFrom(const Character &chr)
+{
+    State = chr.State;
+    Direction = chr.Direction;
+    field2_0x2 = chr.field2_0x2;
+    field_0x3 = chr.field_0x3;
+    ClassID = chr.ClassID;
+    MapCharID = chr.MapCharID;
+    EnemyCharID = chr.EnemyCharID;
+    Tile = chr.Tile;
+    MoveTile = chr.MoveTile;
+    Frame = chr.Frame;
+    field15_0x11 = chr.field15_0x11;
+    field_0x12 = chr.field_0x12;
+    field17_0x13 = chr.field17_0x13;
+    Level = chr.Level;
+    Gold = chr.Gold;
+    FreePoints = chr.FreePoints;
+    Exp = chr.Exp;
+    Fehtovanie = chr.Fehtovanie;
+    Trading = chr.Trading;
+    Metkost = chr.Metkost;
+    PlotnickoeDelo = chr.PlotnickoeDelo;
+    Medicine = chr.Medicine;
+    Identification = chr.Identification;
+    KuznechnoeDelo = chr.KuznechnoeDelo;
+    Armor = chr.Armor;
+    Otravlenie = chr.Otravlenie;
+    field62_0x52 = chr.field62_0x52;
+    field63_0x53 = chr.field63_0x53;
+    CurrentLovkost = chr.CurrentLovkost;
+    BaseLovkost = chr.BaseLovkost;
+    CurrentHarizm = chr.CurrentHarizm;
+    BaseHarizm = chr.BaseHarizm;
+    HP = chr.HP;
+    CurrentSila = chr.CurrentSila;
+    BaseSila = chr.BaseSila;
+    CurrentVinoslivost = chr.CurrentVinoslivost;
+    BaseVinoslivost = chr.BaseVinoslivost;
+    
+    ArmorWeapons = chr.ArmorWeapons;
+    
+    Inventory = chr.Inventory;
+    
+    Accessories = chr.Accessories;
+
+    field76_0xbc = chr.field76_0xbc;
+    field78_0xbe = chr.field78_0xbe;
+    field80_0xc0 = chr.field80_0xc0;
+    field82_0xc2 = chr.field82_0xc2;
+    CurrentBrn = chr.CurrentBrn;
+    CurrentUdr = chr.CurrentUdr;
+    CurrentVer = chr.CurrentVer;
+    field90_0xca = chr.field90_0xca;
+    Arrows = chr.Arrows;
+    field_0xce = chr.field_0xce;
+    field96_0xd0 = chr.field96_0xd0;
+    Flags = chr.Flags;
+    field98_0xd2 = chr.field98_0xd2;
+    field99_0xd3 = chr.field99_0xd3;
+    NameID = chr.NameID;
+    NickID = chr.NickID;
+    CharacterBase = chr.CharacterBase;
+    FrameCount = chr.FrameCount;
+    paletteOffset = chr.paletteOffset;
+    //chr.seek(8, 1);                  //dc
+    ViewPos = chr.ViewPos;
+    POS = chr.POS;
+    imgSize = chr.imgSize;
+    field113_0xf8 = chr.field113_0xf8;
+    //chr.seek(6, 1);
 }
 
 int32_t Engine::Character::GetMaxPartySize()
@@ -215,9 +293,9 @@ void Engine::Village::Load(FSMgr::iFile* pfile)
     
     unk1 = pfile->readS32L();
         
-    TimeSt1 = pfile->readS32L();
-    TimeSt2 = pfile->readS32L();
-    TimeSt3 = pfile->readS32L();
+    TimeSt[0] = pfile->readS32L();
+    TimeSt[1] = pfile->readS32L();
+    TimeSt[2] = pfile->readS32L();
 
     unk2 = pfile->readS32L();
         
@@ -240,6 +318,27 @@ void Engine::Village::Load(FSMgr::iFile* pfile)
 
     unk4 = pfile->readU8();
     SmithItemsCount = pfile->readS8();
+}
+
+Engine::GameState::GameState()
+{
+    for (int32_t i = 0; i < Items.size(); ++i)
+        Items.at(i).Index = i;
+    
+    for (int32_t i = 0; i < MapChar_ARRAY.size(); ++i)
+        MapChar_ARRAY.at(i).Index = i;
+    
+    for (int32_t i = 0; i < GS1ARRAY.size(); ++i)
+        GS1ARRAY.at(i).Index = i;
+         
+    for (int32_t i = 0; i < GS2ARRAY.size(); ++i)
+        GS2ARRAY.at(i).Index = i;
+    
+    for (int32_t i = 0; i < Characters.size(); ++i)
+        Characters.at(i).Index = i;
+    
+    for (int32_t i = 0; i < VillageState.size(); ++i)
+        VillageState.at(i).Index = i;
 }
     
 void Engine::GameState::Load(FSMgr::iFile *pfile)
@@ -291,6 +390,8 @@ void Engine::GameState::Load(FSMgr::iFile *pfile)
 
 void Engine::LoadGameState(int32_t stateID)
 {
+    HardComputeUnit = nullptr;
+    
     printf("Incomplete %s\n", __PRETTY_FUNCTION__);
     FSMgr::File file = FSMgr::Mgr::ReadFile(fmt::format("GAME.{:d}", stateID));
     
@@ -313,6 +414,119 @@ void Engine::LoadGameState(int32_t stateID)
             break;
         
         _state.GS2ARRAYCount++;
+    }
+    
+    _mainMapChar->unk1 = _mainCharacter->GetMaxPartySize();
+    
+    if (_mainMapChar->unk1 < _mainMapChar->GroupSize)
+        _mainMapChar->GroupSize = _mainMapChar->unk1;
+    
+    for (Village &vlg : _state.VillageState)
+    {
+        if (vlg.MapID)
+        {
+            vlg.Flags = 0x10;
+            
+            if (vlg.Bld2Num && _mainCharacter->CharacterBase != (_state.MapChar_ARRAY.at(vlg.ChiefCharId).unk5 & 3))
+                vlg.Flags |= 4;
+        }
+    }
+    
+    //Load quests info
+    file = FSMgr::Mgr::ReadFile(fmt::format("QUEST{:s}.RES", _langLiter));
+    for(int32_t i = 0; i < quest_1.size(); ++i)
+    {
+        TSq1 &sq = quest_1.at(i);
+        sq.Index = i;
+        sq.Load(&file);
+    }
+    
+    for(uint16_t &v : quest_2)
+        v = file->readU16L();
+    
+    std::vector<uint8_t> words(64000);
+    file->read(words.data(), 64000);
+    
+    for(TSq5 &q : quest_4)
+    {
+        uint16_t v = file->readU16L();
+        if (v != 0xFFFF)
+        {
+            q.id = v & 0x1FF;
+            q.Flags = v >> 12;
+        }
+        else
+            q.id = -1;
+    }
+    
+    for(TSq5 &q : quest_5)
+    {
+        uint16_t v = file->readU16L();
+        if (v != 0xFFFF)
+        {
+            q.id = v & 0x1FF;
+            q.Flags = v >> 12;
+        }
+        else
+            q.id = -1;
+    }
+    
+    std::vector<uint16_t> seq(60000);
+    for(uint16_t &v : seq)
+        v = file->readU16L();
+    
+    for(TQuestState &qs : QuestsState)
+        qs.Load(&file);
+    
+    //Construct texts
+    for(int32_t i = 0; i < 60000;)
+    {
+        int32_t id = i;
+        std::string tmpstr;
+        while( i < 60000 && seq[i] != 0xFFFF)
+        {
+            const uint8_t *s = words.data() + seq[i];
+            
+            if (i == id && seq[i] == 0)
+            {
+                int32_t j = i; 
+                while (j < 60000)
+                {
+                    if (seq[j] != 0)
+                        break;
+                    j++;
+                }
+                if (j >= 60000)
+                {
+                    i = 60000;
+                    break;
+                }
+            }
+            
+            if (!tmpstr.empty())
+            {
+                if ( s[0] > '@' || 
+                    (s[0] == '-' && s[1] == 0) ||
+                    (s[0] >= '0' && s[0] <= '9') )
+                    tmpstr += " ";
+            }
+            
+            for(int32_t cnt = 0; cnt < 1024 && *s != 0; ++cnt)
+            {
+                tmpstr += CP::cp866u8[*s];
+                s++;
+            }
+            
+            i++;
+        }
+        
+        if (!tmpstr.empty())
+        {
+            QuestTexts[id] = tmpstr;
+            //printf("%d %s\n", id, tmpstr.c_str());
+        }
+        
+        i++;
     }
 }
 

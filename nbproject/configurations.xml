@@ -8,6 +8,7 @@
         <itemPath>fmt/format.cc</itemPath>
         <itemPath>fmt/os.cc</itemPath>
       </logicalFolder>
+      <itemPath>cp866.cpp</itemPath>
       <itemPath>font.cpp</itemPath>
       <itemPath>fsmgr.cpp</itemPath>
       <itemPath>game.cpp</itemPath>
@@ -23,6 +24,7 @@
       <itemPath>game_placeoff.cpp</itemPath>
       <itemPath>game_play.cpp</itemPath>
       <itemPath>game_quest.cpp</itemPath>
+      <itemPath>game_sound.cpp</itemPath>
       <itemPath>game_soundres.cpp</itemPath>
       <itemPath>game_state.cpp</itemPath>
       <itemPath>game_ui.cpp</itemPath>
@@ -53,6 +55,7 @@
         <itemPath>fmt/xchar.h</itemPath>
       </logicalFolder>
       <itemPath>common/common.h</itemPath>
+      <itemPath>cp866.h</itemPath>
       <itemPath>font.h</itemPath>
       <itemPath>fsmgr.h</itemPath>
       <itemPath>game.h</itemPath>
@@ -122,6 +125,10 @@
       </item>
       <item path="common/strutils.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="cp866.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="cp866.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="fmt/args.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="fmt/chrono.h" ex="false" tool="3" flavor2="0">
@@ -189,6 +196,8 @@
       <item path="game_play.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game_quest.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_sound.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game_soundres.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -257,6 +266,10 @@
       </item>
       <item path="common/strutils.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="cp866.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="cp866.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="fmt/args.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="fmt/chrono.h" ex="false" tool="3" flavor2="0">
@@ -324,6 +337,8 @@
       <item path="game_play.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game_quest.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_sound.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game_soundres.cpp" ex="false" tool="1" flavor2="0">
       </item>

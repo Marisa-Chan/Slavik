@@ -1,5 +1,6 @@
 #include "game.h"
 #include "game_locale.h"
+#include "fmt/printf.h"
 
 namespace Game {
 
@@ -119,6 +120,7 @@ void Engine::ShowHideCharInfo()
             {
                 InvPos = 0;
                 DAT_00a3e7a0 = 0;
+                DisplayInvOfCharID = CharInfoCharacter->Index + 1;
                 PlayChangeScreen(PLSCREEN_3);
             }
         }
@@ -171,330 +173,241 @@ void Engine::DrawCharInfo()
         outp.y = (TxtPlace_ARRAY_00465754[2].y - TxtPlace_ARRAY_00465754[1].y + 14) * SCREENRESY  / 640;
         TextQueue(txt, _Fonts[0], outp, MAPRECT);
     }
-//    bVar15 = false;
-//    for (local_38 = 0; local_38 < 6; local_38 += 1) {
-//        iVar18 = *(int *)(CharInfoCharacter->ArmorWeapons + local_38 + -1) >> 0x10;
-//        if ((iVar18 != 0) && (iVar18 != DAT_00a3e7a0)) {
-//            pIVar1 = _state.Items + iVar18;
-//            iVar19._0_1_ = pIVar1->TypeID;
-//            iVar19._1_1_ = pIVar1->BonusID;
-//            iVar19._2_1_ = pIVar1->SpecialID;
-//            iVar19._3_1_ = pIVar1->InfoID;
-//            local_2c._0_2_ = ArmorWeaponInfo[iVar19 >> 0x18].unk6;
-//            local_2c._2_2_ = ArmorWeaponInfo[iVar19 >> 0x18].unk7;
-//            local_2c >>= 0x10;
-//            if (local_38 == 0) {
-//                if ((*(int *)((int)&CharInfoCharacter->MoveTile.x + 1) >> 0x18 != 2) || (CharInfoCharacter->ArmorWeapons[2] == 0)) {
-//                    bVar15 = true;
-//LAB_0042e30c:
-//                    local_20 = *(int *)(&DAT_004657b4 + *(int *)(&DAT_0046573c + local_38 * 4) * 0x10 + ScreenMode * 8) +
-//                               (int)((ItemInvSlotWidth + 1) - (uint)*(ushort *)(ImgSprite_ARRAY_006304b8[local_2c].pData + _bkgImage)) / 2
-//                    ;
-//                    ImgQueue2((int)(ImgSprite_ARRAY_006304b8[local_2c].pData + _bkgImage),
-//                              (int)GFX::pRawPalettes + ImgSprite_ARRAY_006304b8[local_2c].paletteOffset,local_20,
-//                              *(int *)(&DAT_004657b8 + ScreenMode * 8 + *(int *)(&DAT_0046573c + local_38 * 4) * 0x10),GScrOff.x,GScrOff.y
-//                              ,DAT_00a3e880,BottomPanelY);
-//                }
-//            }
-//            else if ((local_38 != 2) || (!bVar15)) goto LAB_0042e30c;
-//        }
-//    }
-//    iVar21._0_2_ = CharInfoCharacter->field48_0xca;
-//    iVar21._2_2_ = CharInfoCharacter->Arrows;
-//    local_2c = iVar21 >> 0x10;
-//    if ((local_2c != 0) && (local_2c != DAT_00a3e7a0)) {
-//        pIVar1 = _state.Items + local_2c;
-//        iVar22._0_1_ = pIVar1->TypeID;
-//        iVar22._1_1_ = pIVar1->BonusID;
-//        iVar22._2_1_ = pIVar1->SpecialID;
-//        iVar22._3_1_ = pIVar1->InfoID;
-//        iVar24._0_2_ = ArmorWeaponInfo[iVar22 >> 0x18].unk6;
-//        iVar24._2_2_ = ArmorWeaponInfo[iVar22 >> 0x18].unk7;
-//        local_2c = iVar24 >> 0x10;
-//        ImgQueue2((int)(ImgSprite_ARRAY_006304b8[local_2c].pData + _bkgImage),
-//                  (int)GFX::pRawPalettes + ImgSprite_ARRAY_006304b8[local_2c].paletteOffset,*(int *)(&DAT_00465804 + ScreenMode * 8),
-//                  *(int *)(&DAT_00465808 + ScreenMode * 8),GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//    }
-//    for (local_38 = 0; local_38 < 5; local_38 += 1) {
-//        local_2c = *(int *)(CharInfoCharacter->Inventory + local_38 + 0x1f) >> 0x10;
-//        if ((local_2c != 0) && (local_2c != DAT_00a3e7a0)) {
-//            pIVar1 = _state.Items + local_2c;
-//            iVar25._0_1_ = pIVar1->TypeID;
-//            iVar25._1_1_ = pIVar1->BonusID;
-//            iVar25._2_1_ = pIVar1->SpecialID;
-//            iVar25._3_1_ = pIVar1->InfoID;
-//            iVar3._0_2_ = AcessoriesInfo[iVar25 >> 0x18].Weight;
-//            iVar3._2_2_ = AcessoriesInfo[iVar25 >> 0x18].ImgID;
-//            local_2c = iVar3 >> 0x10;
-//            local_44 = (TxtPlace *)(ImgSprite_ARRAY_006304b8[local_2c].pData + _bkgImage);
-//            memcpy(&local_34,local_44,4);
-//            local_34 >>= 0x10;
-//            memcpy(local_14,local_44,2);
-//            ImgQueue2((int)(ImgSprite_ARRAY_006304b8[local_2c].pData + _bkgImage),
-//                      (int)GFX::pRawPalettes + ImgSprite_ARRAY_006304b8[local_2c].paletteOffset,
-//                      *(int *)(&DAT_00465814 + local_38 * 0x10 + ScreenMode * 8) - local_14[0] / 2,
-//                      *(int *)(&DAT_00465818 + local_38 * 0x10 + ScreenMode * 8) - local_34 / 2,GScrOff.x,GScrOff.y,DAT_00a3e880,
-//                      BottomPanelY);
-//        }
-//    }
-//    if (DAT_00a3e7a0 != 0) {
-//        local_2c = FUN_0042c870(_state.Items + DAT_00a3e7a0);
-//        local_44 = (TxtPlace *)(ImgSprite_ARRAY_006304b8[local_2c].pData + _bkgImage);
-//        memcpy(&local_34,local_44,4);
-//        local_34 >>= 0x10;
-//        memcpy(local_14,local_44,2);
-//        ImgQueue2((int)(ImgSprite_ARRAY_006304b8[local_2c].pData + _bkgImage),
-//                  (int)GFX::pRawPalettes + ImgSprite_ARRAY_006304b8[local_2c].paletteOffset,
-//                  *(int *)(&DAT_00465864 + ScreenMode * 8) - local_14[0] / 2,*(int *)(&DAT_00465868 + ScreenMode * 8) - local_34 / 2,
-//                  GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//    }
-//    local_44 = (TxtPlace *)(&TxtPlace_ARRAY_00465874[0].Lo + ScreenMode);
-//        // 0
-//    itoa(CharInfoCharacter->Exp,(char *)txt,10);
-//    local_20 = (local_44->Lo).x;
-//    local_1c = (local_44->Lo).y;
-//    local_44 = local_44 + 1;
-//    GFX::TextQueue((char *)txt,&Font3,local_20,local_1c,GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//        // 1
-//    itoa(*(int *)(CharInfoCharacter->field17_0x13 + 0x1d) >> 0x18,(char *)txt,10);
-//    local_20 = (local_44->Lo).x;
-//    local_1c = (local_44->Lo).y;
-//    local_44 = local_44 + 1;
-//    GFX::TextQueue((char *)txt,&Font3,local_20,local_1c,GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//    iVar4._0_2_ = CharInfoCharacter->BaseLovkost;
-//    iVar4._2_2_ = CharInfoCharacter->CurrentHarizm;
-//        // 2
-//    itoa(iVar4 >> 0x10,(char *)txt,10);
-//    local_20 = (local_44->Lo).x;
-//    local_1c = (local_44->Lo).y;
-//    local_44 = local_44 + 1;
-//    GFX::TextQueue((char *)txt,&Font3,local_20,local_1c,GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//        // 3
-//    iVar5._0_2_ = CharInfoCharacter->HP;
-//    iVar5._2_2_ = CharInfoCharacter->CurrentSila;
-//    itoa(iVar5 >> 0x10,(char *)txt,10);
-//    local_20 = (local_44->Lo).x;
-//    local_1c = (local_44->Lo).y;
-//    local_44 = local_44 + 1;
-//    GFX::TextQueue((char *)txt,&Font3,local_20,local_1c,GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//        // 4
-//    iVar6._0_2_ = CharInfoCharacter->field28_0x52;
-//    iVar6._2_2_ = CharInfoCharacter->CurrentLovkost;
-//    itoa(iVar6 >> 0x10,(char *)txt,10);
-//    local_20 = (local_44->Lo).x;
-//    local_1c = (local_44->Lo).y;
-//    local_44 = local_44 + 1;
-//    GFX::TextQueue((char *)txt,&Font3,local_20,local_1c,GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//    iVar7._0_2_ = CharInfoCharacter->BaseSila;
-//    iVar7._2_2_ = CharInfoCharacter->CurrentVinoslivost;
-//        // 5
-//    itoa(iVar7 >> 0x10,(char *)txt,10);
-//    local_20 = (local_44->Lo).x;
-//    local_1c = (local_44->Lo).y;
-//    local_44 = local_44 + 1;
-//    GFX::TextQueue((char *)txt,&Font3,local_20,local_1c,GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//    iVar8._0_2_ = CharInfoCharacter->BaseHarizm;
-//    iVar8._2_2_ = CharInfoCharacter->HP;
-//    iVar18 = (iVar8 >> 0x10) + 15;
-//    iVar19 = iVar18 >> 31;
-//        // 6
-//    itoa((int)((iVar18 + iVar19 * -0x10) - (uint)(iVar19 << 3 < 0)) >> 4,(char *)txt,10);
-//    local_20 = (local_44->Lo).x;
-//    local_1c = (local_44->Lo).y;
-//    local_44 = local_44 + 1;
-//    GFX::TextQueue((char *)txt,&Font3,local_20,local_1c,GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//    iVar9._0_2_ = CharInfoCharacter->CurrentHarizm;
-//    iVar9._2_2_ = CharInfoCharacter->BaseHarizm;
-//        // 7
-//    itoa(iVar9 >> 0x10,(char *)txt,10);
-//    local_20 = (local_44->Lo).x;
-//    local_1c = (local_44->Lo).y;
-//    local_44 = local_44 + 1;
-//    GFX::TextQueue((char *)txt,&Font3,local_20,local_1c,GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//        // 8
-//    iVar10._0_2_ = CharInfoCharacter->CurrentSila;
-//    iVar10._2_2_ = CharInfoCharacter->BaseSila;
-//    itoa(iVar10 >> 0x10,(char *)txt,10);
-//    local_20 = (local_44->Lo).x;
-//    local_1c = (local_44->Lo).y;
-//    local_44 = local_44 + 1;
-//    GFX::TextQueue((char *)txt,&Font3,local_20,local_1c,GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//    iVar11._0_2_ = CharInfoCharacter->CurrentLovkost;
-//    iVar11._2_2_ = CharInfoCharacter->BaseLovkost;
-//        // 9
-//    itoa(iVar11 >> 0x10,(char *)txt,10);
-//    local_20 = (local_44->Lo).x;
-//    local_1c = (local_44->Lo).y;
-//    local_44 = local_44 + 1;
-//    GFX::TextQueue((char *)txt,&Font3,local_20,local_1c,GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//    iVar12._0_2_ = CharInfoCharacter->CurrentVinoslivost;
-//    iVar12._2_2_ = CharInfoCharacter->BaseVinoslivost;
-//        // 10
-//    itoa(iVar12 >> 0x10,(char *)txt,10);
-//    local_20 = (local_44->Lo).x;
-//    local_1c = (local_44->Lo).y;
-//    local_44 = local_44 + 1;
-//    GFX::TextQueue((char *)txt,&Font3,local_20,local_1c,GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//    itoa((ushort)CharInfoCharacter->Metkost / 100,(char *)txt,10);
-//    local_20 = (local_44->Lo).x;
-//    local_1c = (local_44->Lo).y;
-//    local_44 = local_44 + 1;
-//    GFX::TextQueue((char *)txt,&Font3,local_20,local_1c,GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//    itoa((ushort)CharInfoCharacter->Fehtovanie / 100,(char *)txt,10);
-//    local_20 = (local_44->Lo).x;
-//    local_1c = (local_44->Lo).y;
-//    local_44 = local_44 + 1;
-//    GFX::TextQueue((char *)txt,&Font3,local_20,local_1c,GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//    itoa((uint)(ushort)CharInfoCharacter->Identification,(char *)txt,10);
-//    local_20 = (local_44->Lo).x;
-//    local_1c = (local_44->Lo).y;
-//    local_44 = local_44 + 1;
-//    GFX::TextQueue((char *)txt,&Font3,local_20,local_1c,GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//    itoa((uint)(ushort)CharInfoCharacter->Trading,(char *)txt,10);
-//    local_20 = (local_44->Lo).x;
-//    local_1c = (local_44->Lo).y;
-//    local_44 = local_44 + 1;
-//    GFX::TextQueue((char *)txt,&Font3,local_20,local_1c,GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//        // 15
-//    itoa((uint)(ushort)CharInfoCharacter->Medicine,(char *)txt,10);
-//    local_20 = (local_44->Lo).x;
-//    local_1c = (local_44->Lo).y;
-//    local_44 = local_44 + 1;
-//    GFX::TextQueue((char *)txt,&Font3,local_20,local_1c,GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//    itoa((uint)(ushort)CharInfoCharacter->KuznechnoeDelo,(char *)txt,10);
-//    local_20 = (local_44->Lo).x;
-//    local_1c = (local_44->Lo).y;
-//    local_44 = local_44 + 1;
-//    GFX::TextQueue((char *)txt,&Font3,local_20,local_1c,GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//    itoa((uint)(ushort)CharInfoCharacter->PlotnickoeDelo,(char *)txt,10);
-//    local_20 = (local_44->Lo).x;
-//    local_1c = (local_44->Lo).y;
-//    local_44 = local_44 + 1;
-//    GFX::TextQueue((char *)txt,&Font3,local_20,local_1c,GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//    iVar18 = Character::GetCurrentWeight(CharInfoCharacter);
-//    sprintf((int)txt,(byte *)"%4.1f",SUB81((double)iVar18 * 0.001,0));
-//    local_20 = (local_44->Lo).x;
-//    local_1c = (local_44->Lo).y;
-//    local_44 = local_44 + 1;
-//    GFX::TextQueue((char *)txt,&Font3,local_20,local_1c,GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//    iVar13._0_2_ = CharInfoCharacter->BaseSila;
-//    iVar13._2_2_ = CharInfoCharacter->CurrentVinoslivost;
-//    sprintf((int)txt,(byte *)"%4.1f",SUB81((double)(((iVar13 >> 0x10) * 1000) / 3 + 10000) * 0.001,0));
-//    local_20 = (local_44->Lo).x;
-//    local_1c = (local_44->Lo).y;
-//    local_44 = local_44 + 1;
-//    GFX::TextQueue((char *)txt,&Font3,local_20,local_1c,GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//        // 20
-//    iVar14._0_2_ = CharInfoCharacter->Armor;
-//    iVar14._2_2_ = CharInfoCharacter->Otravlenie;
-//    itoa(iVar14 >> 0x10,(char *)txt,10);
-//    local_20 = (local_44->Lo).x;
-//    local_1c = (local_44->Lo).y;
-//    local_44 = local_44 + 1;
-//    GFX::TextQueue((char *)txt,&Font3,local_20,local_1c,GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//    pbVar23 = txt;
-//    uVar16 = 10;
-//    iVar18 = Character::GetArmor(CharInfoCharacter);
-//        // 21
-//    itoa(iVar18,(char *)pbVar23,uVar16);
-//    local_20 = (local_44->Lo).x;
-//    local_1c = (local_44->Lo).y;
-//    local_44 = local_44 + 1;
-//    GFX::TextQueue((char *)txt,&Font3,local_20,local_1c,GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//    if (((CharInfoCharacter->Arrows == 0) || (*(int *)((int)&CharInfoCharacter->MoveTile.x + 1) >> 0x18 != 1)) ||
-//       (CharInfoCharacter->ArmorWeapons[1] == 0)) {
-//        pbVar23 = txt;
-//        uVar16 = 10;
-//        iVar18 = FUN_0041af48(CharInfoCharacter,0);
-//        // 22
-//        itoa(iVar18,(char *)pbVar23,uVar16);
-//    }
-//    else {
-//        pbVar23 = txt;
-//        uVar16 = 10;
-//        iVar18 = FUN_0041ade4(CharInfoCharacter);
-//        // 22
-//        itoa(iVar18,(char *)pbVar23,uVar16);
-//    }
-//    local_20 = (local_44->Lo).x;
-//    local_1c = (local_44->Lo).y;
-//    local_44 = local_44 + 1;
-//    GFX::TextQueue((char *)txt,&Font3,local_20,local_1c,GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//        // 23
-//    itoa(CharInfoCharacter->Gold,(char *)txt,10);
-//    local_20 = (local_44->Lo).x;
-//    local_1c = (local_44->Lo).y;
-//    local_44 = local_44 + 1;
-//    GFX::TextQueue((char *)txt,&Font3,local_20,local_1c,GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//        // 24
-//    itoa(CharInfoCharacter->FreePoints,(char *)txt,10);
-//    local_2c = (local_44->Lo).y;
-//    local_44 = (TxtPlace *)(ImgSprite_ARRAY_006304b8[171].pData + _bkgImage);
-//    memcpy(local_14,local_44,2);
-//    local_44 = (TxtPlace *)(&TxtPlace_ARRAY_00465754[0].Lo + ScreenMode);
-//    iVar18 = FUN_0043f821(&Font3,txt);
-//    local_20 = (local_44->Lo).x + (int)((uint)local_14[0] - iVar18) / 2;
-//    GFX::TextQueue((char *)txt,&Font3,local_20,local_2c,GScrOff.x,GScrOff.y,DAT_00a3e880,BottomPanelY);
-//    for (local_38 = 0; local_38 < 5; local_38 += 1) {
-//        local_20 = (local_44->Lo).x;
-//        local_1c = (local_44->Lo).y;
-//        local_44 = local_44 + 1;
-//        switch(local_38) {
-//        case 0:
-//            local_30 = 0;
-//            break;
-//        case 1:
-//            local_30 = 3;
-//            break;
-//        case 2:
-//            local_30 = 5;
-//            break;
-//        case 3:
-//            local_30 = 2;
-//            break;
-//        case 4:
-//            local_30 = 6;
-//        }
-//        local_30 = CheckKharUp(CharInfoCharacter,local_30);
-//        if (local_30 != 0) {
-//            if (local_38 == 0) {
-//                local_30 = 0;
-//            }
-//            else {
-//                pFVar20 = &Font3;
-//                iVar18 = local_20;
-//                iVar19 = local_1c;
-//                iVar21 = GScrOff.x;
-//                iVar22 = GScrOff.y;
-//                iVar24 = DAT_00a3e880;
-//                iVar25 = BottomPanelY;
-//                pcVar17 = itoa(local_30,(char *)txt,10);
-//                GFX::TextQueue(pcVar17,pFVar20,iVar18,iVar19,iVar21,iVar22,iVar24,iVar25);
-//                local_30 = 0x18;
-//            }
-//            ImgQueue2((int)(ImgSprite_ARRAY_006304b8[171].pData + _bkgImage),
-//                      (int)GFX::pRawPalettes + ImgSprite_ARRAY_006304b8[171].paletteOffset,local_20 + local_30,local_1c + 2,GScrOff.x,
-//                      GScrOff.y,DAT_00a3e880,BottomPanelY);
-//        }
-//    }
-//    if ((CharInfoCharacter->field_0x3 & 2) == 0) {
-//        local_38 = 0xa9;
-//    }
-//    else {
-//        local_38 = 0xaa;
-//    }
-//    piVar2 = &(local_44->Lo).y;
-//    local_20 = (local_44->Lo).x;
-//    iVar18 = local_38 * 8;
-//    local_44 = (TxtPlace *)piVar2;
-//    ImgQueue2((int)(ImgSprite_ARRAY_006304b8[local_38].pData + _bkgImage),
-//              (int)GFX::pRawPalettes + ImgSprite_ARRAY_006304b8[local_38].paletteOffset,local_20,*piVar2,GScrOff.x,GScrOff.y,DAT_00a3e880,
-//              BottomPanelY);
+    
+    static const std::array<Common::Point, 5> AWPos =
+    {{
+        //{208, 94},
+        {255, 126},
+        //{208, 22},
+        {255, 54},
+        //{280, 70},
+        {328, 103},
+        //{136, 70},
+        {182, 103},
+        //{172, 199},
+        {221, 233}
+    }};
+
+    static const std::array<int32_t, 6> AWInd = {{3, 4, 3, 0, 1, 2}};
+    
+    bool wpnDrawed = false;
+    for (int32_t i = 0; i < 6; ++i)
+    {
+        int32_t itemId = CharInfoCharacter->ArmorWeapons[i];
+        if (itemId && itemId != DAT_00a3e7a0)
+        {
+            ItemInfo &inf = _state.Items.at(itemId);
+            
+            bool draw = false;
+            if (i == 0)
+            {
+                if (CharInfoCharacter->field_0x12 != ESLT_2 || CharInfoCharacter->ArmorWeapons[ESLT_2] == 0)
+                {
+                    wpnDrawed = true;
+                    draw = true;                    
+                }
+            }
+            else if (i != 2 || !wpnDrawed)
+                draw = true;
+            
+            if (draw)
+                ImgQueue2(_menuImages.at( ArmorWeaponInfo.at(inf.InfoID).unk7 ),
+                          AWPos[ AWInd[i] ],
+                          MAPRECT);
+        }
+    }
+    
+    if (CharInfoCharacter->Arrows != 0 && CharInfoCharacter->Arrows != DAT_00a3e7a0)
+    {
+        //(245, 199)
+        constexpr const Common::Point ArrPos(295, 232);
+        ImgQueue2(_menuImages.at( ArmorWeaponInfo.at( _state.Items.at(CharInfoCharacter->Arrows).InfoID ).unk7 ),
+                  ArrPos,
+                  MAPRECT);
+    }
+    
+    static const std::array<Common::Point, 5> AccPos =
+    {{
+        //{181, 44},
+        {232, 74},
+        //{166, 157},
+        {214, 190},
+        //{317, 157},
+        {367, 190},
+        //{199, 182},
+        {248, 215},
+        //{284, 182}
+        {334, 215}
+    }};
+    
+    for (int32_t i = 0; i < 5; ++i)
+    {
+        int32_t itemId = CharInfoCharacter->Accessories[i];
+        if (itemId && itemId != DAT_00a3e7a0)
+        {
+            GFX::Image *img = _menuImages.at(  AcessoriesInfo.at( _state.Items.at(itemId).InfoID ).ImgID  );   
+            ImgQueue2(img, AccPos[i] - img->GetSize() / 2, MAPRECT);
+        }
+    }
+    
+    if (DAT_00a3e7a0)
+    {
+        GFX::Image *img = _menuImages.at( FUN_0042c870(&_state.Items.at(DAT_00a3e7a0)) );
+        //(167, 322)
+        constexpr const Common::Point slotPlace(215, 393);
+        ImgQueue2(img, slotPlace - img->GetSize() / 2, MAPRECT);
+    }
+    
+    constexpr const std::array<Common::Point, 25> txtPos =
+    {{
+    /*{413, 48},*/{519, 63},
+    /*{415, 68},*/{519, 86},
+    /*{532, 110},*/{665, 138},
+    /*{532, 126},*/{665, 158},
+    /*{532, 145},*/{665, 181},
+    /*{532, 162},*/{665, 203},
+    /*{310, 281},*/{388, 352},
+    /*{482, 110},*/{602, 138},
+    /*{482, 126},*/{602, 158},
+    /*{482, 145},*/{602, 181},
+    /*{482, 162},*/{602, 203},
+    /*{482, 179},*/{602, 224},
+    /*{482, 196},*/{602, 245},
+    /*{567, 220},*/{715, 275},
+    /*{567, 237},*/{715, 296},
+    /*{567, 254},*/{715, 318},
+    /*{567, 271},*/{715, 339},
+    /*{567, 288},*/{715, 360},
+    /*{470, 320},*/{588, 400},
+    /*{470, 340},*/{588, 425},
+    /*{310, 298},*/{388, 373},
+    /*{310, 315},*/{388, 394},
+    /*{310, 332},*/{388, 415},
+    /*{310, 349},*/{388, 436},
+    /*{575, 50}*/{700, 63}
+    }};
+
+    TextQueue(std::to_string(CharInfoCharacter->Exp), _Fonts[3], txtPos[0], MAPRECT);
+    TextQueue(std::to_string(CharInfoCharacter->Level), _Fonts[3], txtPos[1], MAPRECT);
+    
+    TextQueue(std::to_string(CharInfoCharacter->CurrentHarizm), _Fonts[3], txtPos[2], MAPRECT);
+    TextQueue(std::to_string(CharInfoCharacter->CurrentSila), _Fonts[3], txtPos[3], MAPRECT);
+    TextQueue(std::to_string(CharInfoCharacter->CurrentLovkost), _Fonts[3], txtPos[4], MAPRECT);
+    TextQueue(std::to_string(CharInfoCharacter->CurrentVinoslivost), _Fonts[3], txtPos[5], MAPRECT);
+    
+    TextQueue(std::to_string((CharInfoCharacter->HP + 15) / 16), _Fonts[3], txtPos[6], MAPRECT);
+    
+    TextQueue(std::to_string(CharInfoCharacter->BaseHarizm), _Fonts[3], txtPos[7], MAPRECT);
+    TextQueue(std::to_string(CharInfoCharacter->BaseSila), _Fonts[3], txtPos[8], MAPRECT);
+    TextQueue(std::to_string(CharInfoCharacter->BaseLovkost), _Fonts[3], txtPos[9], MAPRECT);
+    TextQueue(std::to_string(CharInfoCharacter->BaseVinoslivost), _Fonts[3], txtPos[10], MAPRECT);
+    
+    TextQueue(std::to_string(CharInfoCharacter->Metkost / 100), _Fonts[3], txtPos[11], MAPRECT);
+    TextQueue(std::to_string(CharInfoCharacter->Fehtovanie / 100), _Fonts[3], txtPos[12], MAPRECT);
+    TextQueue(std::to_string(CharInfoCharacter->Identification), _Fonts[3], txtPos[13], MAPRECT);
+    TextQueue(std::to_string(CharInfoCharacter->Trading), _Fonts[3], txtPos[14], MAPRECT);   
+    TextQueue(std::to_string(CharInfoCharacter->Medicine), _Fonts[3], txtPos[15], MAPRECT);
+    TextQueue(std::to_string(CharInfoCharacter->KuznechnoeDelo), _Fonts[3], txtPos[16], MAPRECT);
+    TextQueue(std::to_string(CharInfoCharacter->PlotnickoeDelo), _Fonts[3], txtPos[17], MAPRECT);
+    TextQueue(fmt::sprintf("%4.1f", (float)GetCurrentWeight(CharInfoCharacter) * 0.001), _Fonts[3], txtPos[18], MAPRECT);
+    TextQueue(fmt::sprintf("%4.1f", ((CharInfoCharacter->CurrentVinoslivost * 1000) / 3 + 10000) * 0.001), _Fonts[3], txtPos[19], MAPRECT);
+    TextQueue(std::to_string(CharInfoCharacter->Otravlenie), _Fonts[3], txtPos[20], MAPRECT);
+    TextQueue(std::to_string(GetArmor(CharInfoCharacter)), _Fonts[3], txtPos[21], MAPRECT);
+
+    if (CharInfoCharacter->Arrows == 0 || CharInfoCharacter->field_0x12 != ESLT_1 || CharInfoCharacter->ArmorWeapons[ESLT_1] == 0)
+        TextQueue(std::to_string(FUN_0041af48(CharInfoCharacter, 0)), _Fonts[3], txtPos[22], MAPRECT);
+    else
+        TextQueue(std::to_string(FUN_0041ade4(CharInfoCharacter)), _Fonts[3], txtPos[22], MAPRECT);
+
+    TextQueue(std::to_string(CharInfoCharacter->Gold), _Fonts[3], txtPos[23], MAPRECT);
+    
+    constexpr const std::array<Common::Point, 6> upPos =
+    {{
+    /*{578, 70},*/{722, 89},
+    /*{573, 110},*/{716, 138},
+    /*{573, 126},*/{716, 158},
+    /*{573, 145},*/{716, 181},
+    /*{573, 162},*/{716, 203},
+    /*{515, 303}*/{644, 379}
+    }};
+    
+    std::string tmp = std::to_string(CharInfoCharacter->FreePoints);
+    Common::Point p(upPos[0].x - (_menuImages.at(171)->GetSize().x - _Fonts[3]->StringWidth(tmp)) / 2,
+                    txtPos[24].y);
+    
+    TextQueue(tmp, _Fonts[3], p, MAPRECT);
+    
+    for (int32_t i = 0; i < 5; ++i)
+    {
+        int32_t points = 0;
+        switch(i)
+        {
+        case 0:
+            points = CheckKharUp(*CharInfoCharacter, KHAR_LEVEL);
+            break;
+            
+        case 1:
+            points = CheckKharUp(*CharInfoCharacter, KHAR_HARIZMA);
+            break;
+            
+        case 2:
+            points = CheckKharUp(*CharInfoCharacter, KHAR_SILA);
+            break;
+            
+        case 3:
+            points = CheckKharUp(*CharInfoCharacter, KHAR_LOVKOST);
+            break;
+            
+        case 4:
+            points = CheckKharUp(*CharInfoCharacter, KHAR_VINOSLIVOST);
+            break;
+        }
+        
+        if (points)
+        {
+            if (i == 0)
+                ImgQueue2(_menuImages.at(171), upPos[i] + Common::Point(0, 2), MAPRECT);
+            else
+            {
+                TextQueue(std::to_string(points), _Fonts[3], upPos[i], MAPRECT);
+                ImgQueue2(_menuImages.at(171), upPos[i] + Common::Point(24, 2), MAPRECT);
+            }
+        }
+    }
+    
+    if ((CharInfoCharacter->field_0x3 & 2) == 0)
+        ImgQueue2(_menuImages.at(169), upPos[5], MAPRECT);
+    else
+        ImgQueue2(_menuImages.at(170), upPos[5], MAPRECT);
 }
 
 void Engine::DrawJournal()
 {
+    FillBkgRect(MAPRECT);
+    //(114, 0)
+    constexpr const Common::Point pimg(144, 0);
+    ImgQueue2(_menuImages.at(1), pimg, MAPRECT);
     
+    //485
+    const int32_t wi = 606;
+    //(133, 20)
+    Common::Point pos = Common::Point(166, 25);
+    
+    DAT_00a3e7c4 = 0;
+    for (int32_t i = 0; i < 300; ++i)
+    {
+        if ((QuestsState[i].State & 0x80) && QuestsState[i].QuestID != 0xffff)
+        {
+            DAT_00a3e7c4++;
+            if (DAT_00a3e7c4 > DWORD_00a3e7b4)
+            {
+                
+                pos.y = PlaceTextWidth(FUN_004363e8(QuestsState[i].QuestID), _Fonts[3], pos, wi) + 3;
+                if (pos.y >= DAT_00a3e88c - 45)
+                    break;
+            }
+        }
+    }
 }
 
 bool Engine::FUN_0041e500(int32_t slot)
@@ -727,6 +640,33 @@ bool Engine::FUN_00424918(Character *pchar, int32_t itemid)
         }
     }
     return false;
+}
+
+bool Engine::FUN_0041eb9c(std::array<int16_t, INVSIZE> *inv, int32_t p1, int32_t p2)
+{
+    if (p2 + p1 >= INVSIZE)
+        return false;
+    
+    if (inv->at(p2 + p1) == DAT_00a3e7a0 || inv->at(p2 + p1) == 0)
+        return false;
+
+    return true;
+}
+
+int32_t Engine::FUN_0041ade4(Character *pchar)
+{
+    const WeapArmorItemInfo &bow = ArmorWeaponInfo.at(  _state.Items.at(pchar->ArmorWeapons[ESLT_1]).InfoID  );
+    const WeapArmorItemInfo &arrow = ArmorWeaponInfo.at(  _state.Items.at(pchar->Arrows).InfoID  );
+    
+    int32_t dmg = bow.Dmg * arrow.Dmg;
+    if (pchar->CurrentUdr)
+    {
+        if ((pchar->Flags & 2) == 0)
+            dmg = pchar->CurrentUdr;
+        else
+            dmg += pchar->CurrentUdr;
+    }
+    return dmg;
 }
 
 }

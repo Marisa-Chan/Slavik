@@ -26,6 +26,7 @@ constexpr const Common::Point SCREENRES = Common::Point(SCREENRESX, SCREENRESY);
 
 constexpr const int32_t MAPVIEWW = 660;
 constexpr const int32_t MAPVIEWH = 556;
+constexpr const Common::Point MAPVIEW = Common::Point(MAPVIEWW, MAPVIEWH);
 
 constexpr const int32_t TILEMAXW = 80;
 constexpr const int32_t TILEMAXH = 160;
@@ -51,6 +52,8 @@ constexpr const int32_t MAXPATHITER = 0x4000;
 
 class Engine
 {
+public:
+    typedef int32_t (Game::Engine::*TQuestFunc)();
 public:
     enum KEYFN
     {
@@ -192,6 +195,16 @@ public:
         DIR_7 = 7,
     };
     
+    enum VJOB
+    {
+        VJOB_NO = 0,
+        VJOB_CHIEF = 1,
+        VJOB_MEDIC = 2,
+        VJOB_TRADER = 3,
+        VJOB_SMITH = 4,
+        VJOB_VOEVODA = 5
+    };
+    
 public:
     
     
@@ -310,7 +323,7 @@ public:
         int16_t field90_0xca;
         int16_t Arrows;
         int16_t field_0xce;
-        int8_t field96_0xd0;
+        int16_t field96_0xd0; //uint8_t
         uint8_t Flags;
         int8_t field98_0xd2;
         int8_t field99_0xd3;
@@ -333,8 +346,7 @@ public:
         Common::Point imgSize;
         //int16_t field111_0xf4;
         //int16_t field112_0xf6;
-        uint8_t field113_0xf8;
-        uint8_t field114_0xf9;
+        uint16_t field113_0xf8;
         uint8_t field115_0xfa;
         uint8_t field116_0xfb;
         uint8_t field117_0xfc;
@@ -352,6 +364,8 @@ public:
         
         inline void RecalcViewPos(Common::Point offset)
             { ViewPos = offset + POS + imgOffset; }
+        
+        void CopyDataFrom(const Character &chr);
     };
     
     struct MapChar
@@ -495,9 +509,7 @@ public:
         
         int32_t unk1 = 0;
         
-        int32_t TimeSt1 = 0;
-        int32_t TimeSt2 = 0;
-        int32_t TimeSt3 = 0;
+        int32_t TimeSt[3];
         
         int32_t unk2 = 0;
         
@@ -585,6 +597,8 @@ public:
         
         std::array<Village, 20> VillageState;
         
+        GameState();
+        
         void Load(FSMgr::iFile *pfile);
     };
     
@@ -661,6 +675,29 @@ public:
     {
         int32_t State = 0;
         int32_t QuestID = -1;
+        
+        void Load(FSMgr::File *pfile);
+    };
+    
+    struct TSq1
+    {
+        int32_t Index = -1;
+        
+        int32_t TxtId = 0;
+        int32_t QwNext = 0;
+        int32_t q4id = 0;
+        int32_t SoundId = 0;
+        int32_t unk1 = 0;
+        int32_t unk2 = 0;
+        int32_t unk3 = 0;
+        
+        void Load(FSMgr::File *pfile);
+    };
+    
+    struct TSq5
+    {
+        int16_t id = -1;
+        uint8_t Flags = 0;
     };
     
 public:
@@ -669,6 +706,10 @@ public:
     {
         for(int32_t i = 0; i < mapGS1.size(); ++i)
             mapGS1[i].Index = i;
+        
+        _cursors.fill(nullptr);
+        
+        quest_2.fill(0);
     }
     
     bool Process();
@@ -678,7 +719,12 @@ public:
     
     static int EventsWatcher(void *, SDL_Event *event);
     
+    
+    void CreateCursors();
+    
     void Draw();
+    
+    void UpdateCursor();
     
     void DrawGame();
     
@@ -705,7 +751,7 @@ public:
     void ImgQueue2(GFX::Image *img, Common::Point pos, Common::Rect limits, vec3f fade = vec3f());
     void ImgQueue1(GFX::PalImage *img, int32_t Pal, Common::Point pos, Common::Rect limits, vec3f fade = vec3f());
     void ImgQueue2(GFX::PalImage *img, int32_t Pal, Common::Point pos, Common::Rect limits, vec3f fade = vec3f());
-    void TextQueue(const std::string &text, GFX::Font *font, Common::Point pos, Common::Rect limits);
+    void TextQueue(const std::string &text, GFX::Font *font, Common::Point pos, Common::Rect limits = Common::Rect());
     int32_t PlaceTextWidth(const std::string &text, GFX::Font *font, Common::Point pos, int32_t width);
     std::string GetStrToken(const std::string &text);
     
@@ -820,7 +866,6 @@ public:
     bool FUN_0041f258(Character *pchar);
     void FUN_00421bb8(Character *pchar);
     void FUN_004110ec(Character *pchar);
-    int FUN_00434c90(int32_t );    
     void MapObjectsUpdateFrames();
     void FUN_0042d574(Character *pchar);
     vec3f FUN_0042c914(Character *pchar, ItemInfo *itm);
@@ -867,6 +912,8 @@ public:
     int32_t FUN_00439aa4(Common::Point p1, Common::Point p2);
     int32_t FUN_0041130c(Character *pchar, Common::Point t, int32_t chIndex);
     
+    int32_t GetGroupMaxPlotnicLevel(MapChar *mchr);
+    
     void FUN_004248a0(MapChar *mchr);
     void FUN_00416058(MapChar *mchr);
     int32_t FUN_0041b100(Character *ch1, Character *ch2);
@@ -892,6 +939,7 @@ public:
     GS1* GetLootByTile(Common::Point tile);
     void FUN_004170a0(GS1 *loot);
     void FUN_0041093c(GS1 *loot);
+    bool FUN_004138c8(Common::Point tile, int32_t itemId);
     
     void DrawSettingsScreen(int32_t);
     
@@ -924,6 +972,121 @@ public:
     void MixPotions(Character *pchar, ItemInfo *itm1, ItemInfo *itm2);
     bool FUN_00414b3c(Character *pchar);
     void IdentifyCharacterItems(Character *pchar);
+    bool FUN_0042054c(Character *pchar);
+    bool FUN_004246f8(Character *pchar);
+    
+    bool FUN_00420634(bool p);
+    
+    int32_t FUN_00434160(int32_t id);
+    int32_t FUN_004351fc(int32_t id);
+    int32_t FUN_00434b60(int32_t id);
+    int32_t FUN_004359d4(int32_t id);
+    int32_t FUN_00434c90(int32_t id);
+    
+    int32_t FUN_004323b0(int32_t classId);
+    
+    int32_t FUN_00432654(int32_t job);
+    void FUN_00422778(Character *pchar);
+    bool FUN_00436248(int32_t id);
+    
+    int32_t FUN_00432f70();
+    int32_t FUN_00432fd0();
+    int32_t FUN_004358b4();
+    int32_t FUN_0043512c();
+    int32_t FUN_0043499c();
+    int32_t FUN_004340d4();
+    int32_t FUN_004347d0();
+    int32_t FUN_00434298();
+    int32_t FUN_00435d6c();
+    int32_t FUN_00434c44();
+    int32_t FUN_00434a28();
+    int32_t FUN_00434a6c();
+    int32_t FUN_00434a94();
+    int32_t FUN_00434abc();
+    int32_t FUN_00434ae4();
+    int32_t FUN_00434b0c();
+    int32_t FUN_00434b34();
+    int32_t FUN_00432820();
+    int32_t FUN_00435740();
+    int32_t FUN_004358e0();
+    int32_t FUN_00435908();
+    int32_t FUN_00435930();
+    int32_t FUN_00435958();
+    int32_t FUN_00435980();
+    int32_t FUN_004359a8();
+    int32_t FUN_004357e4();
+    int32_t FUN_00435814();
+    int32_t FUN_00435844();
+    int32_t FUN_00435460();
+    int32_t FUN_00433f18();
+    int32_t FUN_00434954();
+    int32_t FUN_004342cc();
+    int32_t FUN_00434300();
+    int32_t FUN_00434334();
+    int32_t FUN_00434368();
+    int32_t FUN_0043439c();
+    int32_t FUN_004343d0();
+    int32_t FUN_00434888();
+    int32_t FUN_004348cc();
+    int32_t FUN_00434628();
+    int32_t FUN_0043408c();
+    int32_t FUN_00434108();
+    int32_t FUN_004348fc();
+    int32_t FUN_004349d0();
+    int32_t FUN_004346ac();
+    int32_t FUN_00434788();
+    int32_t FUN_00433e84();
+    int32_t FUN_00434250();
+    int32_t FUN_00434730();
+    int32_t FUN_00433f54();
+    int32_t FUN_00434438();
+    int32_t FUN_00433edc();
+    int32_t FUN_00433fac();
+    int32_t FUN_0043400c();
+    int32_t FUN_00434570();
+    int32_t FUN_00434804();
+    int32_t FUN_004353f4();
+    int32_t FUN_00435100();
+    int32_t FUN_00433af8();
+    int32_t FUN_004352ec();
+    int32_t FUN_00434d1c();
+    int32_t FUN_00434da4();
+    int32_t FUN_004339a8();
+    int32_t FUN_004336e8();
+    int32_t FUN_00433848();
+    int32_t FUN_004338f8();
+    int32_t FUN_004334b8();
+    int32_t FUN_00433798();
+    int32_t FUN_00433568();
+    int32_t FUN_00433618();
+    int32_t FUN_00435874();
+    int32_t FUN_004351d8();
+    int32_t FUN_0043516c();
+    int32_t FUN_004351b4();
+    int32_t FUN_00435190();
+    int32_t FUN_0043536c();
+    int32_t FUN_0043542c();
+    int32_t FUN_00435334();
+    int32_t FUN_004354a8();
+    int32_t FUN_004354e0();
+    int32_t FUN_00435568();
+    int32_t FUN_00433368();
+    int32_t FUN_00433410();
+    int32_t FUN_00433464();
+    int32_t FUN_0043321c();
+    int32_t FUN_004333bc();
+    int32_t FUN_00433270();
+    int32_t FUN_004332c4();
+    int32_t FUN_00435a84();
+    int32_t FUN_00434e98();
+    int32_t FUN_00433acc();
+    int32_t FUN_00435514();
+    int32_t FUN_004353bc();
+    
+    
+    bool IsSelectedCharacter(Character *pchar);
+    
+    void SelectCharacter(Character *pchar);
     
     int32_t FUN_00417170(int val) { return 2 - ((rand() % 2 + val + 1) % 3); }
     
@@ -969,15 +1132,29 @@ public:
     void DrawInventory(Character *chr, int btn, bool bkg = true);
     void DrawCharInfo();
     void DrawJournal();
+    void DrawQuestScreen();
     
     void FUN_00425104(const ItemInfo *inf);
     void FUN_0041e210(Character *pchar, int32_t typ, int32_t itemid);
     bool FUN_00424918(Character *pchar, int32_t itemid);
     bool FUN_0041e778(int aidx);
     
+    bool FUN_0041eb9c(std::array<int16_t, INVSIZE> *inv, int32_t p1, int32_t p2);
+    
+    int32_t FUN_0041ade4(Character *pchar);
+    
+    //Quest
+    void FUN_0041f18c(TSq1 *qw, int32_t id);
+    int FUN_004364f0(Character *pchar);
+    int FUN_00435e78();
+    void FUN_00435dbc(int32_t id);
+    int32_t FUN_0043259c(int32_t funcid);
+    std::string FUN_004363e8(int32_t id);
     
     //Sound
     void FUN_0043d1d0();
+    void SoundPlaySpeech(int32_t id);
+    bool FUN_00429c28(int32_t id);
 
     
     void ChangeWeapon(int32_t wpnId);
@@ -1075,11 +1252,17 @@ public:
     
     Character *_camLockChar = nullptr;
     
+    Character *PInteractChar = nullptr;
+    
+    int32_t DAT_00a3e76c = 0;
+    
+    
     bool DWORD_00a3e758 = false;
     
     int32_t DAT_00a3e704 = 0;
     int32_t DisplayInvOfCharID2 = 1;
     int32_t DisplayInvOfCharID = 1;
+    int _invButton = 0;
     
     Character *HardComputeUnit = nullptr;
     int32_t HardComputeCount = 0;
@@ -1098,7 +1281,16 @@ public:
     std::vector<DlgTxt> qOut1; 
     std::vector<DlgTxt> qOut2;
     
+    int32_t qwsel1 = 0;
+    int32_t qwsel2 = 0;
     
+    std::array<TSq1, 8000> quest_1;
+    std::array<uint16_t, 300> quest_2;
+    std::array<TSq5, 6000> quest_4;
+    std::array<TSq5, 6000> quest_5;
+    std::map<int32_t, std::string> QuestTexts;
+    
+    std::array<TQuestState, 300> QuestsState;
     
     int32_t mapGS1Count = 0;
     std::array<GS1, 200> mapGS1;
@@ -1138,6 +1330,9 @@ public:
     std::array<int16_t, INVSIZE> InfSvInv;
     std::array<int16_t, 5> InfSvAccess;
     
+    std::array<int16_t, INVSIZE> int16_t_ARRAY_0083dc4c[4];
+    std::array<int16_t, 4> int16_t_ARRAY_0083dd4c;
+    
     
     
     Common::Point ViewTiles;
@@ -1155,11 +1350,26 @@ public:
     int32_t DAT_00a3e7a0 = -1;
     
     int32_t DWORD_00a3e7b4 = 0;
+    int32_t DAT_00a3e7c4 = 0;
+    
+    int32_t SpeechBufferIndex = 0;
+    
+    
+    int32_t DAT_00a3e7c8 = 0;
+    int32_t DAT_00a3e7cc = 0;
+    int32_t DAT_00a3e82c = 0;
+    int32_t DAT_00a3e830 = 0;   
+    
+    
+    
     
     std::vector<GFX::Image *> _menuImages;
     GFX::Image *_bkgImage = nullptr;
     
     GFX::Image *_mapImage = nullptr;
+    
+    std::array<SDL_Cursor *, 11> _cursors;
+    int32_t _curCursor = -1;
     
     static const std::vector<Common::Rect> _mainMenuBoxes;
     static const std::vector<Common::Rect> _saveMenuBoxes; 
@@ -1207,7 +1417,7 @@ public:
     
     std::array<GFX::Font *, 4> _Fonts;
     
-    std::array<TQuestState, 300> QuestsState;
+    
     
     bool _doQuit = false;
     

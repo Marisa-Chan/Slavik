@@ -151,7 +151,7 @@ void Engine::UpdateGame()
         else if (DWORD_00a3e74c & 8)
         {
             DWORD_00a3e74c &= ~8;
-            if (_playScreenID == 7)
+            if (_playScreenID == PLSCREEN_7)
                 FUN_00431d70(0);
         }
         
@@ -504,21 +504,6 @@ void Engine::FUN_004110ec(Character *pchar)
     
     if (pchar->Index +1 == DisplayInvOfCharID)
         FUN_0042f50c(pchar, 0);
-}
-
-
-int Engine::FUN_00434c90(int32_t infId)
-{
-    for(int32_t i = 0; i < _mainCharacter->Inventory.size(); ++i)
-    {
-        if (_mainCharacter->Inventory[i])
-        {
-            ItemInfo &inf = _state.Items.at(_mainCharacter->Inventory[i]);
-            if (inf.TypeID == 11 && inf.InfoID == infId - 1)
-                return i + 1;
-        }
-    }
-    return 0;
 }
 
 void Engine::FUN_00439230(Character *pchar)
@@ -1052,6 +1037,8 @@ void Engine::FUN_0042f50c(Character *pchar, int32_t p)
     
     if (p != 0)
         DWORD_00a3e74c |= 4;
+    
+    _invButton = p;
 }
 
 
@@ -4148,7 +4135,7 @@ void Engine::FUN_0042459c()
         
         if (_playScreenID == PLSCREEN_2)
         {
-            _playScreenID = 0;
+            _playScreenID = PLSCREEN_0;
             FUN_004292e4();
         }
         else
