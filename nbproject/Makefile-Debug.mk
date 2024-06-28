@@ -42,6 +42,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/font.o \
 	${OBJECTDIR}/fsmgr.o \
 	${OBJECTDIR}/game.o \
+	${OBJECTDIR}/game_arrows.o \
 	${OBJECTDIR}/game_character.o \
 	${OBJECTDIR}/game_data.o \
 	${OBJECTDIR}/game_input.o \
@@ -57,6 +58,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/game_sound.o \
 	${OBJECTDIR}/game_soundres.o \
 	${OBJECTDIR}/game_state.o \
+	${OBJECTDIR}/game_trade.o \
 	${OBJECTDIR}/game_ui.o \
 	${OBJECTDIR}/game_village.o \
 	${OBJECTDIR}/gfx.o \
@@ -124,6 +126,11 @@ ${OBJECTDIR}/game.o: game.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I/usr/include -I/usr/include/c++/13.2.1 -I/usr/include/c++/13.2.1/x86_64-pc-linux-gnu -I. `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game.o game.cpp
+
+${OBJECTDIR}/game_arrows.o: game_arrows.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I/usr/include -I/usr/include/c++/13.2.1 -I/usr/include/c++/13.2.1/x86_64-pc-linux-gnu -I. `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_arrows.o game_arrows.cpp
 
 ${OBJECTDIR}/game_character.o: game_character.cpp
 	${MKDIR} -p ${OBJECTDIR}
@@ -199,6 +206,11 @@ ${OBJECTDIR}/game_state.o: game_state.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I/usr/include -I/usr/include/c++/13.2.1 -I/usr/include/c++/13.2.1/x86_64-pc-linux-gnu -I. `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_state.o game_state.cpp
+
+${OBJECTDIR}/game_trade.o: game_trade.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I/usr/include -I/usr/include/c++/13.2.1 -I/usr/include/c++/13.2.1/x86_64-pc-linux-gnu -I. `pkg-config --cflags sdl2` `pkg-config --cflags opengl` `pkg-config --cflags SDL2_image` -std=c++11  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/game_trade.o game_trade.cpp
 
 ${OBJECTDIR}/game_ui.o: game_ui.cpp
 	${MKDIR} -p ${OBJECTDIR}

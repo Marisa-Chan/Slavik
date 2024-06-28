@@ -5,11 +5,185 @@
 namespace Game {
 
 
-    
-    
-void Engine::FUN_00431d70(int p)
+void Engine::DrawTradeInv(int inv, int p)
 {
-    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
+    Common::Point outPos = tagRECT_ARRAY_00465ab4[inv].Pos();
+    int32_t startPos = int16_t_ARRAY_0083dd4c[inv];
+    int32_t endPos = startPos + 6;
+    
+    GFX::Image *img;
+    if (p < 0)
+        img = _menuImages.at(19);
+    else
+        img = _menuImages.at(18);
+    
+    ImgQueue2(img, outPos, MAPRECT);
+    
+    outPos.x += img->GetSize().x;
+    outPos.y += (ScrlBtnHeight - _menuImages.at(17)->GetSize().y) / 2;
+    
+    Common::Point ppos = outPos;
+    for (int32_t i = startPos; i < endPos; ++i)
+    {
+        int32_t itemId = int16_t_ARRAY_0083dc4c[inv].at(i);
+        vec3f clr;
+        
+        if (itemId)
+            clr = FUN_0042c914(CharInfoCharacter, &(_state.Items.at(itemId)));
+        
+        ImgQueue2(_menuImages.at(17), ppos, MAPRECT, clr);
+        
+        ppos.x += ItemInvSlotWidth;
+    }
+    
+    if (p > 0)
+        img = _menuImages.at(21);
+    else
+        img = _menuImages.at(20);        
+    
+    ImgQueue2(img, ppos, MAPRECT);
+    
+    ppos = outPos;
+    for (int32_t i = startPos; i < endPos; ++i)
+    {
+        int32_t itemId = int16_t_ARRAY_0083dc4c[inv].at(i);
+        if (itemId)
+        {
+            int32_t imgId = FUN_0042c870(&_state.Items.at(itemId));
+            img = _menuImages.at(imgId);
+            
+            Common::Point p = ppos + Common::Point( ((ItemInvSlotWidth + 1) - img->GetSize().x) / 2,
+                                                    ((ScrlBtnHeight + 1) - img->GetSize().y) / 2 );
+            ImgQueue2(img, p, MAPRECT);
+        }
+        ppos.x += ItemInvSlotWidth;
+    }
+}
+
+int32_t Engine::FUN_0041b348(ItemInfo *itm)
+{
+    if (itm->TypeID < 6)
+    {
+        int32_t val = ArmorWeaponInfo.at( itm->InfoID ).unk5;
+        if (itm->BonusID > -1 && (itm->Flags & ItemInfo::FLAG_IDENTIFIED) == 0)
+        {
+            val += BonusesInfo.at(itm->BonusID).unk1;
+            if (val < 1)
+                val = 1;
+        }
+        return val;
+    }
+    else if (itm->TypeID < 9)
+    {
+        int32_t val = AcessoriesInfo.at( itm->InfoID ).BonusID;
+        if (itm->BonusID > -1 && (itm->Flags & ItemInfo::FLAG_IDENTIFIED) == 0)
+        {
+            val += BonusesInfo.at(itm->BonusID).unk1;
+            if (val < 1)
+                val = 1;
+        }
+        return val;
+    }
+    else if (itm->TypeID == 12)
+    {
+        return ArmorWeaponInfo.at( itm->InfoID ).unk5 * itm->Concentration;
+    }
+    else if (itm->TypeID == 9)
+    {
+        int32_t val = AlchemiesInfo.at( itm->InfoID ).BonusID;
+        if (val < 0)
+            val = -(itm->Concentration * val);
+        return val * 8;
+    }
+    else
+        return MiscItemsInfo.at( itm->InfoID ).BonusID;
+
+    return 0;
+}
+    
+void Engine::DrawTrade(int p)
+{
+    FillBkgRect(MAPRECT);
+    
+    ImgQueue2(_menuImages[6], MAPRECT.Pos(), MAPRECT);
+    ImgQueue2(_menuImages[180], tagRECT_ARRAY_00465a54[0].Pos(), MAPRECT);
+    ImgQueue2(_menuImages[182], tagRECT_ARRAY_00465a54[1].Pos(), MAPRECT);
+    
+    if (PInteractChar)
+    {
+        std::string name = PInteractChar->FmtCharName();
+        int32_t nameW = _Fonts[0]->StringWidth(name);
+        const Common::Point outPos( (MAPRECT.left + MAPRECT.right  - nameW) / 2,
+                                    SCREENRES.y * 0.002083 * 20.0 );
+        
+        TextQueue(name, _Fonts[0], outPos, MAPRECT);
+    }
+    
+    for (int32_t i = 0; i < 4; ++i)
+    {
+        if (Common::ABS(p) == i + 1)
+            DrawTradeInv(i, p);
+        else
+            DrawTradeInv(i, 0);
+    }
+    
+    DAT_00a3e850 = 0;
+    for (int32_t i = 0; i < INVSIZE; ++i)
+    {
+        int32_t itemId = int16_t_ARRAY_0083dc4c[1].at(i);
+        if (itemId)
+            DAT_00a3e850 += FUN_0041b348(&_state.Items.at(itemId));
+    }
+    
+    DAT_00a3e854 = 0;
+    for (int32_t i = 0; i < INVSIZE; ++i)
+    {
+        int32_t itemId = int16_t_ARRAY_0083dc4c[3].at(i);
+        if (itemId)
+            DAT_00a3e854 += FUN_0041b348(&_state.Items.at(itemId));
+    }
+    
+    if (PInteractChar)
+    {
+        int32_t local_20 = DAT_00a3e82c + FUN_0041aea0(DAT_00a3e850);
+        int32_t local_1c = DAT_00a3e830 + FUN_0041b65c(DAT_00a3e854);
+        if (local_1c < local_20)
+        {
+            for (; DAT_00a3e82c != 0 && local_1c < local_20; --local_20)
+            {
+                DAT_00a3e7c8++;
+                DAT_00a3e82c--;
+            }
+            
+            for (; DAT_00a3e7cc != 0 && local_1c < local_20; ++local_1c)
+            {
+                DAT_00a3e7cc--;
+                DAT_00a3e830++;
+            }
+        }
+        else
+        {
+            for (; DAT_00a3e830 != 0 && local_20 < local_1c; --local_1c)
+            {
+                DAT_00a3e7cc++;
+                DAT_00a3e830--;
+            }
+            
+            for (; DAT_00a3e7c8 != 0 && local_20 < local_1c; ++local_20)
+            {
+                DAT_00a3e7c8--;
+                DAT_00a3e82c++;
+            }
+        }
+    }
+    
+    TextQueue(std::to_string(DAT_00a3e7cc), _Fonts[3], tagRECT_ARRAY_00465ab4[5].Pos(), MAPRECT);
+    TextQueue(std::to_string(DAT_00a3e830), _Fonts[3], tagRECT_ARRAY_00465ab4[6].Pos(), MAPRECT);
+    TextQueue(std::to_string(FUN_0041b65c(DAT_00a3e854) + DAT_00a3e830), _Fonts[3], tagRECT_ARRAY_00465ab4[7].Pos(), MAPRECT);
+    
+    TextQueue(std::to_string(DAT_00a3e82c), _Fonts[3], tagRECT_ARRAY_00465ab4[8].Pos(), MAPRECT);
+    TextQueue(std::to_string(DAT_00a3e7c8), _Fonts[3], tagRECT_ARRAY_00465ab4[9].Pos(), MAPRECT);
+    TextQueue(std::to_string(FUN_0041aea0(DAT_00a3e850) + DAT_00a3e82c), _Fonts[3], tagRECT_ARRAY_00465ab4[10].Pos(), MAPRECT);
 }
 
 void Engine::FillBkgRect(Common::Rect rect)
@@ -102,9 +276,7 @@ void Engine::ShowHideCharInfo()
             {
                 CharInfoCharacter = &_state.Characters.at(DisplayInvOfCharID2 - 1);
                 FUN_0042f50c(CharInfoCharacter, 0);
-            }
-            else
-                _playScreenID = PLSCREEN_0;            
+            }          
         }
         else
         {
@@ -478,8 +650,8 @@ bool Engine::FUN_0041e500(int32_t slot)
     
     PlaySound(sndId,0,0,0);
     
-    if (_playScreenID == PLSCREEN_3)
-        PlayChangeScreen(PLSCREEN_3);
+//    if (_playScreenID == PLSCREEN_3)
+//        PlayChangeScreen(PLSCREEN_3);
     
     FUN_0042f50c(CharInfoCharacter, 0);
     return true;
@@ -529,7 +701,7 @@ bool Engine::FUN_0041e778(int aidx)
     }
     
     PlaySound(0,0,0,0);
-    PlayChangeScreen(PLSCREEN_3);
+    //PlayChangeScreen(PLSCREEN_3);
     FUN_0042f50c(CharInfoCharacter, 0);
     return true;
 }

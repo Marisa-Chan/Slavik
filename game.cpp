@@ -354,12 +354,12 @@ void Engine::Draw()
             DrawQuestScreen();
         else if (_playScreenID == PLSCREEN_2)
             DrawJournal();
-        else if (_playScreenID == PLSCREEN_MAP)
-            FillBkgRect(MAPRECT);
         else if (_playScreenID == PLSCREEN_3)
             DrawCharInfo();
+        else if (_playScreenID == PLSCREEN_MAP)
+            FillBkgRect(MAPRECT);
         else if (_playScreenID == PLSCREEN_7)
-            FUN_00431d70(0);
+            DrawTrade(0);
         
         if (_playScreenID == PLSCREEN_0 || _playScreenID == PLSCREEN_3)
         {
@@ -495,7 +495,7 @@ bool Engine::LoadMap(int32_t mapID, int32_t param)
     _objectsToLoadCount = 0;
     
     if (_playScreenID == PLSCREEN_MAP)
-        PlayChangeScreen(PLSCREEN_MAP);
+        UpdateMapImage();
     
     printf("Incomplete %s\n", __PRETTY_FUNCTION__);
     if (_currentMap)
@@ -1200,14 +1200,14 @@ void Engine::DrawObjects()
                         
                         if (shdw) 
                         {
-                            Common::Point p = chr.shdOffset + _outOff + chr.POS;
+                            //Common::Point p = chr.shdOffset + _outOff + chr.POS;
                             //printf("Shadow %d %d\n",p.x, p.y );
                             GFXDrawer.SetFade(false);
                             GFXDrawer.DrawShadow( shdw, chr.shdOffset + _outOff + chr.POS);
                         }
                         
-                        //if ((chr.ClassID & CLASS_BIT40) == 0)
-                        //    FUN_004251d0(&chr);
+                        if ((chr.ClassID & CLASS_BIT40) == 0)
+                            FUN_004251d0(chr);
                     }
                 }
             }
@@ -1371,6 +1371,38 @@ void Engine::DrawObjects()
         }
     }
     
+    for(int32_t i = 0; i < MapObjects2Count; ++i)
+    {
+        MapObject2 &arrow = MapObjects2.at(i);
+        Common::Point pt = _outOff + arrow.p3 + arrow.p2;
+        
+        if (pt.x > _gameViewport.x || pt.y > _gameViewport.y)
+            continue;
+        
+        int32_t refid = pt.y + 94;
+        
+        if (MapObjDrawRefCount1 < refid) 
+            MapObjDrawRefCount1 = refid;
+        
+        MapObjDrawRef &ref = MapObjDraw.at(refid);
+        if (ref.Type == MapObjDrawRef::TYPE_UNK)
+        {
+            ref.Type = MapObjDrawRef::TYPE_OBJ2;
+            ref.MOBJ2 = &arrow;
+            ref.Pos = pt;
+        }
+        else 
+        {
+            MapObjDrawRef &href = MapObjDrawHeap.at(MapObjDrawRefCount2);
+            href.Type = MapObjDrawRef::TYPE_OBJ2;
+            href.NextObjInHeap = ref.NextObjInHeap;
+            href.MOBJ2 = &arrow;
+            href.Pos = pt;
+
+            ref.NextObjInHeap = MapObjDrawRefCount2;
+            MapObjDrawRefCount2++;
+        }
+    }
     
 //    local_38 = MapObjects2;
 //    for (local_28 = 0; local_28 < MapObjects2Count; local_28 += 1) {
@@ -1416,6 +1448,15 @@ void Engine::DrawObjects()
         {
             if (ref->Type == MapObjDrawRef::TYPE_OBJ2)
             {
+                MapObject2 *obj = ref->MOBJ2;
+                if (obj->SpecialID == 0)
+                {
+                    ///
+                }
+                
+                GFXDrawer.SetFade(false);
+                
+                GFXDrawer.Draw(_menuImages.at( (_counter & 1) + obj->dmg2), ref->Pos);
             }
             else if (ref->Type == MapObjDrawRef::TYPE_OBJ1)
             {
@@ -1778,7 +1819,7 @@ bool Engine::StartPlayMovie(const std::string &movie)
         
         if (_stateMode == STATEMD_PLAY) 
         {
-            PlayChangeScreen(PLSCREEN_0);
+            //PlayChangeScreen(PLSCREEN_0);
             FUN_004292e4();
         }
         return false;
@@ -2055,9 +2096,9 @@ void Engine::FUN_004290d8()
             chr = _mainCharacter;
     }
     
-    if (chr->field_0x12 == 0)
+    if (chr->field_0x12 == ESLT_0)
         DrawElm[0] = 8;
-    else if (chr->field_0x12 == 1)
+    else if (chr->field_0x12 == ESLT_1)
         DrawElm[0] = 9;
     else
         DrawElm[0] = 16;
@@ -2098,7 +2139,7 @@ void Engine::UpdateMainMenu()
                 _stateMode = STATEMD_PLAY;
                 _imgQueue2Count = 0;
                 LoadINTR();
-                PlayChangeScreen(PLSCREEN_0);
+                //PlayChangeScreen(PLSCREEN_0);
                 FUN_004292e4();
                 break;
                 
@@ -2326,7 +2367,7 @@ void Engine::Update8()
         _stateMode = STATEMD_PLAY;
         
         FUN_004290d8();
-        PlayChangeScreen(PLSCREEN_0);
+        //PlayChangeScreen(PLSCREEN_0);
         FUN_004292e4();
     }
 }
@@ -2353,7 +2394,7 @@ void Engine::OnMovieEnd()
     
     if (_stateMode == STATEMD_PLAY) 
     {
-        PlayChangeScreen(PLSCREEN_0);
+        //PlayChangeScreen(PLSCREEN_0);
         FUN_004292e4();
     }
 }
@@ -2496,7 +2537,7 @@ void Engine::ImgQueue1(GFX::Image *img, Common::Point pos, Common::Rect limits, 
         place.DrawPlace = pos;
         place.Limits = limits;
         place.Pal = -1;
-        place.Fade = fade;
+        place.Fade = fade / 100.0;
         
         _imgQueue1Count++;
     }
@@ -2512,7 +2553,7 @@ void Engine::ImgQueue2(GFX::Image *img, Common::Point pos, Common::Rect limits, 
         place.DrawPlace = pos;
         place.Limits = limits;
         place.Pal = -1;
-        place.Fade = fade;
+        place.Fade = fade / 100.0;
         
         _imgQueue2Count++;
     }
@@ -2528,7 +2569,7 @@ void Engine::ImgQueue1(GFX::PalImage *img, int32_t Pal, Common::Point pos, Commo
         place.DrawPlace = pos;
         place.Limits = limits;
         place.Pal = Pal;
-        place.Fade = fade;
+        place.Fade = fade / 100.0;
         
         _imgQueue1Count++;
     }
@@ -2544,7 +2585,7 @@ void Engine::ImgQueue2(GFX::PalImage *img, int32_t Pal, Common::Point pos, Commo
         place.DrawPlace = pos;
         place.Limits = limits;
         place.Pal = Pal;
-        place.Fade = fade;
+        place.Fade = fade / 100.0;
         
         _imgQueue2Count++;
     }

@@ -177,7 +177,8 @@ std::array<std::string, Locale::GMSG_MAX> Locale::GameMessages =
 /*GMSM_BLKSMTHTEACH*/"Ты познал секреты кузнечного дела",
 /*GMSM_TRADETEACH*/"Ты узнал много нового об искусстве торговли",
 /*GMSM_IDENTIFYTEACH*/"Ты узнал много интересного о неведомых вещах",
-/*GMSM_READBIRCHBARK*/"Ты прочитал Берестяную Грамоту"
+/*GMSM_READBIRCHBARK*/"Ты прочитал Берестяную Грамоту",
+/*GMSM_NOMONEY*/"Слишком мало даешь!"
 };
 
 std::array<std::string, Locale::CHARHINT_MAX> Locale::CharHints =

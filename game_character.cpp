@@ -138,6 +138,8 @@ void Engine::FUN_00414078(Character *pchar)
         pchar->pFrame = frmInfo.FrameID;
         pchar->imgOffset = frmInfo.ImgOffset;
         pchar->imgSize = chbase.Images.at(pchar->pFrame)->SW.Size();
+        pchar->wpnOffset = frmInfo.WpnOffset;
+        pchar->shdOffset = frmInfo.ShdOffset;
     }
     else 
     {
@@ -149,6 +151,8 @@ void Engine::FUN_00414078(Character *pchar)
         
         pchar->pFrame = frmInfo.FrameID;
         pchar->imgOffset = frmInfo.ImgOffset;
+        pchar->wpnOffset = Common::Point();
+        pchar->shdOffset = frmInfo.ShdOffset;
         
         if (!(pchar->field_0x3 & 0x80)) 
             pchar->imgSize = obj.Images.at(pchar->pFrame)->SW.Size();
@@ -197,7 +201,7 @@ void Engine::DrawCharacterSprite(Character &ch)
         int32_t eqSlot2 = ESLT_0;
         
         const int8_t *lkp = nullptr;
-        if ((eqSlot == ESLT_1) && (tmp != ESLT_2)) 
+        if ((eqSlot == ESLT_1) && (tmp != 2)) 
         {
             lkp = EqLookUp2[tmp][ch.Direction];
             eqSlot2 = EQSLOT_UNK;
@@ -235,6 +239,90 @@ void Engine::DrawCharacterSprite(Character &ch)
         }
     }
 }
+
+
+
+void Engine::FUN_004251d0(Character &ch)
+{
+    if ( !(ch.field_0x3 & 4) ) 
+    {
+        for (int32_t i : EqLookUp1[ ch.Direction ]) 
+        {
+            int32_t itemID = ch.ArmorWeapons[i];
+            if (itemID)
+            {
+                const WeapArmorItemInfo &info = ArmorWeaponInfo.at( _state.Items.at(itemID).InfoID );
+                if (info.SprImage > -1)
+                {
+                    Resources::CharacterSprites &spr = Res.CharacterEquip.at(info.SprImage);
+                    Resources::CharacterSprites::FrameInfo &frm = spr.Seq[ch.State][ch.Direction].FrameData.at(ch.Frame);
+                    
+                    if (spr.Shadows.at(frm.FrameID))
+                        GFXDrawer.DrawShadow(spr.Shadows.at(frm.FrameID), 
+                                             _outOff + ch.POS + ch.wpnOffset + frm.ShdOffset);
+                }
+            }
+        }
+    }
+    else
+    {
+        int32_t tmp = 0;
+        
+        if (ch.State == CHSTATE_1)
+            tmp = 3;
+        else if (ch.State == CHSTATE_5)
+            tmp = 2;
+        else if (ch.State == CHSTATE_4)
+            tmp = 1;
+        else
+            tmp = 0;
+        
+        int32_t eqSlot = ch.field_0x12;
+        int32_t eqSlot2 = ESLT_0;
+        
+        const int8_t *lkp = nullptr;
+        if ((eqSlot == ESLT_1) && (tmp != 2)) 
+        {
+            lkp = EqLookUp2[tmp][ch.Direction];
+            eqSlot2 = EQSLOT_UNK;
+        }
+        else 
+        {
+            if (eqSlot == ESLT_1)
+                eqSlot = EQSLOT_UNK;
+            
+            lkp = EqLookUp3[tmp][ch.Direction];
+            eqSlot2 = ESLT_5;
+        }
+        
+        for (int32_t i = 0; i < 6; ++i) 
+        {
+            int32_t itemID = ch.ArmorWeapons[ lkp[i] ];
+            if (itemID)
+            {
+                const WeapArmorItemInfo &info = ArmorWeaponInfo.at( _state.Items.at(itemID).InfoID );
+                if (info.SprImage > -1)
+                {
+                    int32_t simg = info.SprImage;
+                    
+                    if ((eqSlot == lkp[i]) || (eqSlot2 == lkp[i]))
+                        simg += 1;
+                    
+                    Resources::CharacterSprites &spr = Res.CharacterEquip.at(simg);
+                    Resources::CharacterSprites::FrameInfo &frm = spr.Seq[ch.State][ch.Direction].FrameData.at(ch.Frame);
+                                      
+                    if (spr.Shadows.at(frm.FrameID))
+                        GFXDrawer.DrawShadow(spr.Shadows.at(frm.FrameID),
+                                            _outOff + ch.POS + ch.wpnOffset + frm.ShdOffset); //???
+                }
+            }
+        }
+    }
+}
+
+
+
+
 
 
 bool Engine::PlaceMob(Character *pchar)
@@ -555,46 +643,59 @@ void Engine::FUN_0041c750(Character *pchar)
 
 
 
-int32_t Engine::GetCurrentWeight(Character *pchar)
+int32_t Engine::GetCurrentWeight(Character *pchar, uint32_t ignore)
 {
     int32_t weight = 0;
-    for (int32_t i = 0; i < 6; ++i)
-    {
-        int32_t id = pchar->ArmorWeapons[i];
-        if (id != 0)
-            weight += ArmorWeaponInfo[_state.Items.at(id).InfoID].unk6;
-    }
     
-    for (int32_t i = 0; i < 5; ++i)
+    if ((ignore & STORE_AWPN) == 0)
     {
-        int32_t id = pchar->Accessories[i];
-        if (id != 0)
-            weight += AcessoriesInfo[_state.Items.at(id).InfoID].Weight;
-    }
-    
-    for (int32_t i = 0; i < 32; ++i)
-    {
-        int32_t id = pchar->Inventory[i];
-        if (id != 0)
+        for (int32_t i = 0; i < 6; ++i)
         {
-            ItemInfo &itm = _state.Items.at(id);
-            if (itm.TypeID < 6)
-                weight += ArmorWeaponInfo[itm.InfoID].unk6;
-            else if (itm.TypeID < 9)
-                weight += AcessoriesInfo[itm.InfoID].Weight;
-            else if (itm.TypeID == 9)
-                weight += AlchemiesInfo[itm.InfoID].Weight;
-            else if (itm.TypeID == 11)
-                weight += MiscItemsInfo[itm.InfoID].Weight;
-            else if (itm.TypeID == 12)
-                weight += ArmorWeaponInfo[itm.InfoID].unk6 * itm.Concentration;
+            int32_t id = pchar->ArmorWeapons[i];
+            if (id != 0)
+                weight += ArmorWeaponInfo[_state.Items.at(id).InfoID].unk6;
         }
     }
     
-    if (pchar->Arrows != 0)
+    if ((ignore & STORE_TRINKET) == 0)
     {
-        ItemInfo &itm = _state.Items.at(pchar->Arrows);
-        weight += ArmorWeaponInfo[itm.InfoID].unk6 * itm.Concentration;
+        for (int32_t i = 0; i < 5; ++i)
+        {
+            int32_t id = pchar->Accessories[i];
+            if (id != 0)
+                weight += AcessoriesInfo[_state.Items.at(id).InfoID].Weight;
+        }
+    }
+    
+    if ((ignore & STORE_INVENTORY) == 0)
+    {
+        for (int32_t i = 0; i < 32; ++i)
+        {
+            int32_t id = pchar->Inventory[i];
+            if (id != 0)
+            {
+                ItemInfo &itm = _state.Items.at(id);
+                if (itm.TypeID < 6)
+                    weight += ArmorWeaponInfo[itm.InfoID].unk6;
+                else if (itm.TypeID < 9)
+                    weight += AcessoriesInfo[itm.InfoID].Weight;
+                else if (itm.TypeID == 9)
+                    weight += AlchemiesInfo[itm.InfoID].Weight;
+                else if (itm.TypeID == 11)
+                    weight += MiscItemsInfo[itm.InfoID].Weight;
+                else if (itm.TypeID == 12)
+                    weight += ArmorWeaponInfo[itm.InfoID].unk6 * itm.Concentration;
+            }
+        }
+    }
+    
+    if ((ignore & STORE_ARROW) == 0)
+    {
+        if (pchar->Arrows != 0)
+        {
+            ItemInfo &itm = _state.Items.at(pchar->Arrows);
+            weight += ArmorWeaponInfo[itm.InfoID].unk6 * itm.Concentration;
+        }
     }
     
     return weight;

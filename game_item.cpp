@@ -336,8 +336,8 @@ bool Engine::FUN_00414b3c(Character *pchar)
     
     FUN_00414ab4(pchar);
     
-    if (pchar->MapCharID == _mainCharacter->MapCharID)
-        FUN_0042d574(pchar);
+    //if (pchar->MapCharID == _mainCharacter->MapCharID)
+    //    FUN_0042d574(pchar);
     
     return true;
 }
@@ -514,10 +514,10 @@ bool Engine::FUN_0041db64(Character *pchar, ItemInfo *itm1, ItemInfo *itm2)
     
     if (pchar->MapCharID == _mainMapChar->Index)
     {
-        FUN_0042d574(pchar);
+        //FUN_0042d574(pchar);
         
-        if (_playScreenID == PLSCREEN_3)
-            PlayChangeScreen(PLSCREEN_3);
+        //if (_playScreenID == PLSCREEN_3)
+        //    PlayChangeScreen(PLSCREEN_3);
         
         if (DisplayInvOfCharID != 0)
             FUN_0042f50c(CharInfoCharacter, 0);
@@ -725,8 +725,8 @@ bool Engine::FUN_00414e64(Character *pchar, ItemInfo *itm1, ItemInfo *itm2)
         
         if (pchar->Index + 1 == DisplayInvOfCharID)
         {
-            if (_playScreenID == PLSCREEN_3)
-                PlayChangeScreen(PLSCREEN_3);
+            //if (_playScreenID == PLSCREEN_3)
+            //    PlayChangeScreen(PLSCREEN_3);
             
             FUN_0042f50c(pchar, 0);
         }
@@ -899,7 +899,7 @@ bool Engine::FUN_00414e64(Character *pchar, ItemInfo *itm1, ItemInfo *itm2)
                     Character &chr = _state.Characters.at(mchr.CharacterIndex + i);
                     if ((chr.ClassID & CLASS_BIT80) == 0 && chr.State != CHSTATE_9 && chr.State != CHSTATE_3)
                     {
-                        chr.field_0x12 = 0;
+                        chr.field_0x12 = ESLT_0;
                         chr.field2_0x2 = 0;
                         chr.HP = 0;
                         
@@ -1032,9 +1032,9 @@ bool Engine::FUN_00414e64(Character *pchar, ItemInfo *itm1, ItemInfo *itm2)
     
     if (pchar->MapCharID == _mainCharacter->MapCharID)
     {
-        FUN_0042d574(pchar);
-        if (_playScreenID == PLSCREEN_3)
-            PlayChangeScreen(PLSCREEN_3);
+        //FUN_0042d574(pchar);
+        //if (_playScreenID == PLSCREEN_3)
+        //    PlayChangeScreen(PLSCREEN_3);
         
         if (DisplayInvOfCharID)
             FUN_0042f50c(CharInfoCharacter, 0);
@@ -1089,10 +1089,10 @@ bool Engine::FUN_004246f8(Character *pchar)
     }
         
     DAT_00a3e790 = 4;
-    if (_playScreenID == PLSCREEN_3)
-    {
-        PlayChangeScreen(PLSCREEN_3);
-    }
+//    if (_playScreenID == PLSCREEN_3)
+//    {
+//        PlayChangeScreen(PLSCREEN_3);
+//    }
     if (DisplayInvOfCharID != 0)
     {
         FUN_0042f50c(&_state.Characters.at(DisplayInvOfCharID - 1), 0);

@@ -486,6 +486,16 @@ const int Engine::FlameAnims[7][2] =
   {60, 73} };
 
 const std::array<Common::Point, 8> Engine::O45ad30 = 
+//{{ 
+//    {-65, -70},
+//    {-99, -48},
+//    {-85,  12},
+//    {-90,  68},
+//    {-58,  80},
+//    {-26,  52},
+//    {-10,  -8},
+//    {-31, -60}
+//}};
 {{ 
     {-70, -65},
     {-48, -99},
@@ -494,7 +504,8 @@ const std::array<Common::Point, 8> Engine::O45ad30 =
     { 80, -58},
     { 52, -26},
     {-8,  -10},
-    {-60, -31}}};
+    {-60, -31}
+}};
 
 const std::array<Engine::SpecialDmg, 18> Engine::SpecialDamages =
 {{

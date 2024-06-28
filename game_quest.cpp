@@ -548,7 +548,8 @@ int32_t Engine::FUN_00432fd0()
         }
     }
     
-    FUN_00431d70(0);
+    //DrawTrade(0);
+    PlayChangeScreen(PLSCREEN_7);
     return 1;
 }
 
@@ -745,7 +746,7 @@ int32_t Engine::FUN_00432820()
     
     _mainMapChar->GroupSize++;
 
-    lastChr.MapCharID = 0;
+    lastChr.MapCharID = _mainMapChar->Index;
     lastChr.field2_0x2 = 0x60;
     lastChr.field17_0x13[1] = 0xff;
     
@@ -785,7 +786,7 @@ int32_t Engine::FUN_00432820()
         lastChr.field113_0xf8 = ((clid - 1) * 9 + lastChr.CharacterBase * 36 + local_18) * 5 + 1;
     }
     
-    PlayChangeScreen(PLSCREEN_0);
+    //PlayChangeScreen(PLSCREEN_0);
     
     MapChar &local_24 = _state.MapChar_ARRAY.at(PInteractChar->MapCharID);
     
@@ -811,6 +812,7 @@ int32_t Engine::FUN_00432820()
                 CurrentVillage->Jobs[i].CharID--;
         }
     }
+    
     return 1;
 }
 
@@ -1313,7 +1315,7 @@ int32_t Engine::FUN_00433af8()
             _currentMap->FootMap.At(chr.Tile).ID = chr.Index + 1;
     }
     
-    PlayChangeScreen(PLSCREEN_0);
+    //PlayChangeScreen(PLSCREEN_0);
     return 1;
 }
 
@@ -1333,7 +1335,7 @@ int32_t Engine::FUN_00434d1c()
 {
     PInteractChar->Medicine += (1600 - _mainCharacter->HP) * 0.015;
     _mainCharacter->HP = 1600;
-    FUN_0042d574(_mainCharacter);
+    //FUN_0042d574(_mainCharacter);
     return 1;
 }
 
@@ -1347,7 +1349,7 @@ int32_t Engine::FUN_00434da4()
         {
             PInteractChar->Medicine += (1600 - chr.HP) * 0.015;
             chr.HP = 1600;
-            FUN_0042d574(&chr);
+            //FUN_0042d574(&chr);
         }
     }
     return 1;
@@ -1552,7 +1554,7 @@ int32_t Engine::FUN_0043536c()
 
 int32_t Engine::FUN_0043542c()
 {
-    return PInteractChar->MapCharID == 0;
+    return PInteractChar->MapCharID == _mainMapChar->Index;
 }
 
 

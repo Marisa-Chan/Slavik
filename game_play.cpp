@@ -115,7 +115,7 @@ void Engine::UpdateGame()
         
         FUN_00428f90( _mainCharacter->ViewPos );
         FUN_004290d8();
-        PlayChangeScreen(PLSCREEN_0);
+        //PlayChangeScreen(PLSCREEN_0);
     }
     
     
@@ -152,7 +152,7 @@ void Engine::UpdateGame()
         {
             DWORD_00a3e74c &= ~8;
             if (_playScreenID == PLSCREEN_7)
-                FUN_00431d70(0);
+                DrawTrade(0);
         }
         
         
@@ -185,11 +185,13 @@ void Engine::UpdateGame()
     }
         
     DrawElmQueue();
+    for(int32_t i = 0; i < _mainMapChar->GroupSize; ++i)
+        FUN_0042d574(&_state.Characters.at(_mainMapChar->CharacterIndex + i), i);
 }
 
 void Engine::FUN_004118dc()
 {
-    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
+    //printf("Incomplete %s\n", __PRETTY_FUNCTION__);
     
     if (_mainMapChar->MapID == _currentMapID) 
     {
@@ -251,10 +253,10 @@ void Engine::FUN_004118dc()
             if (rand() % 2 != 0)
                 local_1c = local_20;
             
-            for (int local_20 = 0; local_20 < 8; ++local_20) 
+            for (int i = 0; i < 8; ++i) 
             {
                 int local_28 = rand() % 6;
-                for (int local_18 = 0; local_18 < 6; ++local_18) 
+                for (int j = 0; j < 6; ++j) 
                 {
                     Common::Point ppos = spwnRect.Pos() + PlaceDOff[uVar5][local_1c][local_28];
                     
@@ -273,8 +275,8 @@ void Engine::FUN_004118dc()
                         
                         FUN_00414ab4(&pchar);
                         
-                        local_20 = 8;
-                        local_18 = 12;
+                        i = 8;
+                        j = 12;
                     }
                     
                     local_28 += 1;
@@ -310,20 +312,216 @@ void Engine::FUN_00414ab4(Character *pchar)
         FUN_004143dc(pchar, nextState);
 }
 
-void Engine::FUN_00436ad0(int32_t tmp)
+void Engine::FUN_00436ad0(int32_t mapid)
 {
-    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
+    Village *vlg = FUN_0043a1f8(mapid);
+    for(int32_t i = 0; i < _state.MapChar_ARRAY.size(); ++i)
+    {
+        MapChar &mchr = _state.MapChar_ARRAY.at(i);
+
+        if (mchr.MapID == mapid)
+        {
+            
+            for (int32_t j = 0; j < mchr.GroupSize; ++j)
+            {
+                Character &chr = _state.Characters.at(mchr.CharacterIndex + j);
+                
+                if ((chr.ClassID & CLASS_BIT80) != 0)
+                {
+                    FUN_00422778(&chr);
+                    
+                    if (vlg && vlg->ChiefCharId == i)
+                    {
+                        for (int32_t k = 0; k < vlg->Jobs.size(); ++k)
+                        {
+                            if (vlg->Jobs[k].CharID == chr.Index)
+                                vlg->Jobs[k].CharID = 0;
+                            else if (chr.Index < vlg->Jobs[k].CharID)
+                                vlg->Jobs[k].CharID--;
+                        }
+                    }
+                    
+                    mchr.GroupSize--;
+                    
+                    for(int32_t k = j; k < mchr.GroupSize; ++k)
+                        _state.Characters.at(mchr.CharacterIndex + k).CopyDataFrom( _state.Characters.at(mchr.CharacterIndex + k + 1));
+
+                    j--;
+                }
+            }
+            
+            if (vlg && vlg->ChiefCharId == i && vlg->Jobs[0].CharID == 0)
+            {
+                for (int32_t j = 0; j < mchr.GroupSize; ++j)
+                {
+                    Character &chr = _state.Characters.at(mchr.CharacterIndex + j);
+                    if (chr.CharacterBase < 3 && (chr.ClassID & 0x38) == 0 && GetVillageCharacterJob(&chr) == 0)
+                    {
+                        vlg->Jobs[0].CharID = chr.Index;
+                        chr.field96_0xd0 = vlg->Jobs[0].unk;
+                        chr.field2_0x2 = 0;
+                        FUN_00414ab4(&chr);
+                        break;
+                    }
+                }
+            }
+        }
+    }
 }
 
 void Engine::FUN_00436a00()
 {
-    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
+    for (int32_t i = 0; i < mapGS1Count; i += 1)
+    {
+        GS1 &mapLoot = mapGS1.at(i);
+        if (mapLoot.LootID < 0)
+        {
+            for (int16_t itemId : mapLoot.ItemID)
+            {
+                if (itemId)
+                    _state.Items.at(itemId).TypeID = 0xff;
+            }
+        }
+        else
+        {
+            GS1 &gloot = _state.GS1ARRAY.at(mapLoot.LootID);
+            gloot.ImgID = mapLoot.ImgID;
+            gloot.ItemID = mapLoot.ItemID;
+        }
+    }
 }
 
 
 void Engine::FUN_00421170()
 {
-    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
+    for(int32_t i = 0; i < MapObjects2Count; ++i)
+    {
+        MapObject2 &arrow = MapObjects2.at(i);
+        arrow.unk4--;
+        
+        if (arrow.unk4 <= 0)
+        {
+            MapObjects2Count--;
+            
+            for(int32_t j = i; j < MapObjects2Count; ++j)
+                MapObjects2.at(j) = MapObjects2.at(j + 1);
+                
+            i--;
+        }
+        else
+        {
+            Character &pCVar16 = _state.Characters.at(arrow.CharID);
+            
+            GFX::Image *img = nullptr;
+            Common::Point tracept;
+            int32_t bldId = -1;
+            
+            if (pCVar16.EnemyCharID < 0)
+            {
+                bldId = -pCVar16.EnemyCharID - 1;
+                if (!CurrentVillage || (_currentMap->MapObjects.at(bldId).unk3 & 1) == 0)
+                {
+                    pCVar16.EnemyCharID = 0;
+                }
+                else
+                {
+                    GameMap::Object &obj = _currentMap->MapObjects.at(bldId);
+                    Resources::SimpleObject &pSimple = Res.SimpleObjects.at( obj.ObjId );
+                    
+                    img = pSimple.Images.at(obj.CurrentFrame);
+                    tracept = obj.Pos + pSimple.Offsets.at(obj.CurrentFrame).Offset;
+                }
+            }
+            
+            for (int32_t j = 0; j < 8; ++j)
+            {
+                _tracePos = arrow.p2 + Common::Point(0, 30);
+                Common::Point pt = FUN_00439bdc(_tracePos); //(int *)&local_38,&local_34,
+                GameMap::Cell &cell = _currentMap->FootMap.At(pt);
+                if (cell.Flags & 0xC)
+                {
+                    
+                    if (pCVar16.EnemyCharID < 0 && CheckTraceImage(img, tracept) != 0)
+                    {
+                        for(int32_t k = 0; k < CurrentVillage->Bld2Num + CurrentVillage->Bld1Num + 7; ++k)
+                        {
+                            Village::BldState &bst = CurrentVillage->BuildingState.at(k);
+                            if (bst.ObjID == bldId)
+                            {
+                                if (rand() % 100 <= 20)
+                                {
+                                    bst.State = 3;
+                                    bst.BldLeft = 1;
+                                }
+                                CurrentVillage->Flags |= 0x15;
+                                FUN_004248a0(&_state.MapChar_ARRAY.at(CurrentVillage->ChiefCharId));
+                                break;
+                            }
+                        }
+                    }
+                    
+                    MapObjects2Count--;
+                    for(int32_t k = i; k < MapObjects2Count; ++k)
+                        MapObjects2.at(k) = MapObjects2.at(k + 1);
+                    i--;
+                    
+                    break;
+                }
+                else if (cell.ID != 0 && cell.ID != 0xfff && cell.ID - 1 != arrow.CharID)
+                {
+                    Character &cchr = _state.Characters.at(cell.ID - 1);
+                    
+                    if (cchr.MapCharID != _mainCharacter->MapCharID)
+                    {
+                        if ((_state.MapChar_ARRAY.at(cchr.MapCharID).unk5 & 0x80) != 0)
+                            CurrentVillage->Flags |= 0x15;
+                        
+                        FUN_004248a0(&_state.MapChar_ARRAY.at(cchr.MapCharID));
+                    }
+                    
+                    if (cchr.State != CHSTATE_9 && cchr.State != CHSTATE_3)
+                    {
+                        int32_t arrowDmg = FUN_0041ace0(&cchr, &arrow);
+                        int32_t retres = FUN_0041c29c(&cchr, arrowDmg);
+                        if (retres == 1)
+                        {
+                            cchr.HP = 0;
+                            cchr.field2_0x2 = 0;
+                            
+                            int32_t local_1c = FUN_0041b70c(&cchr);
+                            
+                            if ((cchr.field_0x3 & 4) == 0)
+                                FUN_004143dc(&cchr, CHSTATE_9);
+                            else
+                                FUN_004143dc(&cchr, CHSTATE_3);
+                            
+                            FUN_0041079c(&pCVar16, local_1c / 4);
+                            
+                            pCVar16.Metkost += local_1c;
+                            FUN_00418510(&pCVar16, local_1c, pCVar16.Level);
+                        }
+                        else if (retres == 0)
+                        {
+                            if ((cchr.field_0x3 & 4) == 0)
+                                FUN_004143dc(&pCVar16, CHSTATE_8);
+                            else 
+                                FUN_004143dc(&pCVar16, CHSTATE_2);
+                        }
+                        //if (cchr.MapCharID == _mainCharacter->MapCharID)
+                        //    FUN_0042d574(&pCVar16);
+                        
+                        MapObjects2Count--;
+                        for(int32_t k = i; k < MapObjects2Count; ++k)
+                            MapObjects2.at(k) = MapObjects2.at(k + 1);
+                        i--;
+                        break;
+                    }
+                }
+                
+                arrow.p2 += arrow.p1;
+            }
+        }
+    }
 }
 
 
@@ -644,14 +842,14 @@ void Engine::FUN_00421da4()
                 case CHSTATE_2:
                 case CHSTATE_8:
                 {
-                    if (chr.Frame == 0 && chr.MapCharID == _mainCharacter->MapCharID)
-                        FUN_0042d574(&chr);
+                    //if (chr.Frame == 0 && chr.MapCharID == _mainCharacter->MapCharID)
+                    //    FUN_0042d574(&chr);
                     
                     if (!FUN_00413de4(&chr))
                     {
                         FUN_00414ab4(&chr);
-                        if (chr.MapCharID == _mainCharacter->MapCharID)
-                            FUN_0042d574(&chr);
+                        //if (chr.MapCharID == _mainCharacter->MapCharID)
+                        //    FUN_0042d574(&chr);
                     }
                 }
                 break;
@@ -670,7 +868,7 @@ void Engine::FUN_00421da4()
                             if (chr.MapCharID == _mainCharacter->MapCharID)
                             {
                                 FUN_00439230(&chr);
-                                FUN_0042d574(&chr);
+                                //FUN_0042d574(&chr);
                             }
                         }
                         FUN_00413de4(&chr);
@@ -775,8 +973,8 @@ void Engine::FUN_00421da4()
                                 FUN_004143dc(&ch1, CHSTATE_8);
                         }
                         
-                        if (ch1.MapCharID == _mainCharacter->MapCharID)
-                            FUN_0042d574(&ch1);
+                        //if (ch1.MapCharID == _mainCharacter->MapCharID)
+                        //    FUN_0042d574(&ch1);
                     }
                     FUN_004143dc(&chr, chr.State);
                 }
@@ -857,9 +1055,242 @@ bool Engine::FUN_00412c30(MapChar *pchar)
     return false;
 }
 
-void Engine::FUN_00418510(Character *pchar, int32_t w, int32_t lvl)
+void Engine::FUN_00418510(Character *pchar, int32_t maxBonusGld, int32_t lvl)
 {
-    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
+    int32_t invCount = 0;
+    for (int32_t i = 0; i < INVSIZE; ++i)
+    {
+        if (pchar->Inventory[i])
+            invCount++;
+    }
+    
+    if (invCount == 0 && pchar->Gold == 0 && (rand() % 101) > 30 && pchar->field62_0x52 == 0)
+        return;
+
+    int32_t startSlot = 0;
+    GameMap::Cell &cell = _currentMap->FootMap.At(pchar->Tile);
+    GS1 *loot = nullptr;
+    if ((cell.Flags & 2) == 0)
+    {
+        if (mapGS1Count >= mapGS1.size())
+            return;
+        
+        loot = &mapGS1.at(mapGS1Count);
+        *loot = GS1();
+        loot->Index = mapGS1Count;
+        loot->Tile = pchar->Tile;
+        loot->LootID = -1;
+        
+        cell.Flags |= 2;
+        
+        mapGS1Count++;
+    }
+    else
+    {
+        for (int32_t i = 0; i < mapGS1Count; ++i)
+        {
+            GS1 &l = mapGS1.at(i);
+            if (l.Tile == pchar->Tile)
+            {
+                for (int16_t itemId : l.ItemID)
+                {
+                    if (!itemId)
+                        break;
+                    
+                    startSlot++;
+                }
+                
+                loot = &l;
+                break;
+            }
+        }
+    }
+    
+    if (!loot)
+        return;
+    
+    if (maxBonusGld >= 2)
+        loot->unk2 += pchar->Gold + (rand() % maxBonusGld);
+    
+    int32_t invPos = 0;
+    for (int32_t i = 0; i < invCount; ++i)
+    {
+        //Skip empty slots
+        while(pchar->Inventory[invPos] == 0 && invPos < INVSIZE)
+        { ++invPos; }
+        
+        loot->ItemID[startSlot] = pchar->Inventory[invPos];
+        pchar->Inventory[invPos] = 0;
+        
+        startSlot++;
+        
+        if (startSlot >= loot->ItemID.size())
+            break;
+    }
+    
+    if (startSlot < loot->ItemID.size() && lvl != 0)
+    {
+        int32_t randVal = rand() % 101;
+        if (randVal > 85) 
+        {
+            ItemInfo *itm = AllocItem();
+            if (itm)
+            {
+                loot->ItemID[startSlot] = itm->Index;
+                startSlot++;
+                
+                if (randVal < 87)
+                {
+                    int32_t tmp = 0;
+                    if (lvl / 5 + 1 >= 2)
+                        tmp = rand() % (lvl / 5 + 1);
+                    
+                    itm->InfoID = tmp + (rand() % 9) * 3;
+                    itm->Weight = ArmorWeaponInfo[ itm->InfoID ].unk1;
+                    itm->Concentration = itm->Weight;
+                    
+                    tmp = itm->InfoID % 9;
+                    if (tmp < 3)
+                        itm->TypeID = 2;
+                    else if (tmp < 6)
+                        itm->TypeID = 0;
+                    else
+                        itm->TypeID = 1;
+                    
+                    if (rand() % 101 < 10)
+                    {
+                        if (_mainCharacter->Identification < rand() % 100)
+                            itm->Flags |= ItemInfo::FLAG_IDENTIFIED;
+                        else
+                        {
+                            _mainCharacter->Identification++;
+                            if (_mainCharacter->Identification > 100)
+                                _mainCharacter->Identification = 100;
+                        }
+                        
+                        tmp = 0;
+                        
+                        if (FUN_004171d4(lvl) >= 2)
+                            tmp = rand() % FUN_004171d4(lvl);
+                        
+                        itm->BonusID = tmp + (rand() % 5) * 10;
+                    }
+                }
+                else if (randVal < 88)
+                {
+                    int32_t tmp = rand() % 3;
+                    if (tmp == 0)
+                    {
+                        tmp = 0;
+                        if (lvl / 5 + 1 >= 2)
+                            tmp = rand() % (lvl / 5 + 1);
+                        
+                        itm->InfoID = tmp + (rand() % 3) * 11 + 34;
+                        itm->TypeID = 3;
+                    }
+                    else if (tmp == 1)
+                    {
+                        tmp = 0;
+                        if (lvl / 4 + 1 >= 2)
+                            tmp = rand() % (lvl / 4 + 1);
+                        
+                        itm->InfoID = tmp + (rand() % 3) * 11 + 37;
+                        itm->TypeID = 5;
+                    }
+                    else if (tmp == 2)
+                    {
+                        tmp = 0;
+                        if (lvl / 4 + 1 >= 2)
+                            tmp = rand() % (lvl / 4 + 1);
+                        
+                        itm->InfoID = tmp + (rand() % 3) * 11 + 41;
+                        itm->TypeID = 4;
+                    }
+                    
+                    itm->Weight = ArmorWeaponInfo[itm->InfoID].unk1;
+                    itm->Concentration = itm->Weight;
+                    
+                    if (rand() % 100 < 7)
+                    {
+                        if (_mainCharacter->Identification < rand() % 100)
+                            itm->Flags |= ItemInfo::FLAG_IDENTIFIED;
+                        
+                        tmp = 0;
+                        
+                        if (FUN_004171d4(lvl) >= 2)
+                            tmp = rand() % FUN_004171d4(lvl);
+                        
+                        itm->BonusID = tmp + (rand() % 5) * 10;
+                    }
+                }
+                else
+                {
+                    if (randVal < 95)
+                    {
+                        if (lvl / 5 + 1 < 2)
+                            itm->InfoID = 6;
+                        else
+                            itm->InfoID = 6 + rand() % (lvl / 5 + 1);
+                        itm->TypeID = 8;
+                    }
+                    else if (randVal < 98) 
+                    {
+                        if (lvl / 5 + 1 < 2)
+                            itm->InfoID = 3;
+                        else
+                            itm->InfoID = 3 + rand() % (lvl / 5 + 1);
+                        itm->TypeID = 7;
+                    }
+                    else 
+                    {
+                        if (lvl / 5 + 1 < 2)
+                            itm->InfoID = 0;
+                        else
+                            itm->InfoID = rand() % (lvl / 5 + 1);
+                        itm->TypeID = 6;
+                    }
+                    
+                    if (_mainCharacter->Identification < rand() % 100)
+                        itm->Flags |= ItemInfo::FLAG_IDENTIFIED;
+                    
+                    int32_t tmp = 0;
+                        
+                    if (FUN_004171d4(lvl) >= 2)
+                        tmp = rand() % FUN_004171d4(lvl);
+                        
+                    itm->BonusID = tmp + (rand() % 5) * 10;
+                }
+            }
+        }
+    }
+    
+    if (startSlot < loot->ItemID.size() && pchar->field62_0x52)
+    {
+        ItemInfo *itm = AllocItem();
+        if (itm)
+        {
+            loot->ItemID[startSlot] = itm->Index;
+            itm->TypeID = 9;
+            itm->InfoID = 0;
+            itm->Concentration = 1.0;
+            itm->Poison = pchar->field62_0x52;
+        }
+    }
+    
+    if (loot->unk2 == 0 && loot->ItemID[0] == 0)
+    {
+        cell.Flags &= ~2;
+        mapGS1Count--;
+    }
+    else
+    {
+        loot->ImgID = GetLootImage(*loot);
+        
+        Common::Point pt = FUN_00439ba0(loot->Tile);
+        GFX::Image *img = _menuImages.at(loot->ImgID);
+        
+        loot->Pos = pt - img->GetSize() / 2;
+    }
 }
 
 void Engine::FUN_0041bdf0(MapChar *mchar)
@@ -929,11 +1360,6 @@ void Engine::FUN_0041bdf0(MapChar *mchar)
             }
         }
     }
-}
-
-void Engine::FUN_0042d574(Character *pchar)
-{
-    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
 }
 
 vec3f Engine::FUN_0042c914(Character *pchar, ItemInfo *itm)
@@ -1179,8 +1605,8 @@ void Engine::FUN_0041d0fc()
                             FUN_00418510(&ch, 0, _mainCharacter->Level);
                         }
                     }
-                    if (ch.MapCharID == _mainCharacter->MapCharID) 
-                        FUN_0042d574(&ch);
+                    //if (ch.MapCharID == _mainCharacter->MapCharID) 
+                    //    FUN_0042d574(&ch);
                 }
                 
                 if (ch.field_0xce)
@@ -1196,9 +1622,9 @@ void Engine::FUN_0041d0fc()
 
                         if (ch.MapCharID == _mainMapChar->Index)
                         {
-                            FUN_0042d574(&ch);
-                            if (_playScreenID == PLSCREEN_3)
-                                PlayChangeScreen(PLSCREEN_3);
+                            //FUN_0042d574(&ch);
+                            //if (_playScreenID == PLSCREEN_3)
+                            //    PlayChangeScreen(PLSCREEN_3);
 
                             if (DisplayInvOfCharID != 0)
                                 FUN_0042f50c(CharInfoCharacter, 0);
@@ -1608,7 +2034,7 @@ int32_t Engine::FUN_0041b4cc(Character *pchar, int32_t fkt)
     FUN_0041c750(pchar);
     
     int32_t val = 0;
-    if (pchar->field_0x12 == 1 && pchar->ArmorWeapons[1] != 0 && fkt != 0)
+    if (pchar->field_0x12 == ESLT_1 && pchar->ArmorWeapons[ESLT_1] != 0 && fkt != 0)
     {
         ItemInfo &inf = _state.Items.at(pchar->ArmorWeapons[1]);
         const WeapArmorItemInfo &w = ArmorWeaponInfo.at(inf.InfoID);
@@ -1709,7 +2135,7 @@ void Engine::FUN_00421d24(Character *pchar, int32_t itmID)
     {
         if (pchar->Inventory[i] == itmID)
         {
-            for(int32_t j = i; j < pchar->Inventory.size() - 1; ++i)
+            for(int32_t j = i; j < pchar->Inventory.size() - 1; ++j)
                 pchar->Inventory[j] = pchar->Inventory[j + 1];
             pchar->Inventory.back() = 0;
             return;
@@ -1772,12 +2198,12 @@ void Engine::FUN_004105a0(Character *pchar)
     if ((pchar->Arrows == 0) || (pchar->ArmorWeapons[1] == 0))
     {
         if (pchar->ArmorWeapons[0] == 0)
-            pchar->field_0x12 = 2;
+            pchar->field_0x12 = ESLT_2;
         else
-            pchar->field_0x12 = 0;
+            pchar->field_0x12 = ESLT_0;
     }
     else 
-        pchar->field_0x12 = 1;
+        pchar->field_0x12 = ESLT_1;
 }
 
 Engine::Character * Engine::FUN_004202a8(MapChar *mchar, Character *pchar)
@@ -1933,9 +2359,9 @@ bool Engine::FUN_00416934(Character *pchar)
         return true;
     }
     
-    if ((pchar->ArmorWeapons[1] != 0) && (pchar->Arrows != 0))
+    if ((pchar->ArmorWeapons[ESLT_1] != 0) && (pchar->Arrows != 0))
     {
-        pchar->field_0x12 = 1;
+        pchar->field_0x12 = ESLT_1;
         if (FUN_00410e84(pchar))
         {
             pchar->MoveTile = _state.Characters.at(pchar->EnemyCharID - 1).Tile;
@@ -1948,10 +2374,10 @@ bool Engine::FUN_00416934(Character *pchar)
         }
     }
     
-    if (pchar->ArmorWeapons[0] == 0)
-        pchar->field_0x12 = 2;
+    if (pchar->ArmorWeapons[ESLT_0] == 0)
+        pchar->field_0x12 = ESLT_2;
     else
-        pchar->field_0x12 = 0;
+        pchar->field_0x12 = ESLT_0;
     
     Character *tgtChar = FUN_004202a8(&_state.MapChar_ARRAY.at(mchr.unk3), pchar);
     if (!tgtChar)
@@ -2085,7 +2511,7 @@ bool Engine::FUN_0041bff8(Character *pchar)
     if (MapObjects2Count >= 100)
         return false;
     
-    Common::Point p = FUN_00439ba0(pchar->MoveTile) + Common::Point(0, -30);
+    Common::FPoint p = FUN_00439ba0(pchar->MoveTile) + Common::FPoint(0, -30);
     
     MapObject2 &obj = MapObjects2.at(MapObjects2Count);
     MapObjects2Count++;
@@ -2104,9 +2530,9 @@ bool Engine::FUN_0041bff8(Character *pchar)
     
     Common::FPoint d = obj.p2.AbsDistance(p) * Common::FPoint(0.25, 0.25) + Common::FPoint(0.001, 0.001);
     if (d.x < d.y)
-        obj.p1 = obj.p2.AbsDistance(p) / (d.y);
+        obj.p1 = (p - obj.p2) / d.y;
     else
-        obj.p1 = obj.p2.AbsDistance(p) / (d.x);
+        obj.p1 = (p - obj.p2) / d.x;
     
     obj.dmg2 = pchar->Direction * 2 + 184; //?
     obj.unk4 = wep.unk4;
@@ -2326,8 +2752,8 @@ void Engine::FUN_0041079c(Character *pchar, int32_t exp)
     {
         if (pchar->Index + 1 == DisplayInvOfCharID)
         {
-            if (_playScreenID == PLSCREEN_3)
-                PlayChangeScreen(PLSCREEN_3);
+            //if (_playScreenID == PLSCREEN_3)
+            //    PlayChangeScreen(PLSCREEN_3);
             FUN_0042f50c(pchar, 0);
         }
     }
@@ -2358,6 +2784,7 @@ void Engine::FUN_00416058(MapChar *mchr)
                     continue;
             }
         }
+        
         switch(chr.State)
         {
             case CHSTATE_0:
@@ -2518,8 +2945,8 @@ void Engine::FUN_00416058(MapChar *mchr)
                                         else
                                             FUN_004143dc(&c, CHSTATE_2);
                                     }
-                                    if (c.MapCharID == _mainCharacter->MapCharID)
-                                        FUN_0042d574(&c);
+                                    //if (c.MapCharID == _mainCharacter->MapCharID)
+                                    //    FUN_0042d574(&c);
                                 }
                                 
                                 FUN_004143dc(&chr, chr.State);
@@ -2767,7 +3194,7 @@ bool Engine::FUN_00412e00(Character *pchar)
                     
                     if (pchar->ArmorWeapons[ESLT_1] && pchar->Arrows) 
                     {
-                        pchar->field_0x12 = 1;
+                        pchar->field_0x12 = ESLT_1;
                         
                         if (FUN_00410e84(pchar)) 
                         {
@@ -2852,7 +3279,7 @@ bool Engine::FUN_00412e00(Character *pchar)
     Common::Rect r = mchar.spwnTlRect;
     
     if ( pchar->Tile.y >= r.top && pchar->Tile.y <= r.bottom &&
-         pchar->Tile.x >= r.top && pchar->Tile.x <= r.right)  // SEEMS ERROR r.top!
+         pchar->Tile.x >= r.top && pchar->Tile.x <= r.right)  // SEEMS ERROR r.top -> r.left!
     {
         if (pchar->State != CHSTATE_0 && pchar->State != CHSTATE_6)
             FUN_00414ab4(pchar);
@@ -3032,12 +3459,12 @@ void Engine::FUN_004123bc(MapChar *mchr)
                     {
                         if (chr.ClassID == 0x4d || chr.ClassID == 0x4f)
                         {
-                            if (chr.field_0x12 == 0)
+                            if (chr.field_0x12 == ESLT_0)
                             {
                                 if (chr.FrameCount >= 2)
-                                    chr.field_0x12 = (rand() % 2) * (rand() % chr.FrameCount) + 1;
+                                    chr.field_0x12 = (rand() % 2) * (rand() % chr.FrameCount) + ESLT_1;
                                 else
-                                    chr.field_0x12 = 1;
+                                    chr.field_0x12 = ESLT_1;
                                 
                                 continue;
                             }
@@ -3220,8 +3647,8 @@ void Engine::FUN_004123bc(MapChar *mchr)
                             FUN_004143dc(&enm, CHSTATE_8);
                     }
                     
-                    if (enm.MapCharID == _mainCharacter->MapCharID)
-                        FUN_0042d574(&enm);
+                    //if (enm.MapCharID == _mainCharacter->MapCharID)
+                    //    FUN_0042d574(&enm);
                 }
                 
                 if (chr.ClassID == 0x49)
@@ -3321,7 +3748,7 @@ bool Engine::FUN_0041f11c(MapChar *mchar, Character *pchar)
 
 bool Engine::FUN_00410e84(Character *pchar)
 {
-    if ((pchar->field_0x12 == 1) && pchar->ArmorWeapons[ESLT_1] && pchar->Arrows)
+    if ((pchar->field_0x12 == ESLT_1) && pchar->ArmorWeapons[ESLT_1] && pchar->Arrows)
     {
         MapChar *pMVar2 = FUN_0041fd74(&_state.MapChar_ARRAY.at(pchar->MapCharID));
         if (pMVar2 == nullptr)
@@ -3465,7 +3892,7 @@ void Engine::FUN_0041ed8c(Character *pchar)
             }
         }
     }
-    else if (pchar->field_0x12 == 1 && pchar->ArmorWeapons[ESLT_1] && pchar->Arrows)
+    else if (pchar->field_0x12 == ESLT_1 && pchar->ArmorWeapons[ESLT_1] && pchar->Arrows)
     {
         if (!pchar->EnemyCharID && !FUN_00410e84(pchar))
             FUN_00414ab4(pchar);
@@ -3582,7 +4009,7 @@ Engine::MapChar *Engine::FUN_0041fd74(MapChar *mchar)
     {
         Character &tchar = _state.Characters.at(_mainMapChar->CharacterIndex + i);
         
-        if ((tchar.ClassID & CLASS_BIT80) == 0 && (tchar.State != CHSTATE_9) && (tchar.State != CHSTATE_3))
+        if ((tchar.ClassID & CLASS_BIT80) == 0 && tchar.State != CHSTATE_9 && tchar.State != CHSTATE_3)
         {
             if (tchar.Tile.y >= mchar->someRect.top && tchar.Tile.y <= mchar->someRect.bottom &&
                 tchar.Tile.x >= mchar->someRect.left && tchar.Tile.x <= mchar->someRect.right) 
@@ -3641,7 +4068,7 @@ int32_t Engine::FUN_00439aa4(Common::Point p1, Common::Point p2)
                 return 1;
         }
     }
-    else if (p2.x >= p1.x)
+    else if (p1.x >= p2.x)
         return 4;
     
     return 0;
@@ -3673,15 +4100,14 @@ int32_t Engine::FUN_0041130c(Character *pchar, Common::Point t, int32_t chIndex)
     int32_t local_24 = ArmorWeaponInfo.at(pIVar1.InfoID).unk4;
     
     Common::Point tpt = FUN_00439ba0(pchar->Tile) + O45ad30.at( FUN_00439aa4(t, pchar->Tile) );
-    Common::Point tpt2 = FUN_00439ba0(t) - Common::Point(30, 0);
+    Common::Point tpt2 = FUN_00439ba0(t) - Common::Point(0, 30);
     
-    Common::FPoint dpt = tpt2 - tpt; 
-    Common::FPoint opt = tpt2.AbsDistance(tpt) * 0.25 + Common::FPoint(0.001, 0.001);
+    Common::FPoint opt = Common::FPoint(tpt2.AbsDistance(tpt)) * 0.25 + Common::FPoint(0.001, 0.001);
     
     if (opt.y < opt.x)
-        opt = dpt / dpt.x;
+        opt = Common::FPoint(tpt2 - tpt) / opt.x;
     else
-        opt = dpt / dpt.y;
+        opt = Common::FPoint(tpt2 - tpt) / opt.y;
     
     Common::FPoint stpt = tpt;
     
@@ -3791,6 +4217,87 @@ void Engine::DrawElmQueue()
             ImgQueue2(_menuImages.at(DrawElm[i] & 0x7F), ElmBox[i].Add(0, -2), Common::Rect());
     }
 }
+
+
+void Engine::FUN_0042d574(Character *pchar, int32_t index)
+{
+    constexpr const std::array<Common::Point, 10> facePos = 
+    {{
+    /*{3, 1},*/{6, 4},
+    /*{58, 1},*/{74, 4},
+    /*{3, 55},*/{6, 71},
+    /*{58, 55},*/{74, 71},
+    /*{3, 109},*/{6, 139},
+    /*{58, 109},*/{74, 139},
+    /*{3, 163},*/{6, 206},
+    /*{58, 163},*/{74, 206},
+    /*{3, 217},*/{6, 273},
+    /*{58, 217}*/{74, 273}    
+    }};
+            
+    Common::Point pos = facePos.at(index);
+    int hplvl = 0;
+    if ((pchar->ClassID & CLASS_BIT40) == 0)
+    {
+        if ((pchar->ClassID & CLASS_BIT80) == 0)
+        {
+            if (pchar->HP <= 400)
+                hplvl = 3;
+            else if (pchar->HP <= 800)
+                hplvl = 2;
+            else if (pchar->HP <= 1200)
+                hplvl = 1;
+            else
+                hplvl = 0;
+        }
+        else
+            hplvl = 4;
+        
+        if (pchar == _mainCharacter)
+        {
+            hplvl += pchar->CharacterBase * 25 + 215;
+            
+            if (pchar->State == CHSTATE_8 || pchar->State == CHSTATE_2)
+                ImgQueue2(_menuImages.at(hplvl), pos, Common::Rect(), vec3f(24, 0, 0));
+            else
+                ImgQueue2(_menuImages.at(hplvl), pos, Common::Rect());
+        }
+        else
+        {
+            hplvl += pchar->CharacterBase * 25 + (pchar->ClassID & CLASS_MASK) * 5 + 195;
+            if (pchar->State == CHSTATE_8 || pchar->State == CHSTATE_2)
+                ImgQueue2(_menuImages.at(hplvl), pos, Common::Rect(), vec3f(24, 0, 0));
+            else
+                ImgQueue2(_menuImages.at(hplvl), pos, Common::Rect());
+        }
+    }
+    
+    if (IsSelectedCharacter(pchar))
+        ImgQueue2(_menuImages.at(173), pos, Common::Rect());
+    
+    if (pchar->HP)
+    {
+        constexpr const int32_t hhp = 40; // 32
+        int32_t pixH = hhp * pchar->HP / 1600;
+        if (pixH == 0)
+            pixH = 1;
+
+        int32_t imgId = 174;
+        if (pchar->Otravlenie)
+            imgId = 175;
+        else if (pchar->HP <= 400)
+            imgId = 176;
+        else if (pchar->HP <= 800)
+            imgId = 177;
+        else
+            imgId = 174;            
+        
+        Common::Point outpos = pos + Common::Point(6, 10); // (4, 8)
+        ImgQueue2(_menuImages.at(imgId), outpos, Common::Rect(outpos.x, outpos.y + hhp - pixH, MAPRECT.right, MAPRECT.bottom));
+    }
+}
+
+
 
 void Engine::FUN_004290ac(int elmid, int imgid)
 {
@@ -4006,7 +4513,7 @@ void Engine::ChangeWeapon(int32_t wpnId)
 
     if (_playScreenID == PLSCREEN_3)
     {
-        PlayChangeScreen(PLSCREEN_3);
+        //PlayChangeScreen(PLSCREEN_3);
         FUN_0042f50c(CharInfoCharacter, 0);
     }
     else if (DisplayInvOfCharID != 0) {
@@ -4109,7 +4616,7 @@ void Engine::FUN_00421698()
         if ((chr.ClassID & CLASS_BIT80) == 0 && chr.State != CHSTATE_9 && chr.State != CHSTATE_3)
         {
             chr.EnemyCharID = 0;
-            if (chr.field_0x12 == 1)
+            if (chr.field_0x12 == ESLT_1)
                 chr.field2_0x2 = 0x44;
             else
                 chr.field2_0x2 = 0x41;

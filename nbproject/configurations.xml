@@ -12,6 +12,7 @@
       <itemPath>font.cpp</itemPath>
       <itemPath>fsmgr.cpp</itemPath>
       <itemPath>game.cpp</itemPath>
+      <itemPath>game_arrows.cpp</itemPath>
       <itemPath>game_character.cpp</itemPath>
       <itemPath>game_data.cpp</itemPath>
       <itemPath>game_input.cpp</itemPath>
@@ -27,6 +28,7 @@
       <itemPath>game_sound.cpp</itemPath>
       <itemPath>game_soundres.cpp</itemPath>
       <itemPath>game_state.cpp</itemPath>
+      <itemPath>game_trade.cpp</itemPath>
       <itemPath>game_ui.cpp</itemPath>
       <itemPath>game_village.cpp</itemPath>
       <itemPath>gfx.cpp</itemPath>
@@ -171,6 +173,8 @@
       </item>
       <item path="game.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="game_arrows.cpp" ex="false" tool="1" flavor2="0">
+      </item>
       <item path="game_character.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game_data.cpp" ex="false" tool="1" flavor2="0">
@@ -202,6 +206,8 @@
       <item path="game_soundres.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game_state.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_trade.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game_ui.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -312,6 +318,8 @@
       </item>
       <item path="game.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="game_arrows.cpp" ex="false" tool="1" flavor2="0">
+      </item>
       <item path="game_character.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game_data.cpp" ex="false" tool="1" flavor2="0">
@@ -343,6 +351,8 @@
       <item path="game_soundres.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game_state.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="game_trade.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="game_ui.cpp" ex="false" tool="1" flavor2="0">
       </item>

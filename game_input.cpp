@@ -340,7 +340,7 @@ void Engine::PlayProcessMouse()
                                     CharInfoCharacter = &pCVar13;
                                     int16_t_ARRAY_0083dc4c[1] = pCVar13.Inventory;
                                     int16_t_ARRAY_0083dd4c[0] = 0;
-                                    FUN_00431d70(0);
+                                    DrawTrade(0);
                                 }
                             }
                             else if (_playScreenID == PLSCREEN_3)
@@ -348,13 +348,9 @@ void Engine::PlayProcessMouse()
                                 InvPos = 0;
                                 DAT_00a3e7a0 = 0;
                                 CharInfoCharacter = &pCVar13;
-                                PlayChangeScreen(PLSCREEN_3);
                                 FUN_0042f50c(CharInfoCharacter, 0);
                                 if (!IsSelectedCharacter(&pCVar13))
-                                {
                                     SelectCharacter(&pCVar13);
-                                    PlayChangeScreen(PLSCREEN_0);
-                                }
                                 FUN_004290d8();
                             }
                             else
@@ -369,7 +365,7 @@ void Engine::PlayProcessMouse()
                                         CharInfoCharacter = &pCVar13;
                                         FUN_0042f50c(&pCVar13, 0);
                                     }
-                                    PlayChangeScreen(PLSCREEN_0);
+                                    //PlayChangeScreen(PLSCREEN_0);
                                     FUN_004290d8();
                                 }
                                 else
@@ -409,7 +405,7 @@ void Engine::PlayProcessMouse()
                 {
                     CharInfoCharacter->Level++;
                     
-                    PlayChangeScreen(PLSCREEN_3);
+                    //PlayChangeScreen(PLSCREEN_3);
                     FUN_0042f50c(CharInfoCharacter, 0);
                 }
                 
@@ -425,7 +421,7 @@ void Engine::PlayProcessMouse()
                     CharInfoCharacter->Exp += points;
                     CharInfoCharacter->BaseHarizm++;
                     
-                    PlayChangeScreen(PLSCREEN_3);
+                    //PlayChangeScreen(PLSCREEN_3);
                     FUN_0042f50c(CharInfoCharacter, 0);
                 }
             }
@@ -440,7 +436,7 @@ void Engine::PlayProcessMouse()
                     CharInfoCharacter->Exp += points;
                     CharInfoCharacter->BaseSila++;
                     
-                    PlayChangeScreen(PLSCREEN_3);
+                    //PlayChangeScreen(PLSCREEN_3);
                     FUN_0042f50c(CharInfoCharacter, 0);
                 }
             }
@@ -455,7 +451,7 @@ void Engine::PlayProcessMouse()
                     CharInfoCharacter->Exp += points;
                     CharInfoCharacter->BaseLovkost++;
                     
-                    PlayChangeScreen(PLSCREEN_3);
+                    //PlayChangeScreen(PLSCREEN_3);
                     FUN_0042f50c(CharInfoCharacter, 0);
                 }
             }
@@ -470,7 +466,7 @@ void Engine::PlayProcessMouse()
                     CharInfoCharacter->Exp += points;
                     CharInfoCharacter->BaseVinoslivost++;
                     
-                    PlayChangeScreen(PLSCREEN_3);
+                    //PlayChangeScreen(PLSCREEN_3);
                     FUN_0042f50c(CharInfoCharacter, 0);
                 }
             }
@@ -488,7 +484,7 @@ void Engine::PlayProcessMouse()
                     CharInfoCharacter->field_0x3 &= ~2;
                 }
                 
-                PlayChangeScreen(PLSCREEN_3);
+                //PlayChangeScreen(PLSCREEN_3);
                 FUN_0042f50c(CharInfoCharacter, 0);
             }
             break;
@@ -515,11 +511,12 @@ void Engine::PlayProcessMouse()
                                 int16_t_ARRAY_0083dc4c[to_panel].at(itmToPos) = int16_t_ARRAY_0083dc4c[fromPanel].at(itmFromPos);
                                 int16_t_ARRAY_0083dc4c[fromPanel].at(itmFromPos) = 0;
 
-                                for (to_panel = itmFromPos; to_panel < INVSIZE - 1; to_panel++)
-                                    int16_t_ARRAY_0083dc4c[fromPanel].at(to_panel) = int16_t_ARRAY_0083dc4c[fromPanel].at(to_panel + 1);
+                                for (int32_t i = itmFromPos; i < INVSIZE - 1; ++i)
+                                    int16_t_ARRAY_0083dc4c[fromPanel].at(i) = int16_t_ARRAY_0083dc4c[fromPanel].at(i + 1);
 
                                 int16_t_ARRAY_0083dc4c[fromPanel].back() = 0;
-                                FUN_00431d70(0);
+                                DrawTrade(0);
+                                break;
                             }
                         }
                     }
@@ -540,8 +537,8 @@ void Engine::PlayProcessMouse()
 
                             FUN_0041e210(CharInfoCharacter, 32, itemId);
 
-                            if (_playScreenID == PLSCREEN_3)
-                                PlayChangeScreen(PLSCREEN_3);
+                            //if (_playScreenID == PLSCREEN_3)
+                            //    PlayChangeScreen(PLSCREEN_3);
                             FUN_0042f50c(CharInfoCharacter, 0);
                         }
                     }
@@ -578,7 +575,7 @@ void Engine::PlayProcessMouse()
                     if (int16_t_ARRAY_0083dd4c[invid] < 0)
                         int16_t_ARRAY_0083dd4c[invid] = 0;
                     
-                    FUN_00431d70(-(invid + 1));
+                    DrawTrade(-(invid + 1));
                 }
                 else
                 {
@@ -600,7 +597,7 @@ void Engine::PlayProcessMouse()
                     if (FUN_0041eb9c(&int16_t_ARRAY_0083dc4c[local_20], 6, int16_t_ARRAY_0083dd4c[local_20]))
                     {
                         int16_t_ARRAY_0083dd4c[local_20]++;
-                        FUN_00431d70(local_20 + 1);
+                        DrawTrade(local_20 + 1);
                     }
                 }
                 else
@@ -615,7 +612,7 @@ void Engine::PlayProcessMouse()
             
             case 200:
             {
-                if (FUN_00420634(false))
+                if (TradeComplete(false))
                 {
                     _playScreenID = PLSCREEN_0;
                     FUN_004292e4();
@@ -625,7 +622,7 @@ void Engine::PlayProcessMouse()
             
             case 201:
             {
-                if (FUN_00420634(true))
+                if (TradeComplete(true))
                 {
                     if (!PInteractChar)
                     {
@@ -766,7 +763,7 @@ void Engine::PlayProcessMouse()
                                 SelectCharacter(MouseOnCharacter);
                         }
                         
-                        PlayChangeScreen(PLSCREEN_0);
+                        //PlayChangeScreen(PLSCREEN_0);
                         
                         if (DisplayInvOfCharID2)
                         {
@@ -820,7 +817,7 @@ void Engine::PlayProcessMouse()
                             }
                         }
                         
-                        PlayChangeScreen(PLSCREEN_0);
+                        //PlayChangeScreen(PLSCREEN_0);
                     }
                     else
                     {
@@ -944,7 +941,7 @@ void Engine::PlayProcessMouse()
                 if (id == 0)
                     return;
                 
-                if (CharInfoCharacter->field_0x12 == 2)
+                if (CharInfoCharacter->field_0x12 == ESLT_2)
                     id = CharInfoCharacter->ArmorWeapons[ESLT_2];
                  
                 if (id == 0 || id == DAT_00a3e7a0)
@@ -1042,23 +1039,18 @@ void Engine::PlayProcessMouse()
             case 100:
                 PlayChangeScreen(PLSCREEN_1);
                 return;
+                
+            default:
+                break;
         }
         
-        if (_playScreenID == PLSCREEN_1)
-        {
-            PlayChangeScreen(PLSCREEN_1);
-            return;
-        }
+//        if (_playScreenID == PLSCREEN_1)
+//        {
+//            PlayChangeScreen(PLSCREEN_1);
+//            return;
+//        }
     }
-}
-
-
-bool Engine::FUN_00420634(bool p)
-{
-    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
-    return false;
-}
-    
+}    
 
     
 }

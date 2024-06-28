@@ -205,6 +205,14 @@ public:
         VJOB_VOEVODA = 5
     };
     
+    enum STORE
+    {
+        STORE_AWPN = (1 << 0), // armor and weapon
+        STORE_ARROW = (1 << 1), // arrow slot
+        STORE_TRINKET = (1 << 2), // accessories and trinkets
+        STORE_INVENTORY = (1 << 3)
+    };
+    
 public:
     
     
@@ -473,7 +481,7 @@ public:
         struct Job
         {
             uint8_t Direction = DIR_0;
-            uint8_t unk = 0;
+            int16_t unk = 0;
             int16_t CharID = 0;
             Common::Point Tile;
             
@@ -517,9 +525,9 @@ public:
         int16_t DoMedicPotionSlot7 = 0;
         int16_t DoMedicPotionSlot5 = 0;
         
-        std::array<int16_t, 24> MedicItems;
+        std::array<int16_t, 25> MedicItems;
         
-        int16_t unk3 = 0;
+        //int16_t unk3 = 0;
         
         std::array<int16_t, 32> TraderItems;
         std::array<int16_t, 23> SmithItems;
@@ -815,12 +823,14 @@ public:
     }
     
     void DrawCharacterSprite(Character &ch);
+    void FUN_004251d0(Character &ch);
+    
     bool PlaceMob(Character *);
     
     Character *CalcMapChar(MapChar *pmchar);
     
     void FUN_0041c750(Character *param_1);
-    int32_t GetCurrentWeight(Character *pchar);
+    int32_t GetCurrentWeight(Character *pchar, uint32_t ignore = 0);
     
     int32_t CheckKharUp(Character &pchar, int32_t param);
     
@@ -858,7 +868,7 @@ public:
     bool FUN_0041e96c();
     
     void FUN_004118dc();
-    void FUN_00436ad0(int32_t);
+    void FUN_00436ad0(int32_t mapid);
     void FUN_00436a00();
     void FUN_00421170();
     void FUN_00421da4();
@@ -867,7 +877,6 @@ public:
     void FUN_00421bb8(Character *pchar);
     void FUN_004110ec(Character *pchar);
     void MapObjectsUpdateFrames();
-    void FUN_0042d574(Character *pchar);
     vec3f FUN_0042c914(Character *pchar, ItemInfo *itm);
     int32_t FUN_0042c870(ItemInfo *itm);
     void FUN_0042f50c(Character *pchar, int32_t);
@@ -875,7 +884,7 @@ public:
     void FUN_0041733c(Village::BldState *state);
     int32_t FUN_0041b70c(Character *pchar);
     void FUN_0041bdf0(MapChar *mchar);
-    void FUN_00418510(Character *pchar, int32_t w, int32_t lvl);
+    void FUN_00418510(Character *pchar, int32_t maxBonusGld, int32_t lvl);
     bool FUN_00412c30(MapChar *pchar);
     void FUN_00414ab4(Character *pchar);
     bool FUN_00416934(Character *pchar);
@@ -949,6 +958,7 @@ public:
     int32_t GetVillageCharacterJob(Character *pchar);
     Village * FUN_0043a1f8(int32_t mapId);
     
+    bool FUN_00417268(Village *vlg, Character *pchr, int32_t iout, int32_t i1, int32_t i2);
     void UpdateVillageMedic(Village *vlg);
     void UpdateVillageSmith(Village *vlg);
     void UpdateVillageVoevoda(Village *vlg);
@@ -957,6 +967,7 @@ public:
     bool CheckTraceImage(GFX::Image *img, Common::Point drawPos);
     bool CheckTraceImage(GFX::PalImage *img, Common::Point drawPos);
     
+    void FUN_0042d574(Character *pchar, int32_t i);
     void DrawElmQueue();
     void FUN_004290ac(int elmid, int imgid);
     
@@ -975,7 +986,11 @@ public:
     bool FUN_0042054c(Character *pchar);
     bool FUN_004246f8(Character *pchar);
     
-    bool FUN_00420634(bool p);
+    
+    int32_t FUN_0041ace0(Character *pchr, MapObject2 *parrow);
+    int32_t FUN_0041c29c(Character *pchr, int32_t arrowDmg);
+    
+    bool TradeComplete(bool p);
     
     int32_t FUN_00434160(int32_t id);
     int32_t FUN_004351fc(int32_t id);
@@ -1115,6 +1130,9 @@ public:
         return 0;
     }
     
+    int32_t FUN_0041aea0(int32_t val);
+    int32_t FUN_0041b65c(int32_t val);
+    
     
     //Input
     void PlayHandleKey(int16_t keyCode);    
@@ -1125,7 +1143,9 @@ public:
     
     
     //UI
-    void FUN_00431d70(int p);
+    void DrawTrade(int p);
+    int32_t FUN_0041b348(ItemInfo *itm);
+    void DrawTradeInv(int inv, int p);
     void FillBkgRect(Common::Rect rect);
     void DrawMap();
     void UpdateMapImage();
@@ -1332,6 +1352,9 @@ public:
     
     std::array<int16_t, INVSIZE> int16_t_ARRAY_0083dc4c[4];
     std::array<int16_t, 4> int16_t_ARRAY_0083dd4c;
+    
+    int32_t DAT_00a3e850 = 0;
+    int32_t DAT_00a3e854 = 0;
     
     
     

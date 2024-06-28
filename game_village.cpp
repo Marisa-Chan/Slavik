@@ -534,10 +534,155 @@ int32_t Engine::GetVillageCharacterJob(Character *pchar)
     return 0;
 }
 
+bool Engine::FUN_00417268(Village *vlg, Character *pchr, int32_t iout, int32_t i1, int32_t i2)
+{
+    int32_t itm1id = vlg->MedicItems.at(i1 - 3);
+    if (!itm1id)
+        return false;
+    
+    int32_t itm2id = vlg->MedicItems.at(i2 - 3);
+    if (!itm2id)
+        return false;
+    
+    MixPotions(pchr, &_state.Items.at(itm1id), &_state.Items.at(itm2id));
+    
+    _state.Items.at(itm2id).TypeID = 0xff;
+    vlg->MedicItems.at(iout - 3) = itm1id;
+    vlg->MedicItems.at(i1 - 3) = 0;
+    vlg->MedicItems.at(i2 - 3) = 0;
+    
+    return true;
+}
 
 void Engine::UpdateVillageMedic(Village *vlg)
 {
-    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
+    if (vlg->Jobs[1].CharID != 0 && _playScreenID != PLSCREEN_7)
+    {
+        vlg->UpdateMedicTimer--;
+        
+        if (vlg->UpdateMedicTimer < 1)
+        {
+            vlg->UpdateMedicTimer = 1440;
+            vlg->DoMedicPotionSlot7 = 1;
+            vlg->DoMedicPotionSlot6 = 1;
+            vlg->DoMedicPotionSlot5 = 1;
+        }
+        else if (vlg->UpdateMedicTimer == 720)
+        {
+            vlg->DoMedicPotionSlot7 = 1;
+            vlg->DoMedicPotionSlot5 = 1;
+        }
+        else if ((vlg->UpdateMedicTimer == 1080) || (vlg->UpdateMedicTimer == 360)) {
+            vlg->DoMedicPotionSlot5 = 1;
+        }
+        
+        Character &chr = _state.Characters.at(vlg->Jobs[1].CharID);
+        
+        for (int32_t local_18 = 5; local_18 < 28; ++local_18)
+        {
+            if (vlg->MedicItems[local_18 - 3] == 0)
+            {
+                switch(local_18)
+                {
+                case 5:
+                case 19:
+                    if (vlg->DoMedicPotionSlot5 != 0)
+                    {
+                        ItemInfo *itm = AllocItem();
+                        if (!itm)
+                            break;
+                        
+                        itm->TypeID = 9;
+                        itm->InfoID = 2;
+                        
+                        ItemInfo itm2;
+                        itm2.TypeID = 9;
+                        itm2.InfoID = 3;
+                        
+                        MixPotions(&chr, itm, &itm2);
+                        
+                        vlg->DoMedicPotionSlot5--;
+                        vlg->MedicItems[local_18 - 3] = itm->Index;
+                    }
+                    break;
+                    
+                case 6:
+                case 20:
+                    if (vlg->DoMedicPotionSlot6 != 0)
+                    {
+                        ItemInfo *itm = AllocItem();
+                        if (!itm)
+                            break;
+                        
+                        itm->TypeID = 9;
+                        itm->InfoID = 0;
+                        
+                        ItemInfo itm2;
+                        itm2.TypeID = 9;
+                        itm2.InfoID = 3;
+                        
+                        MixPotions(&chr, itm, &itm2);
+                        
+                        vlg->DoMedicPotionSlot6--;
+                        vlg->MedicItems[local_18 - 3] = itm->Index;
+                    }
+                    break;
+                    
+                case 7:
+                case 21:
+                    if (vlg->DoMedicPotionSlot7 != 0)
+                    {
+                        ItemInfo *itm = AllocItem();
+                        if (!itm)
+                            break;
+                        
+                        itm->TypeID = 9;
+                        itm->InfoID = 1;
+                        
+                        ItemInfo itm2;
+                        itm2.TypeID = 9;
+                        itm2.InfoID = 3;
+                        
+                        MixPotions(&chr, itm, &itm2);
+                        
+                        vlg->DoMedicPotionSlot7--;
+                        vlg->MedicItems[local_18 - 3] = itm->Index;
+                    }
+                    break;
+                    
+                case 8:
+                case 22:
+                    FUN_00417268(vlg, &chr, local_18, 19, 20);
+                    break;
+                    
+                case 9:
+                case 23:
+                    FUN_00417268(vlg, &chr, local_18, 19, 21);
+                    break;
+                    
+                case 10:
+                case 24:
+                    FUN_00417268(vlg, &chr, local_18, 19, 23);
+                    break;
+                    
+                case 11:
+                case 25:
+                    FUN_00417268(vlg, &chr, local_18, 20, 21);
+                    break;
+                    
+                case 12:
+                case 26:
+                    FUN_00417268(vlg, &chr, local_18, 20, 23);
+                    break;
+                    
+                case 13:
+                case 27:
+                    FUN_00417268(vlg, &chr, local_18, 21, 22);
+                    break;
+                }
+            }
+        }
+    }
 }
 
 void Engine::UpdateVillageSmith(Village *vlg)

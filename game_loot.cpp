@@ -36,19 +36,26 @@ Engine::GS1* Engine::GetLootByTile(Common::Point tile)
 }
 
 void Engine::FUN_004170a0(GS1 *loot)
-{    
-    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
-    /*DAT_00a3e76c = loot->Index;
+{   
+    DAT_00a3e76c = loot->Index;
     DAT_00a3e7c8 = _mainCharacter->Gold;
     DAT_00a3e830 = 0;
     DAT_00a3e82c = 0;
     DAT_00a3e7cc = 0;
-    PInteractChar = 0;
-    memset(&DAT_0083dc4c,0,0x100);
-    memcpy((undefined4 *)&DAT_0083dc4c,(undefined4 *)Game::CharInfoCharacter->field39_0x72,0x40);
-    memcpy((undefined4 *)(int16_t_ARRAY_0083dcca + 1),(undefined4 *)&loot->ItemID,0x2c);
-    memset(&DAT_0083dd4c,0,8);
-    FUN_00431d70(0);*/
+    PInteractChar = nullptr;
+    
+    int16_t_ARRAY_0083dc4c[1].fill(0);
+    int16_t_ARRAY_0083dc4c[3].fill(0);
+    
+    int16_t_ARRAY_0083dc4c[0] = CharInfoCharacter->Inventory;
+    int16_t_ARRAY_0083dc4c[2].fill(0);
+    
+    for(int32_t i = 0; i < loot->ItemID.size(); ++i)
+        int16_t_ARRAY_0083dc4c[2].at(i) = loot->ItemID.at(i);
+    
+    int16_t_ARRAY_0083dd4c.fill(0);
+    
+    //DrawTrade(0);
 }
 
 

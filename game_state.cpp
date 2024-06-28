@@ -157,7 +157,12 @@ void Engine::Character::CopyDataFrom(const Character &chr)
     CharacterBase = chr.CharacterBase;
     FrameCount = chr.FrameCount;
     paletteOffset = chr.paletteOffset;
-    //chr.seek(8, 1);                  //dc
+    
+    pFrame = chr.pFrame;
+    shdOffset = chr.shdOffset;
+    imgOffset = chr.imgOffset;
+    wpnOffset = chr.wpnOffset;
+    
     ViewPos = chr.ViewPos;
     POS = chr.POS;
     imgSize = chr.imgSize;
@@ -194,7 +199,10 @@ void Engine::ItemInfo::Load(FSMgr::iFile* pfile)
     BonusID = pfile->readS8();
     SpecialID = pfile->readS8();
     InfoID = pfile->readS8();
-    Concentration = pfile->readFloatL();
+    if (TypeID == 12)
+        Concentration = pfile->readS32L();
+    else
+        Concentration = pfile->readFloatL();
     Weight = pfile->readFloatL();
     Poison = pfile->readS16L();
     Flags = pfile->readU8();
@@ -261,6 +269,9 @@ void Engine::Village::Job::Load(FSMgr::iFile* pfile)
     CharID = pfile->readS16L();
     Tile.y = pfile->readS16L();
     Tile.x = pfile->readS16L();
+    
+    if (unk == 0xFF)
+        unk = -1;
 }
 
 void Engine::Village::BldState::Load(FSMgr::iFile* pfile)
@@ -306,7 +317,7 @@ void Engine::Village::Load(FSMgr::iFile* pfile)
     for (int16_t &item : MedicItems)
         item = pfile->readS16L();
         
-    unk3 = pfile->readS16L();
+    //unk3 = pfile->readS16L();
 
     for (int16_t &item : TraderItems)
         item = pfile->readS16L();

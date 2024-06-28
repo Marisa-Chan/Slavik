@@ -32,6 +32,7 @@ public:
         GMSM_TRADETEACH = 15,
         GMSM_IDENTIFYTEACH = 16,
         GMSM_READBIRCHBARK = 17,
+        GMSM_NOMONEY = 18,
         
         GMSG_MAX
     };
