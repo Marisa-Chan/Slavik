@@ -436,7 +436,7 @@ iDirNode *FSDirNode::ScanDir(const std::string &_name, const std::string &_path)
 
     tmp.pop_back(); // delete *
 
-    iDirNode *ndr = new iDirNode(_name, _path);
+    iDirNode *ndr = new FSDirNode(_name, _path);
 
     do
     {
@@ -452,7 +452,7 @@ iDirNode *FSDirNode::ScanDir(const std::string &_name, const std::string &_path)
             }
             else
             {
-                ndr->AddNode(new iFileNode(fdata.cFileName, tmp2));
+                ndr->AddNode(new FSFileNode(fdata.cFileName, tmp2));
             }
         }
     }
