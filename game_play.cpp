@@ -2270,7 +2270,7 @@ bool Engine::FUN_00416934(Character *pchar)
                 }
                 else if (pchar->Direction != CurrentVillage->Jobs[job].Direction)
                 {
-                    FUN_004391bc(pchar,(uint)CurrentVillage->Jobs[job].Direction);
+                    FUN_004391bc(pchar, (int)CurrentVillage->Jobs[job].Direction);
                     return true;
                 }
                 FUN_00414ab4(pchar);

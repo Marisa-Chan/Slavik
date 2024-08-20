@@ -448,11 +448,11 @@ iDirNode *FSDirNode::ScanDir(const std::string &_name, const std::string &_path)
             {
                 iNode *sub = ScanDir(fdata.cFileName, tmp2);
                 if (sub)
-                    ndr->addNode(sub);
+                    ndr->AddNode(sub);
             }
             else
             {
-                ndr->addNode(new iFileNode(fdata.cFileName, tmp2));
+                ndr->AddNode(new iFileNode(fdata.cFileName, tmp2));
             }
         }
     }

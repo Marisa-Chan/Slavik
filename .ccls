@@ -1,0 +1,4 @@
+g++
+-xc++
+-Iinclude
+-std=c++14

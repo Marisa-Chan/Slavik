@@ -80,6 +80,8 @@ public:
     static PFNGLGETUNIFORMBLOCKINDEXPROC GLGetUniformBlockIndex;
     static PFNGLUNIFORMBLOCKBINDINGPROC GLUniformBlockBinding;
     static PFNGLBINDBUFFERBASEPROC GLBindBufferBase;
+	
+	static PFNGLACTIVETEXTUREPROC GLActiveTexture;
 };
     
 }

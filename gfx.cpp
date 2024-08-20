@@ -611,7 +611,7 @@ Light *CDrawer::CreateLight(Common::Point sz)
             _state.Tex2 = l->HW;
             ApplyStates();
             
-            glActiveTexture(GL_TEXTURE2);
+            Glext::GLActiveTexture(GL_TEXTURE2);
             
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -619,7 +619,7 @@ Light *CDrawer::CreateLight(Common::Point sz)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, l->SW.Width(), l->SW.Height(), 0, GL_RED, GL_UNSIGNED_BYTE, l->SW.data());     
-            glActiveTexture(GL_TEXTURE0);
+            Glext::GLActiveTexture(GL_TEXTURE0);
         }
             break;
     }
@@ -639,9 +639,9 @@ void CDrawer::UpdateLight(Light *l)
             _state.Tex2 = l->HW;
             ApplyStates();
             
-            glActiveTexture(GL_TEXTURE2);
+            Glext::GLActiveTexture(GL_TEXTURE2);
             glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, l->SW.Width(), l->SW.Height(), GL_RED, GL_UNSIGNED_BYTE, l->SW.data());            
-            glActiveTexture(GL_TEXTURE0);
+            Glext::GLActiveTexture(GL_TEXTURE0);
         }
             break;
     }
@@ -688,15 +688,15 @@ void CDrawer::ApplyStates(int setAll)
     {
         if (newStates->Tex2)
         {
-            glActiveTexture(GL_TEXTURE2);
+            Glext::GLActiveTexture(GL_TEXTURE2);
             glBindTexture(GL_TEXTURE_2D, newStates->Tex2);
-            glActiveTexture(GL_TEXTURE0);
+            Glext::GLActiveTexture(GL_TEXTURE0);
         }
         else
         {
-            glActiveTexture(GL_TEXTURE2);
+            Glext::GLActiveTexture(GL_TEXTURE2);
             glBindTexture(GL_TEXTURE_2D, 0);
-            glActiveTexture(GL_TEXTURE0);
+            Glext::GLActiveTexture(GL_TEXTURE0);
         }
         
         if (_mode == MODE_PS)
@@ -930,17 +930,17 @@ void CDrawer::Begin()
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     
-    glActiveTexture(GL_TEXTURE0);
+    Glext::GLActiveTexture(GL_TEXTURE0);
     glEnable(GL_TEXTURE_2D);
     
     if (_mode == MODE_PS)
     {
-        glActiveTexture(GL_TEXTURE1);
+        Glext::GLActiveTexture(GL_TEXTURE1);
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, _psPalettes);
-        glActiveTexture(GL_TEXTURE2);
+        Glext::GLActiveTexture(GL_TEXTURE2);
         glEnable(GL_TEXTURE_2D);
-        glActiveTexture(GL_TEXTURE0);
+        Glext::GLActiveTexture(GL_TEXTURE0);
         
         Glext::GLUniform1i(_stdTex1Loc, 0);
         Glext::GLUniform1i(_stdTex2Loc, 1);
@@ -988,7 +988,7 @@ uint32_t CDrawer::GetBufferTex(int32_t bfid)
 
 void CDrawer::SetPalettes(const Common::PlaneArray<SDL_Color, 256, 256> &pals)
 {
-    glActiveTexture(GL_TEXTURE1);
+    Glext::GLActiveTexture(GL_TEXTURE1);
     glEnable(GL_TEXTURE_2D);
     
     if (!_psPalettes)
@@ -1002,7 +1002,7 @@ void CDrawer::SetPalettes(const Common::PlaneArray<SDL_Color, 256, 256> &pals)
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, pals.data()); 
     
-    glActiveTexture(GL_TEXTURE0);
+    Glext::GLActiveTexture(GL_TEXTURE0);
 }
 
 void CDrawer::SetVirtResolution(Common::Point size)
