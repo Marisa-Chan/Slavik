@@ -931,7 +931,7 @@ void Engine::FUN_00421da4()
                         continue;
                     
                     Character &ch1 = _state.Characters.at(chr.EnemyCharID - 1);
-                    if ((ch1.ClassID & CLASS_BIT80) == ch1.State == CHSTATE_9 || ch1.State == CHSTATE_3)
+                    if ((ch1.ClassID & CLASS_BIT80) || ch1.State == CHSTATE_9 || ch1.State == CHSTATE_3)
                     {
                         chr.EnemyCharID = 0;
                         FUN_00414ab4(&chr);
@@ -4532,6 +4532,8 @@ void Engine::FUN_0042179c()
     
     if (!SelectedCharacters[0])
         return;
+        
+    bool wpnState = (SelectedCharacters[0]->field_0x3 & 4) == 0;
     
     for (int32_t i = 0; i < 10; ++i)
     {
@@ -4542,7 +4544,7 @@ void Engine::FUN_0042179c()
         if ((pchar->ClassID & CLASS_BIT80) || pchar->State == CHSTATE_9 || pchar->State == CHSTATE_3)
             continue;
 
-        if ((SelectedCharacters[0]->field_0x3 & 4) == 0)
+        if (wpnState)
         {
             if ((pchar->field_0x3 & 4) == 0)
             {
@@ -4562,7 +4564,7 @@ void Engine::FUN_0042179c()
             else
                 pchar->State = CHSTATE_6;
             
-            pchar->field2_0x2 &= 0xfa;
+            pchar->field2_0x2 &= ~5;
             
             if (pchar->field2_0x2 == 0)
                 pchar->field2_0x2 = 0x40;
@@ -4610,7 +4612,7 @@ void Engine::FUN_00421698()
     FUN_00429194(true);
     FUN_004290ac(4, 7);
     
-    for (int32_t i = 1; i < _mainMapChar->GroupSize; ++i)
+    for (int32_t i = 0; i < _mainMapChar->GroupSize; ++i)
     {
         Character &chr = _state.Characters.at(_mainCharacter->Index + i);
         if ((chr.ClassID & CLASS_BIT80) == 0 && chr.State != CHSTATE_9 && chr.State != CHSTATE_3)
