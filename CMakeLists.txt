@@ -58,6 +58,7 @@ if(CMAKE_BUILD_TYPE MATCHES [dD][eE][bB][uU][gG])
    
    if(NOT WIN32)
       target_compile_options(slavik PUBLIC "-fsanitize=address")
+      target_link_libraries(slavik "-fsanitize=address")
    endif()
 else()
 	target_compile_options(slavik PUBLIC "-O2" "-s")
