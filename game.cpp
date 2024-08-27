@@ -560,6 +560,9 @@ bool Engine::LoadMap(int32_t mapID, int32_t param)
 //        MapChar &mchar = _state.MapChar_ARRAY.at(i)
     for (MapChar &mchar : _state.MapChar_ARRAY)
     {
+        if (&mchar == _mainMapChar)
+            continue;
+            
         if (mchar.unk5 != 0 && mchar.MapID == _currentMapID) 
         {
             if (param == 0 && (mchar.unk5 & 0x40)) 
