@@ -257,6 +257,19 @@ public:
         Common::PlaneArray<uint8_t, 160, 320> LightMap2;
         
         Common::Point MapLimits;
+        
+        Common::Point CheckFoot(Common::Point p) const
+        {
+            if (p.x < 0)
+                p.x = 0;
+            if (p.y < 0)
+                p.y = 0;
+            if (p.x > MapLimits.x * 2)
+                p.x = MapLimits.x * 2;
+            if (p.y > MapLimits.y * 2)
+                p.y = MapLimits.y * 2;
+            return p;
+        }
     };
     
     struct ImagePlace

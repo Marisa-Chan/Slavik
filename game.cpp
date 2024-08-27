@@ -1090,7 +1090,9 @@ void Engine::DrawGroundAndObj()
     
     if (mapGS1Count != 0) 
     {
-        Common::Point iVar18 = _some + ViewTiles * 2; // xxx 
+        Common::Point iVar18 = _currentMap->CheckFoot(_some + ViewTiles * 2); // xxx 
+        
+        
         for (int32_t y = _some.y; y < iVar18.y; ++y) 
         {
             for (int32_t x = _some.x; x < iVar18.x; ++x) 
