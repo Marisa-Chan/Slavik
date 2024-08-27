@@ -335,7 +335,7 @@ void Engine::Draw()
     
     if ( _stateMode == STATEMD_PLAY )
     {
-        if (_playScreenID == PLSCREEN_0 || _bTransparentMenu == 0)
+        if (_playScreenID == PLSCREEN_0 || _bTransparentMenu)
         {
             GFXDrawer.SetVirtResolution();
             GFXDrawer.SetModelViewMatrix(mat4x4f());

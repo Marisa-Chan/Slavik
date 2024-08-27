@@ -325,7 +325,9 @@ void Engine::DrawCharInfo()
     
     FUN_0041c750(CharInfoCharacter);
     
-    FillBkgRect(MAPRECT);
+    if (!_bTransparentMenu)
+        FillBkgRect(MAPRECT);
+        
     ImgQueue2(_menuImages.at(2), MAPRECT.Pos(), MAPRECT);
     
     std::string txt = CharInfoCharacter->FmtCharName();
