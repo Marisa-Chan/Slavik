@@ -56,21 +56,11 @@ bool Engine::Process()
 
 bool Engine::Update()
 {
-    
-    if (_KeyState[KEYFN_MAPLEFT])
-        _camera.x -= 10;
-    if (_KeyState[KEYFN_MAPRIGHT])
-        _camera.x += 10;
-    if (_KeyState[KEYFN_MAPUP])
-        _camera.y -= 10;
-    if (_KeyState[KEYFN_MAPDOWN])
-        _camera.y += 10;
-    
     if (_KeyQueue.empty())
-        _KeyCode = 0;
+        _KeyPressed = -1;
     else
     {
-        _KeyCode = _KeyQueue.front();
+        _KeyPressed = _KeyQueue.front();
         _KeyQueue.pop_front();
     }
     
@@ -100,6 +90,17 @@ bool Engine::Update()
             if ((_mouseDown & MOUSEB_R) == 0)
                 _mouseDownPrev &= ~MOUSEB_R;
             
+        }
+        
+        if ((_mouseDownPrev & MOUSEB_3) == 0)
+            _mouseDownPrev |= _mousePress & MOUSEB_3;
+        else 
+        {
+            if ((_mousePress & MOUSEB_3) != 0)
+                _mousePress &= ~MOUSEB_3;
+            
+            if ((_mouseDown & MOUSEB_3) == 0)
+                _mouseDownPrev &= ~MOUSEB_3;
         }
     }
     
@@ -177,16 +178,8 @@ void Engine::CreateCursors()
 
 void Engine::Init(int gfxmode)
 {    
-    _KeyMap.clear();
-    _KeyMap[SDL_SCANCODE_LEFT] = KEYFN_MAPLEFT;
-    _KeyMap[SDL_SCANCODE_RIGHT] = KEYFN_MAPRIGHT;
-    _KeyMap[SDL_SCANCODE_UP] = KEYFN_MAPUP;
-    _KeyMap[SDL_SCANCODE_DOWN] = KEYFN_MAPDOWN;
-    _KeyMap[SDL_SCANCODE_LSHIFT] = KEYFN_SHIFT;
-    _KeyMap[SDL_SCANCODE_RSHIFT] = KEYFN_SHIFT;
-    _KeyMap[SDL_SCANCODE_LCTRL] = KEYFN_CTRL;
-    _KeyMap[SDL_SCANCODE_RCTRL] = KEYFN_CTRL;
-    
+    InitKeyMapping();
+    InitHotKeys();
     _KeyState.fill(0);
     
     System::EventsAddHandler(EventsWatcher);
@@ -235,9 +228,10 @@ int Engine::EventsWatcher(void *, SDL_Event *event)
         {
             auto it = Instance._KeyMap.find(event->key.keysym.scancode);
             if (it != Instance._KeyMap.end())
+            {
                 Instance._KeyState[it->second] = 1;
-            
-            Instance._KeyQueue.push_back(event->key.keysym.scancode);
+                Instance._KeyQueue.push_back(it->second);
+            }            
         }
         break;
 
@@ -270,6 +264,11 @@ int Engine::EventsWatcher(void *, SDL_Event *event)
                     Instance._mousePress |= MOUSEB_R;
                     Instance._mouseDown |= MOUSEB_R;
                     break;
+                
+                case SDL_BUTTON_MIDDLE:
+                    Instance._mousePress |= MOUSEB_3;
+                    Instance._mouseDown |= MOUSEB_3;
+                    break;
             }
             
         }
@@ -290,6 +289,11 @@ int Engine::EventsWatcher(void *, SDL_Event *event)
                 case SDL_BUTTON_RIGHT:
                     Instance._mousePress &= ~MOUSEB_R;
                     Instance._mouseDown &= ~MOUSEB_R;
+                    break;
+                    
+                case SDL_BUTTON_MIDDLE:
+                    Instance._mousePress &= ~MOUSEB_3;
+                    Instance._mouseDown &= ~MOUSEB_3;
                     break;
             }
         }
@@ -1895,15 +1899,24 @@ void Engine::ProcessCamera()
     //if (_mousePos.y < _screenSize.y) 
     {
         if ((_mousePos.x <= 0) && (_camera.x > TileWh))
-            tmp.x = _camera.x - 16;
+            tmp.x = _camera.x - SCREENSHIFT;
         else if ((_mousePos.x >= _screenSize.x - 1) && (_camera.x + _gameViewport.x < _camMax.x))
-            tmp.x = _camera.x + 16;
+            tmp.x = _camera.x + SCREENSHIFT;
     }
     
     if ((_mousePos.y <= 0) && (_camera.y > TileH))
-        tmp.y = _camera.y - 16;
+        tmp.y = _camera.y - SCREENSHIFT;
     else if ((_mousePos.y >= _screenSize.y - 1) && (_camera.y + _gameViewport.y < _camMax.y))
-        tmp.y = _camera.y + 16;
+        tmp.y = _camera.y + SCREENSHIFT;
+        
+    if (_KeyState[KEYFN_LEFT])
+        tmp.x -= SCREENSHIFT;
+    if (_KeyState[KEYFN_RIGHT])
+        tmp.x += SCREENSHIFT;
+    if (_KeyState[KEYFN_UP])
+        tmp.y -= SCREENSHIFT;
+    if (_KeyState[KEYFN_DOWN])
+        tmp.y += SCREENSHIFT;
     
     if (_camLockChar) 
     {

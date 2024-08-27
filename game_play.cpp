@@ -160,8 +160,8 @@ void Engine::UpdateGame()
         {
             DWORD_00a3e74c &= ~1;
             
-            if (_KeyCode)
-                PlayHandleKey(_KeyCode);
+            if (_KeyPressed != -1)
+                PlayHandleKey(_KeyPressed);
             
             PlayProcessMouse();
             
@@ -170,8 +170,8 @@ void Engine::UpdateGame()
         }
         else
         {
-            if (_KeyCode) 
-                PlayHandleKey(_KeyCode);
+            if (_KeyPressed != -1) 
+                PlayHandleKey(_KeyPressed);
             
             PlayProcessMouse();
         }

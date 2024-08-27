@@ -50,6 +50,10 @@ constexpr const int32_t INVSIZE = 32;
 
 constexpr const int32_t MAXPATHITER = 0x4000;
 
+constexpr const int32_t SCREENSHIFT = 16;
+
+constexpr const int32_t MAXSPEED = 5;
+
 class Engine
 {
 public:
@@ -57,21 +61,150 @@ public:
 public:
     enum KEYFN
     {
-        KEYFN_MAPLEFT  = 0,
-        KEYFN_MAPRIGHT = 1,
-        KEYFN_MAPUP    = 2,
-        KEYFN_MAPDOWN  = 3,
+        KEYFN_ESC,
         
-        KEYFN_SHIFT = 4,
-        KEYFN_CTRL = 5,
+        KEYFN_F1,
+        KEYFN_F2,
+        KEYFN_F3,
+        KEYFN_F4,
+        KEYFN_F5,
+        KEYFN_F6,
+        KEYFN_F7,
+        KEYFN_F8,
+        KEYFN_F9,
+        KEYFN_F10,
+        KEYFN_F11,
+        KEYFN_F12,
+        
+        KEYFN_TILDE,
+        KEYFN_1,
+        KEYFN_2,
+        KEYFN_3,
+        KEYFN_4,
+        KEYFN_5,
+        KEYFN_6,
+        KEYFN_7,
+        KEYFN_8,
+        KEYFN_9,
+        KEYFN_0,
+        KEYFN_MINUS,
+        KEYFN_ADD,
+        KEYFN_BSLASH,
+        KEYFN_BACKSPACE,
+        
+        KEYFN_TAB,
+        KEYFN_Q,
+        KEYFN_W,
+        KEYFN_E,
+        KEYFN_R,
+        KEYFN_T,
+        KEYFN_Y,
+        KEYFN_U,
+        KEYFN_I,
+        KEYFN_O,
+        KEYFN_P,
+        KEYFN_BRKTL,
+        KEYFN_BRKTR,
+        
+        KEYFN_CAPS,
+        KEYFN_A,
+        KEYFN_S,
+        KEYFN_D,
+        KEYFN_F,
+        KEYFN_G,
+        KEYFN_H,
+        KEYFN_J,
+        KEYFN_K,
+        KEYFN_L,
+        KEYFN_COLON,
+        KEYFN_QUOTE,
+        
+        KEYFN_RETURN,
+        
+        KEYFN_SHIFT,
+        
+        KEYFN_Z,
+        KEYFN_X,
+        KEYFN_C,
+        KEYFN_V,
+        KEYFN_B,
+        KEYFN_N,
+        KEYFN_M,
+        KEYFN_LESS,
+        KEYFN_MORE,
+        KEYFN_SLASH,
+        
+        KEYFN_CTRL,
+        KEYFN_WIN,
+        KEYFN_ALT,
+        KEYFN_SPACE,
+        KEYFN_MENU,
+        
+        KEYFN_PRNT,
+        KEYFN_SCROLL,
+        KEYFN_PAUSE,
+        
+        KEYFN_INSERT,
+        KEYFN_HOME,
+        KEYFN_PAGEUP,
+        KEYFN_DELETE,
+        KEYFN_END,
+        KEYFN_PAGEDOWN,
+        
+        KEYFN_LEFT,
+        KEYFN_RIGHT,
+        KEYFN_UP,
+        KEYFN_DOWN,
+        
+        KEYFN_NUMLOCK,
+        KEYFN_NUMDIV,
+        KEYFN_NUMMULT,
+        KEYFN_NUMMINUS,
+        KEYFN_NUM7,
+        KEYFN_NUM8,
+        KEYFN_NUM9,
+        KEYFN_NUM4,
+        KEYFN_NUM5,
+        KEYFN_NUM6,
+        KEYFN_NUMADD,
+        KEYFN_NUM1,
+        KEYFN_NUM2,
+        KEYFN_NUM3,
+        KEYFN_NUM0,
+        KEYFN_NUMDEL,
+        KEYFN_NUMRETURN,        
         
         KEYFN_MAX
     };
     
     enum MOUSEB
     {
-        MOUSEB_L = 1,
-        MOUSEB_R = 2,
+        MOUSEB_L = (1 << 0),
+        MOUSEB_R = (1 << 1),
+        MOUSEB_3 = (1 << 2),
+    };
+    
+    enum HOTKEY
+    {
+        HOTKEY_CYCLE,
+        HOTKEY_DRAWWEAPON,
+        HOTKEY_WPN1,
+        HOTKEY_WPN2,
+        HOTKEY_WPN3,
+        HOTKEY_A,
+        HOTKEY_SHIFTA,
+        HOTKEY_F,
+        HOTKEY_I,
+        HOTKEY_GODMODE,
+        HOTKEY_M,
+        HOTKEY_Q,
+        HOTKEY_CTRLS,
+        HOTKEY_T,
+        HOTKEY_SPEEDUP,
+        HOTKEY_SPEEDDOWN,
+        HOTKEY_BAG,
+        
+        HOTKEY_MAX
     };
     
     enum STATEMODE
@@ -721,6 +854,30 @@ public:
         uint8_t Flags = 0;
     };
     
+    struct THotKey
+    {
+        enum MOD
+        {
+            MOD_SHIFT = (1 << 0),
+            MOD_ALT   = (1 << 1),
+            MOD_CTRL  = (1 << 2),
+            
+            MOD_MAX = (MOD_SHIFT | MOD_ALT | MOD_CTRL) + 1
+        };
+        
+        std::array<int16_t, MOD_MAX> Funcs;
+        
+        //int16_t Key = -1; //usege for debug?
+        
+        THotKey()
+        { Funcs.fill(-1); }
+        
+        void SetFunc(int16_t func, uint8_t mod = 0)
+        {
+            Funcs.at(mod) = func;
+        }
+    };
+    
 public:
     
     Engine()
@@ -1153,6 +1310,10 @@ public:
     int32_t FUN_004392f4();
     int32_t FUN_00439a28(Common::Point pt, const Common::PlaneVector<uint8_t> *mask);
     bool FUN_0041e500(int32_t slot);
+    int16_t GetHotKeyFunc(const THotKey &hkey);
+    int16_t GetHotKeyFunc(int16_t keyCode);
+    void InitKeyMapping();
+    void InitHotKeys();
     
     
     //UI
@@ -1233,10 +1394,12 @@ public:
     
     int32_t _playScreenID = PLSCREEN_0;
     
-    std::map<int16_t, int8_t> _KeyMap;
+    std::map<int16_t, int16_t> _KeyMap;
     std::array<int8_t, KEYFN_MAX> _KeyState;
     std::deque<int16_t> _KeyQueue;
-    int16_t _KeyCode = 0;
+    std::map<int16_t, THotKey> _HotKeys;
+    int16_t _KeyPressed = 0;
+    
     
     Village *CurrentVillage = nullptr;
     

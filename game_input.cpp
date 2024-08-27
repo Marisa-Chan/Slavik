@@ -3,9 +3,219 @@
 
 namespace Game {
     
+int16_t Engine::GetHotKeyFunc(const THotKey &hkey)
+{
+    int32_t funcIndex = 0;
+    
+    if (_KeyState.at(KEYFN_SHIFT))
+        funcIndex |= THotKey::MOD_SHIFT;
+        
+    if (_KeyState.at(KEYFN_CTRL))
+        funcIndex |= THotKey::MOD_CTRL;
+        
+    if (_KeyState.at(KEYFN_ALT))
+        funcIndex |= THotKey::MOD_ALT;
+    
+    return hkey.Funcs.at(funcIndex);
+}
+
+int16_t Engine::GetHotKeyFunc(int16_t keyCode)
+{
+    auto it = _HotKeys.find(keyCode);
+    
+    if (it != _HotKeys.end())
+        return GetHotKeyFunc(it->second);
+        
+    return -1;
+}
+    
 void Engine::PlayHandleKey(int16_t keyCode)
 {
     printf("Incomplete %s\n", __PRETTY_FUNCTION__);
+        
+    int16_t func = GetHotKeyFunc(keyCode);
+    
+    if (func == -1)
+        return;
+        
+    switch(func)
+    {
+        case HOTKEY_CYCLE:
+        {
+            InvPos = 0;
+            DAT_00a3e7a0 = 0;
+            FUN_00429194(0);
+            
+            int32_t idx = 0;
+            for (idx = 0; idx < 10 && SelectedCharacters[idx] != nullptr; ++idx)
+            {}
+            
+            if (idx < 2)
+            {
+                if (idx == 0)
+                    SelectedCharacters[0] = _mainCharacter;
+                else
+                {
+                    for (idx = SelectedCharacters[0]->Index - _mainMapChar->CharacterIndex + 1; idx < _mainMapChar->GroupSize; ++idx)
+                    {
+                        if ( (_state.Characters.at(_mainMapChar->CharacterIndex + idx).ClassID & CLASS_BIT80) == 0)
+                            break;
+                    }
+                    
+                    if (idx < _mainMapChar->GroupSize)
+                        SelectedCharacters[0] = &_state.Characters.at(_mainMapChar->CharacterIndex + idx);
+                    else
+                        SelectedCharacters[0] = _mainCharacter;
+                }
+            }
+            else
+                SelectedCharacters.fill(nullptr);
+            
+            //PlayChangeScreen(PLSCREEN_0);
+            if (_playScreenID == PLSCREEN_3)
+            {
+                CharInfoCharacter = SelectedCharacters[0];
+                
+                if (!SelectedCharacters[0])
+                    _playScreenID = PLSCREEN_0;
+                else
+                {
+                    //PlayChangeScreen(2);
+                    FUN_0042f50c(CharInfoCharacter, 0);
+                    FUN_004290d8();
+                }
+            }
+            else if (DisplayInvOfCharID != 0)
+            {
+                CharInfoCharacter = SelectedCharacters[0];
+                
+                if (!SelectedCharacters[0])
+                {
+                    DisplayInvOfCharID2 = 0;
+                    DisplayInvOfCharID = 0;
+                }
+            }
+        }
+        break;
+        
+        case HOTKEY_DRAWWEAPON:
+            FUN_0042179c();
+        break;
+        
+        case HOTKEY_WPN1:
+            ChangeWeapon(2);
+        break;
+        
+        case HOTKEY_WPN2:
+            ChangeWeapon(0);
+        break;
+        
+        case HOTKEY_WPN3:
+            ChangeWeapon(1);
+        break;
+        
+        case HOTKEY_A:
+            FUN_00421698();
+        break;
+        
+        case HOTKEY_SHIFTA:
+        {
+            SelectedCharacters.fill(nullptr);
+            int32_t j = 0;
+            for(int32_t i = 0; i < _mainMapChar->GroupSize; ++i)
+            {
+                Character &chr = _state.Characters.at(_mainMapChar->CharacterIndex + i);
+                if ((chr.ClassID & CLASS_BIT80) == 0 && chr.State != CHSTATE_9 && chr.State != CHSTATE_3)
+                {
+                    SelectedCharacters[j] = &chr;
+                    j++;
+                }
+            }
+        }
+        break;
+        
+        case HOTKEY_F:
+            FUN_004226c0();
+        break;
+        
+        case HOTKEY_I:
+            ShowHideCharInfo();
+        break;
+        
+        case HOTKEY_GODMODE:
+            _bGodMode = !_bGodMode;
+        break;
+        
+        case HOTKEY_M:
+        {
+            if (_playScreenID == PLSCREEN_0 || _playScreenID == PLSCREEN_MAP)
+            {
+                PlaySound(4, 0, 0, 0);
+                FUN_00429194(true);
+                FUN_004290ac(2, 14);
+                if (_playScreenID == PLSCREEN_MAP)
+                {
+                    _playScreenID = PLSCREEN_0;
+                    FUN_004292e4();
+                }
+                else
+                    PlayChangeScreen(PLSCREEN_MAP);
+            }
+        }
+        break;
+        
+        case HOTKEY_Q:
+            FUN_0042459c();
+        break;
+        
+        case HOTKEY_CTRLS:
+            if (!_camLockChar)
+                _camLockChar = _mainCharacter;
+            else
+                _camLockChar = nullptr;
+        break;
+        
+        case HOTKEY_T:
+            _bTransparentMenu = !_bTransparentMenu;
+            //WriteCfgFile();
+        break;
+        
+        case HOTKEY_SPEEDUP:
+            if (_speed < MAXSPEED)
+                _speed++;
+        break;
+        
+        case HOTKEY_SPEEDDOWN:
+            if (_speed > 0)
+                _speed--;
+        break;
+        
+        case HOTKEY_BAG:
+            CharInfoCharacter = SelectedCharacters[0];
+            if (!SelectedCharacters[0])
+            {
+                DisplayInvOfCharID2 = 0;
+                DisplayInvOfCharID = 0;
+            }
+            else
+            {
+                if (SelectedCharacters[0]->Index + 1 == DisplayInvOfCharID)
+                {
+                    DisplayInvOfCharID2 = 0;
+                    DisplayInvOfCharID = 0;
+                }
+                else
+                {
+                    InvPos = 0;
+                    DAT_00a3e7a0 = 0;
+                    FUN_0042f50c(SelectedCharacters[0], 0);
+                }
+            }
+        break;
+        
+    default:
+        break;
+    }
 }
 
 int32_t Engine::FUN_00439a28(Common::Point pt, const Common::PlaneVector<uint8_t> *mask)
@@ -1051,6 +1261,152 @@ void Engine::PlayProcessMouse()
 //        }
     }
 }    
+
+void Engine::InitKeyMapping()
+{
+    _KeyMap.clear();
+    
+    _KeyMap[SDL_SCANCODE_ESCAPE] = KEYFN_ESC;
+        
+    _KeyMap[SDL_SCANCODE_F1] = KEYFN_F1;
+    _KeyMap[SDL_SCANCODE_F2] = KEYFN_F2;
+    _KeyMap[SDL_SCANCODE_F3] = KEYFN_F3;
+    _KeyMap[SDL_SCANCODE_F4] = KEYFN_F4;
+    _KeyMap[SDL_SCANCODE_F5] = KEYFN_F5;
+    _KeyMap[SDL_SCANCODE_F6] = KEYFN_F6;
+    _KeyMap[SDL_SCANCODE_F7] = KEYFN_F7;
+    _KeyMap[SDL_SCANCODE_F8] = KEYFN_F8;
+    _KeyMap[SDL_SCANCODE_F9] = KEYFN_F9;
+    _KeyMap[SDL_SCANCODE_F10] = KEYFN_F10;
+    _KeyMap[SDL_SCANCODE_F11] = KEYFN_F11;
+    _KeyMap[SDL_SCANCODE_F12] = KEYFN_F12;
+        
+    _KeyMap[SDL_SCANCODE_GRAVE] = KEYFN_TILDE;
+    _KeyMap[SDL_SCANCODE_1] = KEYFN_1;
+    _KeyMap[SDL_SCANCODE_2] = KEYFN_2;
+    _KeyMap[SDL_SCANCODE_3] = KEYFN_3;
+    _KeyMap[SDL_SCANCODE_4] = KEYFN_4;
+    _KeyMap[SDL_SCANCODE_5] = KEYFN_5;
+    _KeyMap[SDL_SCANCODE_6] = KEYFN_6;
+    _KeyMap[SDL_SCANCODE_7] = KEYFN_7;
+    _KeyMap[SDL_SCANCODE_8] = KEYFN_8;
+    _KeyMap[SDL_SCANCODE_9] = KEYFN_9;
+    _KeyMap[SDL_SCANCODE_0] = KEYFN_0;
+    _KeyMap[SDL_SCANCODE_MINUS] = KEYFN_MINUS;
+    _KeyMap[SDL_SCANCODE_EQUALS] = KEYFN_ADD;
+    _KeyMap[SDL_SCANCODE_BACKSLASH] = KEYFN_BSLASH;
+    _KeyMap[SDL_SCANCODE_BACKSPACE] = KEYFN_BACKSPACE;
+        
+    _KeyMap[SDL_SCANCODE_TAB] = KEYFN_TAB;
+    _KeyMap[SDL_SCANCODE_Q] = KEYFN_Q;
+    _KeyMap[SDL_SCANCODE_W] = KEYFN_W;
+    _KeyMap[SDL_SCANCODE_E] = KEYFN_E;
+    _KeyMap[SDL_SCANCODE_R] = KEYFN_R;
+    _KeyMap[SDL_SCANCODE_T] = KEYFN_T;
+    _KeyMap[SDL_SCANCODE_Y] = KEYFN_Y;
+    _KeyMap[SDL_SCANCODE_U] = KEYFN_U;
+    _KeyMap[SDL_SCANCODE_I] = KEYFN_I;
+    _KeyMap[SDL_SCANCODE_O] = KEYFN_O;
+    _KeyMap[SDL_SCANCODE_P] = KEYFN_P;
+    _KeyMap[SDL_SCANCODE_LEFTBRACKET] = KEYFN_BRKTL;
+    _KeyMap[SDL_SCANCODE_RIGHTBRACKET] = KEYFN_BRKTR;
+        
+    _KeyMap[SDL_SCANCODE_CAPSLOCK] = KEYFN_CAPS;
+    _KeyMap[SDL_SCANCODE_A] = KEYFN_A;
+    _KeyMap[SDL_SCANCODE_S] = KEYFN_S;
+    _KeyMap[SDL_SCANCODE_D] = KEYFN_D;
+    _KeyMap[SDL_SCANCODE_F] = KEYFN_F;
+    _KeyMap[SDL_SCANCODE_G] = KEYFN_G;
+    _KeyMap[SDL_SCANCODE_H] = KEYFN_H;
+    _KeyMap[SDL_SCANCODE_J] = KEYFN_J;
+    _KeyMap[SDL_SCANCODE_K] = KEYFN_K;
+    _KeyMap[SDL_SCANCODE_L] = KEYFN_L;
+    _KeyMap[SDL_SCANCODE_SEMICOLON] = KEYFN_COLON;
+    _KeyMap[SDL_SCANCODE_APOSTROPHE] = KEYFN_QUOTE;
+        
+    _KeyMap[SDL_SCANCODE_RETURN] = KEYFN_RETURN;
+        
+    _KeyMap[SDL_SCANCODE_LSHIFT] = KEYFN_SHIFT;
+        
+    _KeyMap[SDL_SCANCODE_Z] = KEYFN_Z,
+    _KeyMap[SDL_SCANCODE_X] = KEYFN_X,
+    _KeyMap[SDL_SCANCODE_C] = KEYFN_C,
+    _KeyMap[SDL_SCANCODE_V] = KEYFN_V,
+    _KeyMap[SDL_SCANCODE_B] = KEYFN_B,
+    _KeyMap[SDL_SCANCODE_N] = KEYFN_N,
+    _KeyMap[SDL_SCANCODE_M] = KEYFN_M,
+    _KeyMap[SDL_SCANCODE_COMMA] = KEYFN_LESS,
+    _KeyMap[SDL_SCANCODE_PERIOD] = KEYFN_MORE,
+    _KeyMap[SDL_SCANCODE_SLASH] = KEYFN_SLASH,
+    
+    _KeyMap[SDL_SCANCODE_RSHIFT] = KEYFN_SHIFT;
+        
+    _KeyMap[SDL_SCANCODE_LCTRL] = KEYFN_CTRL;
+    _KeyMap[SDL_SCANCODE_LGUI] = KEYFN_WIN;
+    _KeyMap[SDL_SCANCODE_LALT] = KEYFN_ALT;
+    _KeyMap[SDL_SCANCODE_SPACE] = KEYFN_SPACE;
+    _KeyMap[SDL_SCANCODE_RALT] = KEYFN_ALT;
+    _KeyMap[SDL_SCANCODE_RGUI] = KEYFN_WIN;
+    _KeyMap[SDL_SCANCODE_APPLICATION] = KEYFN_MENU;
+    _KeyMap[SDL_SCANCODE_RCTRL] = KEYFN_CTRL;
+        
+    _KeyMap[SDL_SCANCODE_PRINTSCREEN] = KEYFN_PRNT;
+    _KeyMap[SDL_SCANCODE_SCROLLLOCK] = KEYFN_SCROLL;
+    _KeyMap[SDL_SCANCODE_PAUSE] = KEYFN_PAUSE;
+        
+    _KeyMap[SDL_SCANCODE_INSERT] = KEYFN_INSERT;
+    _KeyMap[SDL_SCANCODE_HOME] = KEYFN_HOME;
+    _KeyMap[SDL_SCANCODE_PAGEUP] = KEYFN_PAGEUP;
+    _KeyMap[SDL_SCANCODE_DELETE] = KEYFN_DELETE;
+    _KeyMap[SDL_SCANCODE_END] = KEYFN_END;
+    _KeyMap[SDL_SCANCODE_PAGEDOWN] = KEYFN_PAGEDOWN;
+        
+    _KeyMap[SDL_SCANCODE_LEFT] = KEYFN_LEFT;
+    _KeyMap[SDL_SCANCODE_RIGHT] = KEYFN_RIGHT;
+    _KeyMap[SDL_SCANCODE_UP] = KEYFN_UP;
+    _KeyMap[SDL_SCANCODE_DOWN] = KEYFN_DOWN;
+        
+    _KeyMap[SDL_SCANCODE_NUMLOCKCLEAR] = KEYFN_NUMLOCK;
+    _KeyMap[SDL_SCANCODE_KP_DIVIDE] = KEYFN_NUMDIV;
+    _KeyMap[SDL_SCANCODE_KP_MULTIPLY] = KEYFN_NUMMULT;
+    _KeyMap[SDL_SCANCODE_KP_MINUS] = KEYFN_NUMMINUS;
+    _KeyMap[SDL_SCANCODE_KP_7] = KEYFN_NUM7;
+    _KeyMap[SDL_SCANCODE_KP_8] = KEYFN_NUM8;
+    _KeyMap[SDL_SCANCODE_KP_9] = KEYFN_NUM9;
+    _KeyMap[SDL_SCANCODE_KP_4] = KEYFN_NUM4;
+    _KeyMap[SDL_SCANCODE_KP_5] = KEYFN_NUM5;
+    _KeyMap[SDL_SCANCODE_KP_6] = KEYFN_NUM6;
+    _KeyMap[SDL_SCANCODE_KP_PLUS] = KEYFN_NUMADD;
+    _KeyMap[SDL_SCANCODE_KP_1] = KEYFN_NUM1;
+    _KeyMap[SDL_SCANCODE_KP_2] = KEYFN_NUM2;
+    _KeyMap[SDL_SCANCODE_KP_3] = KEYFN_NUM3;
+    _KeyMap[SDL_SCANCODE_KP_0] = KEYFN_NUM0;
+    _KeyMap[SDL_SCANCODE_KP_PERIOD] = KEYFN_NUMDEL;
+    _KeyMap[SDL_SCANCODE_RETURN2] = KEYFN_NUMRETURN;
+}
+
+void Engine::InitHotKeys()
+{
+    _HotKeys.clear();
+    
+    _HotKeys[KEYFN_TAB].SetFunc(HOTKEY_CYCLE);
+    _HotKeys[KEYFN_SPACE].SetFunc(HOTKEY_DRAWWEAPON);
+    _HotKeys[KEYFN_1].SetFunc(HOTKEY_WPN1);
+    _HotKeys[KEYFN_2].SetFunc(HOTKEY_WPN2);
+    _HotKeys[KEYFN_3].SetFunc(HOTKEY_WPN3);
+    _HotKeys[KEYFN_A].SetFunc(HOTKEY_A);
+    _HotKeys[KEYFN_A].SetFunc(HOTKEY_SHIFTA, THotKey::MOD_SHIFT);
+    _HotKeys[KEYFN_F].SetFunc(HOTKEY_F);
+    _HotKeys[KEYFN_I].SetFunc(HOTKEY_I);
+    _HotKeys[KEYFN_L].SetFunc(HOTKEY_GODMODE, THotKey::MOD_SHIFT | THotKey::MOD_CTRL);
+    _HotKeys[KEYFN_M].SetFunc(HOTKEY_M);
+    _HotKeys[KEYFN_Q].SetFunc(HOTKEY_Q);
+    _HotKeys[KEYFN_S].SetFunc(HOTKEY_CTRLS, THotKey::MOD_CTRL);
+    _HotKeys[KEYFN_T].SetFunc(HOTKEY_T);
+    _HotKeys[KEYFN_NUMADD].SetFunc(HOTKEY_SPEEDUP);
+    _HotKeys[KEYFN_NUMMINUS].SetFunc(HOTKEY_SPEEDDOWN);
+    _HotKeys[KEYFN_TILDE].SetFunc(HOTKEY_BAG);
+}
 
     
 }
