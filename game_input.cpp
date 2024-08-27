@@ -8,13 +8,13 @@ int16_t Engine::GetHotKeyFunc(const THotKey &hkey)
     int32_t funcIndex = 0;
     
     if (_KeyState.at(KEYFN_SHIFT))
-        funcIndex |= THotKey::MOD_SHIFT;
+        funcIndex |= THotKey::KMOD_SHIFT;
         
     if (_KeyState.at(KEYFN_CTRL))
-        funcIndex |= THotKey::MOD_CTRL;
+        funcIndex |= THotKey::KMOD_CTRL;
         
     if (_KeyState.at(KEYFN_ALT))
-        funcIndex |= THotKey::MOD_ALT;
+        funcIndex |= THotKey::KMOD_ALT;
     
     return hkey.Funcs.at(funcIndex);
 }
@@ -1395,13 +1395,13 @@ void Engine::InitHotKeys()
     _HotKeys[KEYFN_2].SetFunc(HOTKEY_WPN2);
     _HotKeys[KEYFN_3].SetFunc(HOTKEY_WPN3);
     _HotKeys[KEYFN_A].SetFunc(HOTKEY_A);
-    _HotKeys[KEYFN_A].SetFunc(HOTKEY_SHIFTA, THotKey::MOD_SHIFT);
+    _HotKeys[KEYFN_A].SetFunc(HOTKEY_SHIFTA, THotKey::KMOD_SHIFT);
     _HotKeys[KEYFN_F].SetFunc(HOTKEY_F);
     _HotKeys[KEYFN_I].SetFunc(HOTKEY_I);
-    _HotKeys[KEYFN_L].SetFunc(HOTKEY_GODMODE, THotKey::MOD_SHIFT | THotKey::MOD_CTRL);
+    _HotKeys[KEYFN_L].SetFunc(HOTKEY_GODMODE, THotKey::KMOD_SHIFT | THotKey::KMOD_CTRL);
     _HotKeys[KEYFN_M].SetFunc(HOTKEY_M);
     _HotKeys[KEYFN_Q].SetFunc(HOTKEY_Q);
-    _HotKeys[KEYFN_S].SetFunc(HOTKEY_CTRLS, THotKey::MOD_CTRL);
+    _HotKeys[KEYFN_S].SetFunc(HOTKEY_CTRLS, THotKey::KMOD_CTRL);
     _HotKeys[KEYFN_T].SetFunc(HOTKEY_T);
     _HotKeys[KEYFN_NUMADD].SetFunc(HOTKEY_SPEEDUP);
     _HotKeys[KEYFN_NUMMINUS].SetFunc(HOTKEY_SPEEDDOWN);

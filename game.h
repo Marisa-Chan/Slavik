@@ -856,16 +856,16 @@ public:
     
     struct THotKey
     {
-        enum MOD
+        enum KMOD
         {
-            MOD_SHIFT = (1 << 0),
-            MOD_ALT   = (1 << 1),
-            MOD_CTRL  = (1 << 2),
+            KMOD_SHIFT = (1 << 0),
+            KMOD_ALT   = (1 << 1),
+            KMOD_CTRL  = (1 << 2),
             
-            MOD_MAX = (MOD_SHIFT | MOD_ALT | MOD_CTRL) + 1
+            KMOD_MAX = (KMOD_SHIFT | KMOD_ALT | KMOD_CTRL) + 1
         };
         
-        std::array<int16_t, MOD_MAX> Funcs;
+        std::array<int16_t, KMOD_MAX> Funcs;
         
         //int16_t Key = -1; //usege for debug?
         
