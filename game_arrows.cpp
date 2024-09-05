@@ -74,7 +74,7 @@ int32_t Engine::FUN_0041c29c(Character *pchr, int32_t arrowDmg)
             
             if (itm.Concentration <= 0.0)
             {
-                itm.TypeID = 0xff;
+                itm.TypeID = -1;
                 pchr->ArmorWeapons.at(slotId) = 0;
             }
         }

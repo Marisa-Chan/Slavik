@@ -295,7 +295,7 @@ int32_t Engine::FUN_00434b60(int32_t id)
             ItemInfo &inf = _state.Items.at(itmId);
             if (inf.TypeID == 11 && inf.InfoID == id - 1)
             {
-                inf.TypeID = 0xff;
+                inf.TypeID = -1;
                 
                 for (; i < 31; ++i)
                     _mainCharacter->Inventory[i] = _mainCharacter->Inventory[i + 1];
@@ -1858,22 +1858,22 @@ int32_t Engine::FUN_00432654(int32_t job)
 void Engine::FUN_00422778(Character *pchar)
 {
     if (pchar->Arrows != 0)
-        _state.Items.at(pchar->Arrows).TypeID = 0xff;
+        _state.Items.at(pchar->Arrows).TypeID = -1;
     
     for (int16_t itemId : pchar->ArmorWeapons)
     {
         if (itemId)
-            _state.Items.at(itemId).TypeID = 0xff;
+            _state.Items.at(itemId).TypeID = -1;
     }
     for (int16_t itemId : pchar->Inventory)
     {
         if (itemId)
-            _state.Items.at(itemId).TypeID = 0xff;
+            _state.Items.at(itemId).TypeID = -1;
     }
     for (int16_t itemId : pchar->Accessories)
     {
         if (itemId)
-            _state.Items.at(itemId).TypeID = 0xff;
+            _state.Items.at(itemId).TypeID = -1;
     }
 }
 

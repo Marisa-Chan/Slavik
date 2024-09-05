@@ -546,7 +546,7 @@ bool Engine::FUN_00417268(Village *vlg, Character *pchr, int32_t iout, int32_t i
     
     MixPotions(pchr, &_state.Items.at(itm1id), &_state.Items.at(itm2id));
     
-    _state.Items.at(itm2id).TypeID = 0xff;
+    _state.Items.at(itm2id).TypeID = -1;
     vlg->MedicItems.at(iout - 3) = itm1id;
     vlg->MedicItems.at(i1 - 3) = 0;
     vlg->MedicItems.at(i2 - 3) = 0;

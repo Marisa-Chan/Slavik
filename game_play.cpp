@@ -379,7 +379,7 @@ void Engine::FUN_00436a00()
             for (int16_t itemId : mapLoot.ItemID)
             {
                 if (itemId)
-                    _state.Items.at(itemId).TypeID = 0xff;
+                    _state.Items.at(itemId).TypeID = -1;
             }
         }
         else
