@@ -1,4 +1,5 @@
 #include "game.h"
+#include <bitset>
 
 namespace Game {
 
@@ -687,7 +688,173 @@ void Engine::UpdateVillageMedic(Village *vlg)
 
 void Engine::UpdateVillageSmith(Village *vlg)
 {
-    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
+    if (vlg->Jobs[3].CharID == 0 || _playScreenID == PLSCREEN_7)
+        return;
+    
+    Character &bsmith = _state.Characters.at(vlg->Jobs[3].CharID);
+    
+    if (vlg->SmithItemsCount < 0)
+    {
+        int32_t local_1c = FUN_00417220((_state.MapChar_ARRAY.at(vlg->ChiefCharId).unk5 & 3) - 1);
+        int32_t local_18 = bsmith.KuznechnoeDelo;
+
+        std::bitset<23> hasItms;
+        int32_t lastId = -1;
+
+        for(int32_t i = 0; i < 23; ++i)
+        {
+            int32_t need = 0;
+            if (i < 3)
+                need = ArmorWeaponInfo.at(30 + i).unk1;
+            else if (i < 12)
+                need = ArmorWeaponInfo.at((i - 3) + local_1c * 9).unk1;
+            else
+                need = ArmorWeaponInfo.at(34 + (i - 12) + local_1c * 11).unk1;
+            
+            if (need <= bsmith.KuznechnoeDelo * 10)
+            {
+                if (vlg->SmithItems[i] == 0)
+                {
+                    vlg->SmithItemsCount = i;
+                    vlg->SmithUpdateTimer = need * 60 / sqrt(bsmith.KuznechnoeDelo);
+                    return;
+                }
+                lastId = i;
+                hasItms.set(i);
+            }
+        }
+        if (lastId > -1)
+        {
+            MapChar &grp = _state.MapChar_ARRAY.at(vlg->ChiefCharId);
+            for(int32_t i = 0; i < 23; ++i)
+            {
+                if (hasItms[i])
+                {
+                    int32_t traderItm = 0;
+                    int32_t slot = -1;
+                    if (i < 12)
+                    {
+                        traderItm = local_1c * 9 + (i - 3);
+                        if (i < 6)
+                            slot = ESLT_2;
+                        else if (i < 9)
+                            slot = ESLT_0;
+                        else
+                            slot = ESLT_1;
+                    }
+                    else
+                    {
+                        traderItm = local_1c * 11 + 34 + (i - 12);
+                        if (i < 15)
+                            slot = ESLT_3;
+                        else if (i < 19)
+                            slot = ESLT_5;
+                        else
+                            slot = ESLT_4;
+                    }
+
+                    int32_t itemId = vlg->SmithItems.at(i);
+
+                    for(int32_t j = 0; j < grp.GroupSize; ++j)
+                    {
+                        Character &chr = _state.Characters.at(grp.CharacterIndex + j);
+                        if ( FUN_00418364(&chr, &_state.Items.at(itemId)) )
+                        {
+                            if (i < 3)
+                            {
+                                if (chr.Arrows == 0)
+                                {
+                                    chr.Arrows = itemId;
+                                    vlg->SmithItems[i] = 0;
+                                    vlg->SmithItemsCount = i;
+                                    vlg->SmithUpdateTimer = ArmorWeaponInfo.at(30 + i).unk1 * 60 / sqrt(bsmith.KuznechnoeDelo);
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                ItemInfo *equiped = nullptr;
+                                if (chr.ArmorWeapons.at(slot))
+                                    equiped = &_state.Items.at( chr.ArmorWeapons.at(slot) );
+
+                                if (!equiped || equiped->InfoID < traderItm)
+                                {
+                                    if (equiped)
+                                        equiped->TypeID = -1;
+                                        
+                                    chr.ArmorWeapons.at(slot) = itemId;
+                                    vlg->SmithItems[i] = 0;
+                                    vlg->SmithItemsCount = i;
+                                    vlg->SmithUpdateTimer = ArmorWeaponInfo.at(traderItm).unk1 * 60 / sqrt(bsmith.KuznechnoeDelo);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        vlg->SmithUpdateTimer--;
+        
+        if (vlg->SmithUpdateTimer < 1)
+        {
+            ItemInfo *itm = AllocItem();
+            if (!itm)
+                return;
+            
+            int32_t i = vlg->SmithItemsCount;
+            vlg->SmithItemsCount = -1;
+
+            int32_t local_1c = FUN_00417220((_state.MapChar_ARRAY.at(vlg->ChiefCharId).unk5 & 3) - 1);
+            int32_t local_18 = bsmith.KuznechnoeDelo;
+
+            int32_t complexity = 0;
+            vlg->SmithItems[i] = itm->Index;
+            if (i < 3)
+            {
+                itm->TypeID = 12;
+                itm->Concentration = 30;
+                itm->InfoID = 30 + i;
+                complexity = ArmorWeaponInfo.at(itm->InfoID).unk1;
+            }
+            else if (i < 12)
+            {
+                itm->InfoID = i - 3 + local_1c * 9;
+                itm->Weight = ArmorWeaponInfo.at(itm->InfoID).unk1;
+                itm->Concentration = itm->Weight;
+                
+                if (i < 6)
+                    itm->TypeID = 2;
+                else if (i < 9)
+                    itm->TypeID = 0;
+                else
+                    itm->TypeID = 1;
+                
+                complexity = itm->Weight;
+            }
+            else
+            {
+                itm->InfoID = i - 12 + 34 + local_1c * 11;
+                itm->Weight = ArmorWeaponInfo.at(itm->InfoID).unk1;
+                itm->Concentration = itm->Weight;
+                
+                if (i < 15)
+                    itm->TypeID = 3;
+                else if (i < 19)
+                    itm->TypeID = 5;
+                else
+                    itm->TypeID = 4;
+                
+                complexity = itm->Weight;
+            }
+
+            int32_t tmp = (1 + (float)complexity / sqrt(bsmith.KuznechnoeDelo));
+            bsmith.KuznechnoeDelo = sqrt( (float)tmp / 24.0 +  (bsmith.KuznechnoeDelo * bsmith.KuznechnoeDelo) );
+        }
+    }
 }
 
 void Engine::UpdateVillageVoevoda(Village *vlg)
