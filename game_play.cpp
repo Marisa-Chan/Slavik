@@ -533,6 +533,13 @@ bool Engine::FUN_0041f258(Character *pchar)
         if (FUN_00411758(pchar, pchar->MoveTile))
             return false;
         
+        if (pchar->EnemyCharID == 0)
+        {
+            //Seems original bug
+            printf("Why EnemyCharID == 0?\n");
+            return false;
+        }
+        
         Character &ch = _state.Characters.at(pchar->EnemyCharID - 1);
         if ((ch.ClassID & CLASS_BIT80) || ch.State == CHSTATE_9 || ch.State != CHSTATE_3)
             pchar->EnemyCharID = 0;
