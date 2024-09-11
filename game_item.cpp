@@ -24,11 +24,11 @@ int32_t Engine::GetItemWeight(const ItemInfo *itm) const
 std::string Engine::GetBonusValueString(const Bonus *b) const
 {
     if (!b->BonusAdd)
-        return Locale::BonusName.at(b->BonusID - 1) + std::string("=") + std::to_string(b->BonusValue);
+        return Locale::BonusName.at(b->BonusKhar - 1) + std::string("=") + std::to_string(b->BonusValue);
     else if (b->BonusValue >= 0)
-        return Locale::BonusName.at(b->BonusID - 1) + std::string("+") + std::to_string(b->BonusValue);
+        return Locale::BonusName.at(b->BonusKhar - 1) + std::string("+") + std::to_string(b->BonusValue);
     else
-        return Locale::BonusName.at(b->BonusID - 1) + std::to_string(b->BonusValue);
+        return Locale::BonusName.at(b->BonusKhar - 1) + std::to_string(b->BonusValue);
 }
 
 std::string Engine::GetItemHint(const ItemInfo *itm) const
@@ -78,13 +78,13 @@ std::string Engine::GetItemHint(const ItemInfo *itm) const
                 if (itm->BonusID > -1)
                 {
                     const BonusSet &bns = BonusesInfo.at(itm->BonusID);
-                    if (bns.Bonuses[0].BonusID)
+                    if (bns.Bonuses[0].BonusKhar)
                         s.append(GetBonusValueString(&bns.Bonuses[0]));
                     
-                    if (bns.Bonuses[1].BonusID)
+                    if (bns.Bonuses[1].BonusKhar)
                         s.append(GetBonusValueString(&bns.Bonuses[1]));
                     
-                    if (bns.Bonuses[2].BonusID)
+                    if (bns.Bonuses[2].BonusKhar)
                         s.append(GetBonusValueString(&bns.Bonuses[2]));
 
                     if (bns.NeedsKhar)
@@ -126,13 +126,13 @@ std::string Engine::GetItemHint(const ItemInfo *itm) const
                 if (itm->BonusID > -1)
                 {
                     const BonusSet &bns = BonusesInfo.at(itm->BonusID);
-                    if (bns.Bonuses[0].BonusID)
+                    if (bns.Bonuses[0].BonusKhar)
                         s.append(GetBonusValueString(&bns.Bonuses[0]));
                     
-                    if (bns.Bonuses[1].BonusID)
+                    if (bns.Bonuses[1].BonusKhar)
                         s.append(GetBonusValueString(&bns.Bonuses[1]));
                     
-                    if (bns.Bonuses[2].BonusID)
+                    if (bns.Bonuses[2].BonusKhar)
                         s.append(GetBonusValueString(&bns.Bonuses[2]));
 
                     if (bns.NeedsKhar)

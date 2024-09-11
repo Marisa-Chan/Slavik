@@ -480,7 +480,7 @@ void Engine::FUN_0041c750(Character *pchar)
                 for (int i = 0; i < 3; i++)
                 {
                     const Bonus &pBonus = BonusesInfo.at(inf.BonusID).Bonuses[i];
-                    int32_t bnsID = pBonus.BonusID - 1;
+                    int32_t bnsID = pBonus.BonusKhar - 1;
                     if (bnsID > -1 && TempBonusAdd[bnsID]) 
                     {
                         TempBonusAdd[bnsID] &= pBonus.BonusAdd;
@@ -506,7 +506,7 @@ void Engine::FUN_0041c750(Character *pchar)
                 for (int i = 0; i < 3; i++)
                 {
                     const Bonus &pBonus = BonusesInfo.at(inf.BonusID).Bonuses[i];
-                    int32_t bnsID = pBonus.BonusID - 1;
+                    int32_t bnsID = pBonus.BonusKhar - 1;
                     if (bnsID > -1 && TempBonusAdd[bnsID]) 
                     {
                         TempBonusAdd[bnsID] &= pBonus.BonusAdd;
@@ -527,7 +527,7 @@ void Engine::FUN_0041c750(Character *pchar)
         for (int i = 0; i < 3; i++)
         {
             const Bonus &pBonus = BonusesInfo.at(pchar->field98_0xd2).Bonuses[i];
-            int32_t bnsID = pBonus.BonusID - 1;
+            int32_t bnsID = pBonus.BonusKhar - 1;
             if (bnsID > -1 && TempBonusAdd[bnsID]) 
             {
                 TempBonusAdd[bnsID] &= pBonus.BonusAdd;
@@ -545,7 +545,7 @@ void Engine::FUN_0041c750(Character *pchar)
         for (int i = 0; i < 3; i++)
         {
             const Bonus &pBonus = BonusesInfo.at(pchar->field99_0xd3).Bonuses[i];
-            int32_t bnsID = pBonus.BonusID - 1;
+            int32_t bnsID = pBonus.BonusKhar - 1;
             if (bnsID > -1 && TempBonusAdd[bnsID]) 
             {
                 TempBonusAdd[bnsID] &= pBonus.BonusAdd;
