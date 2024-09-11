@@ -1830,8 +1830,15 @@ int32_t Engine::FUN_00432654(int32_t job)
     if (chrInGrp == 0)
         return 0;
 
+
+    Character *selChar = PInteractChar;
+
+    PInteractChar = &_state.Characters.at(_mainMapChar->CharacterIndex + chrInGrp);
+
     if (!FUN_00433af8())
         return 0;
+
+    PInteractChar = selChar;
 
 
     MapChar &pMVar1 = _state.MapChar_ARRAY.at(CurrentVillage->ChiefCharId);
