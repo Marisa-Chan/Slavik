@@ -561,7 +561,7 @@ void Engine::PlayProcessMouse()
                                     CharInfoCharacter = &pCVar13;
                                     int16_t_ARRAY_0083dc4c[1] = pCVar13.Inventory;
                                     int16_t_ARRAY_0083dd4c[0] = 0;
-                                    DrawTrade(0);
+                                    //DrawTrade(0);
                                 }
                             }
                             else if (_playScreenID == PLSCREEN_3)
@@ -736,7 +736,7 @@ void Engine::PlayProcessMouse()
                                     int16_t_ARRAY_0083dc4c[fromPanel].at(i) = int16_t_ARRAY_0083dc4c[fromPanel].at(i + 1);
 
                                 int16_t_ARRAY_0083dc4c[fromPanel].back() = 0;
-                                DrawTrade(0);
+                                //DrawTrade(0);
                                 break;
                             }
                         }
@@ -796,7 +796,7 @@ void Engine::PlayProcessMouse()
                     if (int16_t_ARRAY_0083dd4c[invid] < 0)
                         int16_t_ARRAY_0083dd4c[invid] = 0;
                     
-                    DrawTrade(-(invid + 1));
+                    //DrawTrade(-(invid + 1));
                 }
                 else
                 {
@@ -818,7 +818,7 @@ void Engine::PlayProcessMouse()
                     if (FUN_0041eb9c(&int16_t_ARRAY_0083dc4c[local_20], 6, int16_t_ARRAY_0083dd4c[local_20]))
                     {
                         int16_t_ARRAY_0083dd4c[local_20]++;
-                        DrawTrade(local_20 + 1);
+                        //DrawTrade(local_20 + 1);
                     }
                 }
                 else

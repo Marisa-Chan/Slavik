@@ -151,8 +151,8 @@ void Engine::UpdateGame()
         else if (DWORD_00a3e74c & 8)
         {
             DWORD_00a3e74c &= ~8;
-            if (_playScreenID == PLSCREEN_7)
-                DrawTrade(0);
+            //if (_playScreenID == PLSCREEN_7)
+                //DrawTrade(0);
         }
         
         

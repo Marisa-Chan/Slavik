@@ -1954,7 +1954,8 @@ void Engine::DrawQuestScreen()
     if ((sel & 0xff) == 100)
         selId = sel >> 8;
     
-    FillBkgRect(MAPRECT);
+    if (!_bTransparentMenu)
+        FillBkgRect(MAPRECT);
     //                           Common::Point(114, 0)
     ImgQueue2(_menuImages.at(1), Common::Point(144, 0), MAPRECT);
     //                           Common::Point(129, 150)

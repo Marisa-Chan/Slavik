@@ -103,7 +103,8 @@ int32_t Engine::GetItemPrice(ItemInfo *itm)
     
 void Engine::DrawTrade(int p)
 {
-    FillBkgRect(MAPRECT);
+    if (!_bTransparentMenu)
+        FillBkgRect(MAPRECT);
     
     ImgQueue2(_menuImages[6], MAPRECT.Pos(), MAPRECT);
     ImgQueue2(_menuImages[180], tagRECT_ARRAY_00465a54[0].Pos(), MAPRECT);
@@ -557,7 +558,8 @@ void Engine::DrawCharInfo()
 
 void Engine::DrawJournal()
 {
-    FillBkgRect(MAPRECT);
+    if (!_bTransparentMenu)
+        FillBkgRect(MAPRECT);
     //(114, 0)
     constexpr const Common::Point pimg(144, 0);
     ImgQueue2(_menuImages.at(1), pimg, MAPRECT);
