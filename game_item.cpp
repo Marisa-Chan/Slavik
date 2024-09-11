@@ -87,12 +87,12 @@ std::string Engine::GetItemHint(const ItemInfo *itm) const
                     if (bns.Bonuses[2].BonusID)
                         s.append(GetBonusValueString(&bns.Bonuses[2]));
 
-                    if (bns.unk3)
+                    if (bns.NeedsKhar)
                     {
                         s.append(Locale::ItemDescr[Locale::ITMDES_NEEDS]);
-                        s.append(Locale::BonusName.at(bns.unk3 - 1));
+                        s.append(Locale::BonusName.at(bns.NeedsKhar - 1));
                         s.append(":");
-                        s.append(std::to_string(bns.unk4));
+                        s.append(std::to_string(bns.NeedsVal));
                     }
                 }
                 
@@ -135,12 +135,12 @@ std::string Engine::GetItemHint(const ItemInfo *itm) const
                     if (bns.Bonuses[2].BonusID)
                         s.append(GetBonusValueString(&bns.Bonuses[2]));
 
-                    if (bns.unk3)
+                    if (bns.NeedsKhar)
                     {
                         s.append(Locale::ItemDescr[Locale::ITMDES_NEEDS]);
-                        s.append(Locale::BonusName.at(bns.unk3 - 1));
+                        s.append(Locale::BonusName.at(bns.NeedsKhar - 1));
                         s.append(":");
-                        s.append(std::to_string(bns.unk4));
+                        s.append(std::to_string(bns.NeedsVal));
                     }
                 }
                 return s;

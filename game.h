@@ -812,9 +812,9 @@ public:
     
     struct BonusSet
     {
-        int16_t unk1;
-        int8_t unk3;
-        int8_t unk4;
+        int16_t Price;
+        int8_t NeedsKhar;
+        int8_t NeedsVal;
         Bonus Bonuses[3];
     };
     
@@ -1322,7 +1322,7 @@ public:
     
     //UI
     void DrawTrade(int p);
-    int32_t FUN_0041b348(ItemInfo *itm);
+    int32_t GetItemPrice(ItemInfo *itm);
     void DrawTradeInv(int inv, int p);
     void FillBkgRect(Common::Rect rect);
     void DrawMap();

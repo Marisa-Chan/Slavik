@@ -2116,7 +2116,7 @@ bool Engine::FUN_00418364(Character *pchar, ItemInfo *pitm)
         if (pitm->BonusID >= 0)
             bset = &BonusesInfo.at(pitm->BonusID);
         
-        if (!bset || bset->unk4 == 0 || FUN_0041b244(pchar, bset->unk3) >= bset->unk4)
+        if (!bset || bset->NeedsVal == 0 || FUN_0041b244(pchar, bset->NeedsKhar) >= bset->NeedsVal)
         {
             const WeapArmorItemInfo &inf = ArmorWeaponInfo.at(pitm->InfoID);
             
@@ -2127,7 +2127,7 @@ bool Engine::FUN_00418364(Character *pchar, ItemInfo *pitm)
     else if (pitm->TypeID < 9)
     {
         const BonusSet &bset = BonusesInfo.at(pitm->BonusID);
-        if (bset.unk4 == 0 || FUN_0041b244(pchar, bset.unk3) >= bset.unk4)
+        if (bset.NeedsVal == 0 || FUN_0041b244(pchar, bset.NeedsKhar) >= bset.NeedsVal)
             return true;
     }
     else

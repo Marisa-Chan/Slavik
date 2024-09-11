@@ -60,14 +60,14 @@ void Engine::DrawTradeInv(int inv, int p)
     }
 }
 
-int32_t Engine::FUN_0041b348(ItemInfo *itm)
+int32_t Engine::GetItemPrice(ItemInfo *itm)
 {
     if (itm->TypeID < 6)
     {
         int32_t val = ArmorWeaponInfo.at( itm->InfoID ).unk5;
         if (itm->BonusID > -1 && (itm->Flags & ItemInfo::FLAG_UNIDENTIFIED) == 0)
         {
-            val += BonusesInfo.at(itm->BonusID).unk1;
+            val += BonusesInfo.at(itm->BonusID).Price;
             if (val < 1)
                 val = 1;
         }
@@ -78,7 +78,7 @@ int32_t Engine::FUN_0041b348(ItemInfo *itm)
         int32_t val = AcessoriesInfo.at( itm->InfoID ).BonusID;
         if (itm->BonusID > -1 && (itm->Flags & ItemInfo::FLAG_UNIDENTIFIED) == 0)
         {
-            val += BonusesInfo.at(itm->BonusID).unk1;
+            val += BonusesInfo.at(itm->BonusID).Price;
             if (val < 1)
                 val = 1;
         }
@@ -132,7 +132,7 @@ void Engine::DrawTrade(int p)
     {
         int32_t itemId = int16_t_ARRAY_0083dc4c[1].at(i);
         if (itemId)
-            DAT_00a3e850 += FUN_0041b348(&_state.Items.at(itemId));
+            DAT_00a3e850 += GetItemPrice(&_state.Items.at(itemId));
     }
     
     DAT_00a3e854 = 0;
@@ -140,7 +140,7 @@ void Engine::DrawTrade(int p)
     {
         int32_t itemId = int16_t_ARRAY_0083dc4c[3].at(i);
         if (itemId)
-            DAT_00a3e854 += FUN_0041b348(&_state.Items.at(itemId));
+            DAT_00a3e854 += GetItemPrice(&_state.Items.at(itemId));
     }
     
     if (PInteractChar)
