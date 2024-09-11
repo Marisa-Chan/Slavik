@@ -464,10 +464,10 @@ Engine::Character *Engine::CalcMapChar(MapChar *mchar)
 void Engine::FUN_0041c750(Character *pchar)
 {    
     std::array<int32_t, 9> TempBonusValues;
-    std::array<int, 9> TempBonusValueType;
+    std::array<bool, 9> TempBonusAdd;
     
     TempBonusValues.fill(0);
-    TempBonusValueType.fill(1);
+    TempBonusAdd.fill(true);
     
     for (int32_t i = 0; i < 6; ++i) 
     {
@@ -481,11 +481,11 @@ void Engine::FUN_0041c750(Character *pchar)
                 {
                     const Bonus &pBonus = BonusesInfo.at(inf.BonusID).Bonuses[i];
                     int32_t bnsID = pBonus.BonusID - 1;
-                    if (bnsID > -1 && TempBonusValueType[bnsID]) 
+                    if (bnsID > -1 && TempBonusAdd[bnsID]) 
                     {
-                        TempBonusValueType[bnsID] &= pBonus.BonusType;
+                        TempBonusAdd[bnsID] &= pBonus.BonusAdd;
 
-                        if (TempBonusValueType[bnsID] == 0)
+                        if (TempBonusAdd[bnsID] == 0)
                             TempBonusValues[bnsID] = pBonus.BonusValue;
                         else
                             TempBonusValues[bnsID] += pBonus.BonusValue;
@@ -507,11 +507,11 @@ void Engine::FUN_0041c750(Character *pchar)
                 {
                     const Bonus &pBonus = BonusesInfo.at(inf.BonusID).Bonuses[i];
                     int32_t bnsID = pBonus.BonusID - 1;
-                    if (bnsID > -1 && TempBonusValueType[bnsID]) 
+                    if (bnsID > -1 && TempBonusAdd[bnsID]) 
                     {
-                        TempBonusValueType[bnsID] &= pBonus.BonusType;
+                        TempBonusAdd[bnsID] &= pBonus.BonusAdd;
 
-                        if (TempBonusValueType[bnsID] == 0)
+                        if (TempBonusAdd[bnsID] == 0)
                             TempBonusValues[bnsID] = pBonus.BonusValue;
                         else
                             TempBonusValues[bnsID] += pBonus.BonusValue;
@@ -528,11 +528,11 @@ void Engine::FUN_0041c750(Character *pchar)
         {
             const Bonus &pBonus = BonusesInfo.at(pchar->field98_0xd2).Bonuses[i];
             int32_t bnsID = pBonus.BonusID - 1;
-            if (bnsID > -1 && TempBonusValueType[bnsID]) 
+            if (bnsID > -1 && TempBonusAdd[bnsID]) 
             {
-                TempBonusValueType[bnsID] &= pBonus.BonusType;
+                TempBonusAdd[bnsID] &= pBonus.BonusAdd;
 
-                if (TempBonusValueType[bnsID] == 0)
+                if (TempBonusAdd[bnsID] == 0)
                     TempBonusValues[bnsID] = pBonus.BonusValue;
                 else
                     TempBonusValues[bnsID] += pBonus.BonusValue;
@@ -546,11 +546,11 @@ void Engine::FUN_0041c750(Character *pchar)
         {
             const Bonus &pBonus = BonusesInfo.at(pchar->field99_0xd3).Bonuses[i];
             int32_t bnsID = pBonus.BonusID - 1;
-            if (bnsID > -1 && TempBonusValueType[bnsID]) 
+            if (bnsID > -1 && TempBonusAdd[bnsID]) 
             {
-                TempBonusValueType[bnsID] &= pBonus.BonusType;
+                TempBonusAdd[bnsID] &= pBonus.BonusAdd;
 
-                if (TempBonusValueType[bnsID] == 0)
+                if (TempBonusAdd[bnsID] == 0)
                     TempBonusValues[bnsID] = pBonus.BonusValue;
                 else
                     TempBonusValues[bnsID] += pBonus.BonusValue;
@@ -566,7 +566,7 @@ void Engine::FUN_0041c750(Character *pchar)
     {
         pchar->CurrentLovkost = TempBonusValues[1];
         
-        if (TempBonusValueType[1] != 0) 
+        if (TempBonusAdd[1] != 0) 
             pchar->CurrentLovkost += pchar->BaseLovkost;
     }
     
@@ -579,7 +579,7 @@ void Engine::FUN_0041c750(Character *pchar)
     else 
     {
         pchar->CurrentHarizm = TempBonusValues[2];
-        if (TempBonusValueType[2] != 0)
+        if (TempBonusAdd[2] != 0)
             pchar->CurrentHarizm += pchar->BaseHarizm;
     }
 
@@ -590,7 +590,7 @@ void Engine::FUN_0041c750(Character *pchar)
     int16_t tmpHp = 0;
     if (TempBonusValues[3] == 0)
         tmpHp = pchar->HP;
-    else if (TempBonusValueType[3] == 0)
+    else if (TempBonusAdd[3] == 0)
         tmpHp = TempBonusValues[3];
     else 
         tmpHp = TempBonusValues[3] + pchar->HP;
@@ -606,7 +606,7 @@ void Engine::FUN_0041c750(Character *pchar)
     else 
     {
         pchar->CurrentSila = TempBonusValues[4];
-        if (TempBonusValueType[4] != 0) 
+        if (TempBonusAdd[4] != 0) 
             pchar->CurrentSila += pchar->BaseSila;
     }
     
@@ -619,7 +619,7 @@ void Engine::FUN_0041c750(Character *pchar)
     else 
     {
         pchar->CurrentVinoslivost = TempBonusValues[5];
-        if (TempBonusValueType[5] != 0)
+        if (TempBonusAdd[5] != 0)
             pchar->CurrentVinoslivost += pchar->BaseVinoslivost;
     }
     
@@ -631,13 +631,13 @@ void Engine::FUN_0041c750(Character *pchar)
     pchar->CurrentVer = TempBonusValues[8];
     pchar->Flags = 0;
     
-    if (TempBonusValueType[6] != 0)
+    if (TempBonusAdd[6] != 0)
         pchar->Flags |= 1;
     
-    if (TempBonusValueType[7] != 0)
+    if (TempBonusAdd[7] != 0)
         pchar->Flags |= 2;
     
-    if (TempBonusValueType[8] != 0)
+    if (TempBonusAdd[8] != 0)
         pchar->Flags |= 4;
 }
 

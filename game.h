@@ -806,7 +806,7 @@ public:
     struct Bonus
     {
         uint8_t BonusID;
-        uint8_t BonusType;
+        bool BonusAdd;
         int16_t BonusValue;
     };
     

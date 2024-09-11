@@ -352,7 +352,7 @@ const std::array<Engine::AccessorieItemInfo, 54> Engine::MiscItemsInfo = {{
 {53,	0,	200,	125,	163} }};
 
 const std::array<Engine::BonusSet, 74> Engine::BonusesInfo = {{
-//unk1  unk3   unk4     Bonuses
+//Price Khar Need Bonuses (Khar Add Val)
 {15,	0,	0,	{{8,1,4}, {0,0,0}, {0,0,0}}},
 {45,	0,	0,	{{8,1,12}, {0,0,0}, {0,0,0}}},
 {-15,	0,	0,	{{8,1,-4}, {0,0,0}, {0,0,0}}},

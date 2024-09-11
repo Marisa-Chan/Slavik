@@ -23,7 +23,7 @@ int32_t Engine::GetItemWeight(const ItemInfo *itm) const
 
 std::string Engine::GetBonusValueString(const Bonus *b) const
 {
-    if (b->BonusType == 0)
+    if (!b->BonusAdd)
         return Locale::BonusName.at(b->BonusID - 1) + std::string("=") + std::to_string(b->BonusValue);
     else if (b->BonusValue >= 0)
         return Locale::BonusName.at(b->BonusID - 1) + std::string("+") + std::to_string(b->BonusValue);
