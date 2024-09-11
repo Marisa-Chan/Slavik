@@ -890,6 +890,8 @@ public:
         _cursors.fill(nullptr);
         
         quest_2.fill(0);
+
+        SelectedCharacters.fill(nullptr);
     }
     
     bool Process();
@@ -1001,7 +1003,7 @@ public:
     
     Character *CalcMapChar(MapChar *pmchar);
     
-    void FUN_0041c750(Character *param_1);
+    void FUN_0041c750(Character *pchar);
     int32_t GetCurrentWeight(Character *pchar, uint32_t ignore = 0);
     
     int32_t CheckKharUp(Character &pchar, int32_t param);

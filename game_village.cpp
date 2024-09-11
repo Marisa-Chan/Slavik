@@ -692,7 +692,7 @@ void Engine::UpdateVillageSmith(Village *vlg)
         return;
     
     Character &bsmith = _state.Characters.at(vlg->Jobs[3].CharID);
-    
+
     if (vlg->SmithItemsCount < 0)
     {
         int32_t local_1c = FUN_00417220((_state.MapChar_ARRAY.at(vlg->ChiefCharId).unk5 & 3) - 1);

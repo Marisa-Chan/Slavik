@@ -1522,26 +1522,26 @@ int32_t Engine::FUN_00435874()
 
 int32_t Engine::FUN_004351d8()
 {
-    return FUN_00432654(VJOB_SMITH);
+    return FUN_00432654(4); //voevoda
 }
 
 
 int32_t Engine::FUN_0043516c()
 {
-    return FUN_00432654(VJOB_CHIEF);
+    return FUN_00432654(1);
 }
 
 
 int32_t Engine::FUN_004351b4()
 {
-    return FUN_00432654(VJOB_TRADER);
+    return FUN_00432654(3);
 }
 
 
 
 int32_t Engine::FUN_00435190()
 {
-    return FUN_00432654(VJOB_MEDIC);
+    return FUN_00432654(2);
 }
 
 
@@ -1816,7 +1816,7 @@ int32_t Engine::FUN_004353bc()
 
 
 int32_t Engine::FUN_00432654(int32_t job)
-{    
+{
     if (!CurrentVillage)
         return 0;
     
