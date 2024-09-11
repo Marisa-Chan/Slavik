@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "array": "cpp",
+        "bitset": "cpp",
+        "set": "cpp",
+        "format": "cpp",
+        "string_view": "cpp",
+        "span": "cpp"
+    }
+}
