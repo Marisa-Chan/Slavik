@@ -41,7 +41,7 @@ std::string Engine::GetItemHint(const ItemInfo *itm) const
         case 3:
         case 4:
         case 5:
-            if ((itm->Flags & 1) == 0)
+            if ((itm->Flags & ItemInfo::FLAG_UNIDENTIFIED) == 0)
             {
                 std::string s = Locale::WeapArmorNames.at(itm->InfoID);
                 if (itm->TypeID < 3)
@@ -115,7 +115,7 @@ std::string Engine::GetItemHint(const ItemInfo *itm) const
         case 6:
         case 7:
         case 8:
-            if ((itm->Flags & 1) == 0)
+            if ((itm->Flags & ItemInfo::FLAG_UNIDENTIFIED) == 0)
             {
                 const AccessorieItemInfo& acc = AcessoriesInfo.at(itm->InfoID);
                 
@@ -170,7 +170,7 @@ std::string Engine::GetItemHint(const ItemInfo *itm) const
         }
         
         case 11:
-            if ((itm->Flags & 1) == 0)
+            if ((itm->Flags & ItemInfo::FLAG_UNIDENTIFIED) == 0)
             {
                 const AccessorieItemInfo& misc = MiscItemsInfo.at(itm->InfoID);
                 std::string s = Locale::MiscItemsInfoNames.at(itm->InfoID);
@@ -187,7 +187,7 @@ std::string Engine::GetItemHint(const ItemInfo *itm) const
             std::string s = Locale::ItemDescr[Locale::ITMDES_QUIVER];
             s.append(std::to_string((int32_t)(itm->Concentration)));
             
-            if ((itm->Flags & 1) == 0)
+            if ((itm->Flags & ItemInfo::FLAG_UNIDENTIFIED) == 0)
             {
                 const WeapArmorItemInfo &aw = ArmorWeaponInfo.at(itm->InfoID);
                 
@@ -533,10 +533,10 @@ void Engine::IdentifyCharacterItems(Character *pchar)
         if (itmid)
         {
             ItemInfo &itm = _state.Items.at(itmid);
-            if (itm.Flags & ItemInfo::FLAG_IDENTIFIED)
+            if (itm.Flags & ItemInfo::FLAG_UNIDENTIFIED)
             {
                 _mainCharacter->Identification++;
-                itm.Flags &= ~ItemInfo::FLAG_IDENTIFIED;
+                itm.Flags &= ~ItemInfo::FLAG_UNIDENTIFIED;
             }
         }
     }
@@ -544,10 +544,10 @@ void Engine::IdentifyCharacterItems(Character *pchar)
     if (pchar->Arrows)
     {
         ItemInfo &itm = _state.Items.at(pchar->Arrows);
-        if (itm.Flags & ItemInfo::FLAG_IDENTIFIED)
+        if (itm.Flags & ItemInfo::FLAG_UNIDENTIFIED)
         {
             _mainCharacter->Identification++;
-            itm.Flags &= ~ItemInfo::FLAG_IDENTIFIED;
+            itm.Flags &= ~ItemInfo::FLAG_UNIDENTIFIED;
         }
     }
     
@@ -556,10 +556,10 @@ void Engine::IdentifyCharacterItems(Character *pchar)
         if (itmid)
         {
             ItemInfo &itm = _state.Items.at(itmid);
-            if (itm.Flags & ItemInfo::FLAG_IDENTIFIED)
+            if (itm.Flags & ItemInfo::FLAG_UNIDENTIFIED)
             {
                 _mainCharacter->Identification++;
-                itm.Flags &= ~ItemInfo::FLAG_IDENTIFIED;
+                itm.Flags &= ~ItemInfo::FLAG_UNIDENTIFIED;
             }
         }
     }
@@ -569,10 +569,10 @@ void Engine::IdentifyCharacterItems(Character *pchar)
         if (itmid)
         {
             ItemInfo &itm = _state.Items.at(itmid);
-            if (itm.Flags & ItemInfo::FLAG_IDENTIFIED)
+            if (itm.Flags & ItemInfo::FLAG_UNIDENTIFIED)
             {
                 _mainCharacter->Identification++;
-                itm.Flags &= ~ItemInfo::FLAG_IDENTIFIED;
+                itm.Flags &= ~ItemInfo::FLAG_UNIDENTIFIED;
             }
         }
     }

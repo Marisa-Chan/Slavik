@@ -65,7 +65,7 @@ int32_t Engine::FUN_0041b348(ItemInfo *itm)
     if (itm->TypeID < 6)
     {
         int32_t val = ArmorWeaponInfo.at( itm->InfoID ).unk5;
-        if (itm->BonusID > -1 && (itm->Flags & ItemInfo::FLAG_IDENTIFIED) == 0)
+        if (itm->BonusID > -1 && (itm->Flags & ItemInfo::FLAG_UNIDENTIFIED) == 0)
         {
             val += BonusesInfo.at(itm->BonusID).unk1;
             if (val < 1)
@@ -76,7 +76,7 @@ int32_t Engine::FUN_0041b348(ItemInfo *itm)
     else if (itm->TypeID < 9)
     {
         int32_t val = AcessoriesInfo.at( itm->InfoID ).BonusID;
-        if (itm->BonusID > -1 && (itm->Flags & ItemInfo::FLAG_IDENTIFIED) == 0)
+        if (itm->BonusID > -1 && (itm->Flags & ItemInfo::FLAG_UNIDENTIFIED) == 0)
         {
             val += BonusesInfo.at(itm->BonusID).unk1;
             if (val < 1)

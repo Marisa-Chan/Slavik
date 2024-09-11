@@ -1144,22 +1144,22 @@ int32_t Engine::FUN_00434438()
 {
     for (int32_t itmId : _mainCharacter->ArmorWeapons) 
     {
-        if (itmId && (_state.Items.at(itmId).Flags & ItemInfo::FLAG_IDENTIFIED))
+        if (itmId && (_state.Items.at(itmId).Flags & ItemInfo::FLAG_UNIDENTIFIED))
             return 1;            
     }
 
-    if (_mainCharacter->Arrows && (_state.Items.at(_mainCharacter->Arrows).Flags & ItemInfo::FLAG_IDENTIFIED))
+    if (_mainCharacter->Arrows && (_state.Items.at(_mainCharacter->Arrows).Flags & ItemInfo::FLAG_UNIDENTIFIED))
         return 1; 
     
     for (int32_t itmId : _mainCharacter->Inventory) 
     {
-        if (itmId && (_state.Items.at(itmId).Flags & ItemInfo::FLAG_IDENTIFIED))
+        if (itmId && (_state.Items.at(itmId).Flags & ItemInfo::FLAG_UNIDENTIFIED))
             return 1;            
     }
     
     for (int32_t itmId : _mainCharacter->Accessories) 
     {
-        if (itmId && (_state.Items.at(itmId).Flags & ItemInfo::FLAG_IDENTIFIED))
+        if (itmId && (_state.Items.at(itmId).Flags & ItemInfo::FLAG_UNIDENTIFIED))
             return 1;            
     }
     

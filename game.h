@@ -548,7 +548,7 @@ public:
     {
         enum FLAGS
         {
-            FLAG_IDENTIFIED = (1 << 0),
+            FLAG_UNIDENTIFIED = (1 << 0),
         };
         
         int32_t Index = -1;

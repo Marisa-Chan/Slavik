@@ -467,7 +467,7 @@ void Engine::FUN_0041c750(Character *pchar)
     std::array<int, 9> TempBonusValueType;
     
     TempBonusValues.fill(0);
-    TempBonusValueType.fill(0);
+    TempBonusValueType.fill(1);
     
     for (int32_t i = 0; i < 6; ++i) 
     {
@@ -475,7 +475,7 @@ void Engine::FUN_0041c750(Character *pchar)
         if (itemID)
         {
             ItemInfo &inf = _state.Items.at(itemID);
-            if (inf.BonusID > -1 && (inf.Flags & 1))
+            if (inf.BonusID > -1 && (inf.Flags & ItemInfo::FLAG_UNIDENTIFIED) == 0)
             {   
                 for (int i = 0; i < 3; i++)
                 {
@@ -486,9 +486,9 @@ void Engine::FUN_0041c750(Character *pchar)
                         TempBonusValueType[bnsID] &= pBonus.BonusType;
 
                         if (TempBonusValueType[bnsID] == 0)
-                            TempBonusValueType[bnsID] = pBonus.BonusValue;
+                            TempBonusValues[bnsID] = pBonus.BonusValue;
                         else
-                            TempBonusValueType[bnsID] += pBonus.BonusValue;
+                            TempBonusValues[bnsID] += pBonus.BonusValue;
                     }
                 }
             }
@@ -501,7 +501,7 @@ void Engine::FUN_0041c750(Character *pchar)
         if (itemID)
         {
             ItemInfo &inf = _state.Items.at(itemID);
-            if (inf.BonusID > -1 && (inf.Flags & 1))
+            if (inf.BonusID > -1 && (inf.Flags & ItemInfo::FLAG_UNIDENTIFIED) == 0)
             {   
                 for (int i = 0; i < 3; i++)
                 {
@@ -512,9 +512,9 @@ void Engine::FUN_0041c750(Character *pchar)
                         TempBonusValueType[bnsID] &= pBonus.BonusType;
 
                         if (TempBonusValueType[bnsID] == 0)
-                            TempBonusValueType[bnsID] = pBonus.BonusValue;
+                            TempBonusValues[bnsID] = pBonus.BonusValue;
                         else
-                            TempBonusValueType[bnsID] += pBonus.BonusValue;
+                            TempBonusValues[bnsID] += pBonus.BonusValue;
                     }
                 }
             }
@@ -533,9 +533,9 @@ void Engine::FUN_0041c750(Character *pchar)
                 TempBonusValueType[bnsID] &= pBonus.BonusType;
 
                 if (TempBonusValueType[bnsID] == 0)
-                    TempBonusValueType[bnsID] = pBonus.BonusValue;
+                    TempBonusValues[bnsID] = pBonus.BonusValue;
                 else
-                    TempBonusValueType[bnsID] += pBonus.BonusValue;
+                    TempBonusValues[bnsID] += pBonus.BonusValue;
             }
         }
     }
@@ -551,9 +551,9 @@ void Engine::FUN_0041c750(Character *pchar)
                 TempBonusValueType[bnsID] &= pBonus.BonusType;
 
                 if (TempBonusValueType[bnsID] == 0)
-                    TempBonusValueType[bnsID] = pBonus.BonusValue;
+                    TempBonusValues[bnsID] = pBonus.BonusValue;
                 else
-                    TempBonusValueType[bnsID] += pBonus.BonusValue;
+                    TempBonusValues[bnsID] += pBonus.BonusValue;
             }
         }
     }

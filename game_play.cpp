@@ -1167,7 +1167,7 @@ void Engine::FUN_00418510(Character *pchar, int32_t maxBonusGld, int32_t lvl)
                     if (rand() % 101 < 10)
                     {
                         if (_mainCharacter->Identification < rand() % 100)
-                            itm->Flags |= ItemInfo::FLAG_IDENTIFIED;
+                            itm->Flags |= ItemInfo::FLAG_UNIDENTIFIED;
                         else
                         {
                             _mainCharacter->Identification++;
@@ -1220,7 +1220,7 @@ void Engine::FUN_00418510(Character *pchar, int32_t maxBonusGld, int32_t lvl)
                     if (rand() % 100 < 7)
                     {
                         if (_mainCharacter->Identification < rand() % 100)
-                            itm->Flags |= ItemInfo::FLAG_IDENTIFIED;
+                            itm->Flags |= ItemInfo::FLAG_UNIDENTIFIED;
                         
                         tmp = 0;
                         
@@ -1258,7 +1258,7 @@ void Engine::FUN_00418510(Character *pchar, int32_t maxBonusGld, int32_t lvl)
                     }
                     
                     if (_mainCharacter->Identification < rand() % 100)
-                        itm->Flags |= ItemInfo::FLAG_IDENTIFIED;
+                        itm->Flags |= ItemInfo::FLAG_UNIDENTIFIED;
                     
                     int32_t tmp = 0;
                         
@@ -1374,7 +1374,7 @@ vec3f Engine::FUN_0042c914(Character *pchar, ItemInfo *itm)
     int32_t val = FUN_00418364(pchar, itm);
     if (val == 0)
         return vec3f(24, 0, 0);
-    else if (itm->Flags & 1)
+    else if (itm->Flags & ItemInfo::FLAG_UNIDENTIFIED)
         return vec3f(15, 15, 0);
     else if (itm->BonusID >= 0)
         return vec3f(0, 12, 0);
