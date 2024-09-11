@@ -1302,7 +1302,7 @@ int32_t Engine::FUN_00433af8()
         if (PInteractChar == SelectedCharacters[i])
         {
             for(int32_t j = i; j < 9; ++j)
-                SelectedCharacters[j] = (SelectedCharacters[j + 1] - 1);
+                SelectedCharacters[j] = SelectedCharacters[j + 1];
             SelectedCharacters.back() = nullptr;
             break;
         }
