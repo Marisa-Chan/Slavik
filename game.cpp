@@ -495,7 +495,7 @@ bool Engine::LoadMap(int32_t mapID, int32_t param)
 {
     DWORD_00a3e758 = false;
     MapObjects2Count = 0;
-    MapsOpened.at(mapID - 1) = 1;
+    MapsOpened.set(mapID - 1);
     _objectsToLoadCount = 0;
     
     if (_playScreenID == PLSCREEN_MAP)

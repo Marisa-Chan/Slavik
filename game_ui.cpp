@@ -245,7 +245,7 @@ void Engine::UpdateMapImage()
         for(int32_t x = 0; x < sz.x; ++x)
         {
             uint8_t m = mask->At(x, y);
-            if (m >= MapsOpened.size() || !MapsOpened[m])
+            if (m >= MapsOpened.size() || MapsOpened.test(m) == false)
                 *pdst = 0;
             else
                 *pdst = *psrc;

@@ -639,8 +639,8 @@ bool Engine::FUN_00414e64(Character *pchar, ItemInfo *itm1, ItemInfo *itm2)
 
         for (int32_t i = 0; i < 56; ++i)
         {
-            if (MapsOpened.at(mapid) == 0 && _dungeonMaps.find(mapid) == _dungeonMaps.end())
-                MapsOpened.at(mapid) = 1;
+            if (MapsOpened.test(mapid) == false && _dungeonMaps.find(mapid) == _dungeonMaps.end())
+                MapsOpened.set(mapid);
                 break;
 
             mapid++;

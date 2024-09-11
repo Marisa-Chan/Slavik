@@ -2,6 +2,7 @@
 #define GAME_H
 
 #include <map>
+#include <bitset>
 #include "common/common.h"
 #include "resources.h"
 #include "font.h"
@@ -205,6 +206,7 @@ public:
         HOTKEY_BAG,
         HOTKEY_DBG_POINTS,
         HOTKEY_DBG_GOLD,
+        HOTKEY_DBG_FULLMAP,
         
         HOTKEY_MAX
     };
@@ -1512,7 +1514,7 @@ public:
     MapChar *_mainMapChar = nullptr;
     
     
-    std::array<int8_t, 56> MapsOpened; //Remake it to bitfield and update map image only change
+    std::bitset<56> MapsOpened; //Remake it to bitfield and update map image only change
     
     int32_t _objectsToLoadCount = 0;
     std::array<int32_t, 512> _objectsToLoad;

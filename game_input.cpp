@@ -223,6 +223,12 @@ void Engine::PlayHandleKey(int16_t keyCode)
         case HOTKEY_DBG_GOLD:
             _mainCharacter->Gold += 1000;
             break;
+
+        case HOTKEY_DBG_FULLMAP:
+            MapsOpened.set();
+            if (_playScreenID == PLSCREEN_MAP)
+                UpdateMapImage();
+            break;
         
     default:
         break;
@@ -285,7 +291,7 @@ int32_t Engine::FUN_004392f4()
              pt.y >= 0 && pt.y < SRect_ARRAY_0046280c.h )
         {
             iVar4 = FUN_00439a28(pt, Res.MapMask);
-            if (MapsOpened[iVar4] != 0)
+            if (MapsOpened.test(iVar4))
                 return iVar4 * 0x100 + 0x103;
             
             return -1;
@@ -1419,6 +1425,7 @@ void Engine::InitHotKeys()
     _HotKeys[KEYFN_TILDE].SetFunc(HOTKEY_BAG);
     _HotKeys[KEYFN_P].SetFunc(HOTKEY_DBG_POINTS, THotKey::KMOD_SHIFT | THotKey::KMOD_CTRL);
     _HotKeys[KEYFN_BRKTL].SetFunc(HOTKEY_DBG_GOLD, THotKey::KMOD_SHIFT | THotKey::KMOD_CTRL);
+    _HotKeys[KEYFN_M].SetFunc(HOTKEY_DBG_FULLMAP, THotKey::KMOD_SHIFT | THotKey::KMOD_CTRL);
 }
 
     
