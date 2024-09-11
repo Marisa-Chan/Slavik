@@ -203,6 +203,8 @@ public:
         HOTKEY_SPEEDUP,
         HOTKEY_SPEEDDOWN,
         HOTKEY_BAG,
+        HOTKEY_DBG_POINTS,
+        HOTKEY_DBG_GOLD,
         
         HOTKEY_MAX
     };

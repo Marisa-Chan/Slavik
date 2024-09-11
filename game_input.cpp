@@ -212,6 +212,17 @@ void Engine::PlayHandleKey(int16_t keyCode)
                 }
             }
         break;
+
+        case HOTKEY_DBG_POINTS:
+        {
+            if (CharInfoCharacter)
+                CharInfoCharacter->FreePoints += 1000;
+            break;
+        }
+
+        case HOTKEY_DBG_GOLD:
+            _mainCharacter->Gold += 1000;
+            break;
         
     default:
         break;
@@ -1406,6 +1417,8 @@ void Engine::InitHotKeys()
     _HotKeys[KEYFN_NUMADD].SetFunc(HOTKEY_SPEEDUP);
     _HotKeys[KEYFN_NUMMINUS].SetFunc(HOTKEY_SPEEDDOWN);
     _HotKeys[KEYFN_TILDE].SetFunc(HOTKEY_BAG);
+    _HotKeys[KEYFN_P].SetFunc(HOTKEY_DBG_POINTS, THotKey::KMOD_SHIFT | THotKey::KMOD_CTRL);
+    _HotKeys[KEYFN_BRKTL].SetFunc(HOTKEY_DBG_GOLD, THotKey::KMOD_SHIFT | THotKey::KMOD_CTRL);
 }
 
     
