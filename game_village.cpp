@@ -859,7 +859,107 @@ void Engine::UpdateVillageSmith(Village *vlg)
 
 void Engine::UpdateVillageVoevoda(Village *vlg)
 {
-    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
+    if (vlg->Jobs[4].CharID == 0)
+        return;
+    
+    vlg->VoevodaUpdateTimer--;
+
+    if (vlg->VoevodaUpdateTimer > 0)
+        return;
+    
+    vlg->VoevodaUpdateTimer = 720;
+
+    Character &voevoda = _state.Characters.at(vlg->Jobs[4].CharID);
+
+    MapChar &citizens = _state.MapChar_ARRAY.at(vlg->ChiefCharId);
+
+    for(int32_t i = 0; i < citizens.GroupSize; ++i)
+    {
+        Character &citizen = _state.Characters.at(citizens.CharacterIndex + i);
+        if ( (citizen.ClassID & CLASS_BIT80) == 0 && citizen.State != 9 && citizen.State != 3 )
+        {
+            if (&citizen == &voevoda)
+                continue;
+            
+            if (citizen.CharacterBase >= 3)
+                continue;
+            
+            int32_t changeValue = 0;
+
+            if (CheckKharUp(citizen, KHAR_LEVEL))
+                citizen.Level++;
+
+            if (citizen.BaseLovkost < voevoda.BaseLovkost)
+            {
+                changeValue = voevoda.BaseLovkost - citizen.BaseLovkost;
+                citizen.FreePoints += 1000;
+
+                int32_t exp = CheckKharUp(citizen, KHAR_LOVKOST);
+                if (exp)
+                {
+                    citizen.Exp += exp;
+                    citizen.BaseLovkost++;
+                }
+
+                citizen.FreePoints -= 1000;
+            }
+
+            if (citizen.BaseHarizm < voevoda.BaseHarizm)
+            {
+                changeValue = voevoda.BaseHarizm - citizen.BaseHarizm;
+                citizen.FreePoints += 1000;
+
+                int32_t exp = CheckKharUp(citizen, KHAR_HARIZMA);
+                if (exp)
+                {
+                    citizen.Exp += exp;
+                    citizen.BaseHarizm++;
+                }
+
+                citizen.FreePoints -= 1000;
+            }
+
+            if (citizen.BaseSila < voevoda.BaseSila)
+            {
+                changeValue = voevoda.BaseSila - citizen.BaseSila;
+                citizen.FreePoints += 1000;
+
+                int32_t exp = CheckKharUp(citizen, KHAR_SILA);
+                if (exp)
+                {
+                    citizen.Exp += exp;
+                    citizen.BaseSila++;
+                }
+
+                citizen.FreePoints -= 1000;
+            }
+
+            if (citizen.BaseVinoslivost < voevoda.BaseVinoslivost)
+            {
+                changeValue = voevoda.BaseVinoslivost - citizen.BaseVinoslivost;
+                citizen.FreePoints += 1000;
+
+                int32_t exp = CheckKharUp(citizen, KHAR_VINOSLIVOST);
+                if (exp)
+                {
+                    citizen.Exp += exp;
+                    citizen.BaseVinoslivost++;
+                }
+
+                citizen.FreePoints -= 1000;
+            }
+
+            if (CheckKharUp(citizen, KHAR_LEVEL))
+                citizen.Level++;
+
+            if (changeValue)
+            {
+                citizen.Fehtovanie += (voevoda.Fehtovanie - citizen.Fehtovanie) / changeValue + 1;
+                citizen.Metkost += (voevoda.Metkost - citizen.Metkost) / changeValue + 1;
+                FUN_0041c750(&citizen);
+            }
+        }
+    }
 }
 
 
