@@ -1165,9 +1165,7 @@ void Engine::PlayProcessMouse()
             case 9:
             {
                 int32_t id = CharInfoCharacter->ArmorWeapons[ESLT_0];
-                if (id == 0)
-                    return;
-                
+
                 if (CharInfoCharacter->field_0x12 == ESLT_2)
                     id = CharInfoCharacter->ArmorWeapons[ESLT_2];
                  
