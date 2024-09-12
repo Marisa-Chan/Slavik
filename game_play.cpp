@@ -4449,7 +4449,7 @@ bool Engine::FUN_0041f5d8(MapChar *mchar, Character *pchar)
 void Engine::ChangeWeapon(int32_t wpnId)
 {
     PlaySound(4, 0, 0, 0);
-    FUN_00429194(true);
+    ResetMouseItemHold();
     
     int32_t num = 1;
     if (_KeyState[KEYFN_SHIFT])
@@ -4535,7 +4535,7 @@ void Engine::ChangeWeapon(int32_t wpnId)
 void Engine::FUN_0042179c()
 {
     PlaySound(4, 0, 0, 0);
-    FUN_00429194(true);
+    ResetMouseItemHold();
     
     if (!SelectedCharacters[0])
         return;
@@ -4596,7 +4596,7 @@ void Engine::FUN_0042179c()
 void Engine::FUN_004226c0()
 {
     PlaySound(4, 0, 0, 0);
-    FUN_00429194(true);
+    ResetMouseItemHold();
     FUN_004290ac(3, 11);
     
     for (int32_t i = 1; i < _mainMapChar->GroupSize; ++i)
@@ -4616,7 +4616,7 @@ void Engine::FUN_00421698()
 {
     PlaySound(4, 0, 0, 0);
     DrawElm[1] = 10;
-    FUN_00429194(true);
+    ResetMouseItemHold();
     FUN_004290ac(4, 7);
     
     for (int32_t i = 0; i < _mainMapChar->GroupSize; ++i)

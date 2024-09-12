@@ -264,7 +264,7 @@ void Engine::ShowHideCharInfo()
 {
     if (_playScreenID == PLSCREEN_0 || _playScreenID == PLSCREEN_3)
     {
-        FUN_00429194(true);
+        ResetMouseItemHold();
         PlaySound(4, 0, 0, 0);
         FUN_004290ac(6, 13);
         
@@ -590,7 +590,7 @@ bool Engine::FUN_0041e500(int32_t slot)
 {
     int32_t sndId = 11;
     
-    if (DAT_00a3e790 == 4)
+    if (CursorAssume == 4)
     {
         if (slot == ESLT_ARROWS)
         {
@@ -620,18 +620,18 @@ bool Engine::FUN_0041e500(int32_t slot)
     {
         if ((CharInfoCharacter->ClassID & CLASS_BIT40) || _state.Items.at(InfItemID).TypeID != slot)
         {
-            FUN_00429194(1);
+            ResetMouseItemHold();
             return false;
         }
         
         if ( !FUN_00418364(CharInfoCharacter, &_state.Items.at(InfItemID)) )
         {
             FUN_0042f9b8(Locale::GameMessages[Locale::GMSM_UNUSABLE]);
-            FUN_00429194(1);
+            ResetMouseItemHold();
             return false;
         }
         
-        DAT_00a3e790 = 4;
+        CursorAssume = 4;
         if (slot == ESLT_ARROWS)
         {
             if (CharInfoCharacter->Arrows != 0)
@@ -664,7 +664,7 @@ bool Engine::FUN_0041e500(int32_t slot)
 
 bool Engine::FUN_0041e778(int aidx)
 {    
-    if (DAT_00a3e790 == 4)
+    if (CursorAssume == 4)
     {
         int32_t iid = CharInfoCharacter->Accessories.at(aidx);
         
@@ -685,17 +685,17 @@ bool Engine::FUN_0041e778(int aidx)
         
         if (notFit)
         {
-            FUN_00429194(1);
+            ResetMouseItemHold();
             return false;
         }
         
         if ( !FUN_00418364(CharInfoCharacter, &_state.Items.at(InfItemID)) )
         {
-            FUN_00429194(1);
+            ResetMouseItemHold();
             return false;
         }
         
-        DAT_00a3e790 = 4;
+        CursorAssume = 4;
         
         if (CharInfoCharacter->Accessories.at(aidx) != 0)
             FUN_00424918(CharInfoCharacter, CharInfoCharacter->Accessories.at(aidx));
@@ -716,27 +716,27 @@ void Engine::FUN_00425104(const ItemInfo *inf)
     {
     case 0:
     case 2:
-        DAT_00a3e790 = 10;
+        CursorAssume = 10;
         break;
         
     case 1:
     case 12:
-        DAT_00a3e790 = 2;
+        CursorAssume = 2;
         break;
         
     case 3:
     case 4:
     case 5:
-        DAT_00a3e790 = 0;
+        CursorAssume = 0;
         break;
         
     case 9:
-        DAT_00a3e790 = 8;
+        CursorAssume = 8;
         break;
        
     default:
     case 11:
-        DAT_00a3e790 = 9;
+        CursorAssume = 9;
         break;
     }
 }

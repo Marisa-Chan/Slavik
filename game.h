@@ -1040,7 +1040,7 @@ public:
     bool FUN_00416700(Village *vlg);
     
     void FUN_004292e4();
-    void FUN_00429194(int32_t);
+    void ResetMouseItemHold();
     bool FUN_0041e96c();
     
     void FUN_004118dc();
@@ -1550,7 +1550,7 @@ public:
     
     int32_t InvPos = 0;
     
-    int32_t DAT_00a3e790 = 0;
+    int32_t CursorAssume = 0;
     
     int32_t DAT_00a3e7a0 = -1;
     

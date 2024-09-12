@@ -44,7 +44,7 @@ void Engine::PlayHandleKey(int16_t keyCode)
         {
             InvPos = 0;
             DAT_00a3e7a0 = 0;
-            FUN_00429194(0);
+            ResetMouseItemHold();
             
             int32_t idx = 0;
             for (idx = 0; idx < 10 && SelectedCharacters[idx] != nullptr; ++idx)
@@ -151,7 +151,7 @@ void Engine::PlayHandleKey(int16_t keyCode)
             if (_playScreenID == PLSCREEN_0 || _playScreenID == PLSCREEN_MAP)
             {
                 PlaySound(4, 0, 0, 0);
-                FUN_00429194(true);
+                ResetMouseItemHold();
                 FUN_004290ac(2, 14);
                 if (_playScreenID == PLSCREEN_MAP)
                 {
@@ -382,11 +382,11 @@ void Engine::PlayProcessMouse()
             {
                 if (_playScreenID == PLSCREEN_0)
                 {
-                    if (DAT_00a3e790 == 7)
-                        DAT_00a3e790 = 4;
+                    if (CursorAssume == 7)
+                        CursorAssume = 4;
 
                     Common::Point tile = FUN_00439bdc(_mouseMapPos + _camera);
-                    if (DAT_00a3e790 == 4)
+                    if (CursorAssume == 4)
                     {
                         for (int32_t i = 0; i < 10 && SelectedCharacters[i]; ++i)
                         {
@@ -402,7 +402,7 @@ void Engine::PlayProcessMouse()
                     }
                     else
                     {
-                        DAT_00a3e790 = 4;
+                        CursorAssume = 4;
                         FUN_004138c8(InfPchar->Tile, InfItemID);
                     }
                 }
@@ -451,7 +451,7 @@ void Engine::PlayProcessMouse()
                 }
                 else if (_playScreenID == PLSCREEN_0 || _playScreenID == PLSCREEN_MAP)
                 {
-                    FUN_00429194(true);
+                    ResetMouseItemHold();
                     PlaySound(4, 0, 0, 0);
                     
                     FUN_004290ac(2, 14);
@@ -488,7 +488,7 @@ void Engine::PlayProcessMouse()
             
             case 9:
             {
-                if (DAT_00a3e790 == 4)
+                if (CursorAssume == 4)
                 {
                     if (CharInfoCharacter->ArmorWeapons[ESLT_0] == 0 ||
                        (CharInfoCharacter->field_0x12 != 0 && CharInfoCharacter->ArmorWeapons[ESLT_2] != 0))
@@ -529,18 +529,18 @@ void Engine::PlayProcessMouse()
             
             case 19:
             {
-                if ((DAT_00a3e7a0 == 0) || (DAT_00a3e790 == 4))
+                if ((DAT_00a3e7a0 == 0) || (CursorAssume == 4))
                     FUN_0041e96c();
-                else if (DAT_00a3e790 == 8 &&
+                else if (CursorAssume == 8 &&
                         FUN_0041db64(InfPchar, &_state.Items.at(DAT_00a3e7a0), &_state.Items.at(InfItemID)) != 0)
-                    DAT_00a3e790 = 4;
-                else if (DAT_00a3e790 == 9 &&
+                    CursorAssume = 4;
+                else if (CursorAssume == 9 &&
                         FUN_00414e64(InfPchar, &_state.Items.at(DAT_00a3e7a0), &_state.Items.at(InfItemID)) != 0)
-                    DAT_00a3e790 = 4;
+                    CursorAssume = 4;
                 else
                 {
                     FUN_0042f9b8(Locale::GameMessages[Locale::GMSM_UNUSABLE]);
-                    FUN_00429194(1);
+                    ResetMouseItemHold();
                 }
             }
             break;
@@ -548,7 +548,7 @@ void Engine::PlayProcessMouse()
             case 30:
             {
                 Character &pCVar13 = _state.Characters.at((retval >> 8) + _mainMapChar->CharacterIndex);
-                if (DAT_00a3e790 == 4)
+                if (CursorAssume == 4)
                 {
                     if ((pCVar13.ClassID & CLASS_BIT80) == 0 && pCVar13.State != CHSTATE_9 && pCVar13.State != CHSTATE_3)
                     {
@@ -750,11 +750,11 @@ void Engine::PlayProcessMouse()
                 }
                 else
                 {
-                    if (DAT_00a3e790 == 7)
+                    if (CursorAssume == 7)
                     {
-                        DAT_00a3e790 = 4;
+                        CursorAssume = 4;
                     }
-                    else if (DAT_00a3e790 == 4)
+                    else if (CursorAssume == 4)
                     {
                         int32_t idx = (_uiMousePos.x - DAT_00a3e870) / ItemInvSlotWidth + InvPos & 0x1f;
                         int32_t itemId = CharInfoCharacter->Inventory.at(idx);
@@ -892,11 +892,11 @@ void Engine::PlayProcessMouse()
     }
     else if (_mousePress & MOUSEB_R)
     {
-        if (DAT_00a3e790 == 7)
-            DAT_00a3e790 = 4;
-        else if (DAT_00a3e790 != 4)
+        if (CursorAssume == 7)
+            CursorAssume = 4;
+        else if (CursorAssume != 4)
         {
-            FUN_00429194(1);
+            ResetMouseItemHold();
             return;
         }
         

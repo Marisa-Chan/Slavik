@@ -205,7 +205,7 @@ void Engine::Init(int gfxmode)
     
     _stateMode = STATEMD_MODE9;
     
-    DAT_00a3e790 = 4;
+    CursorAssume = 4;
     
     _mainMapChar = &_state.MapChar_ARRAY[0];
     _mainCharacter = & _state.Characters.at(_state.MapChar_ARRAY[0].CharacterIndex);
@@ -2290,7 +2290,7 @@ void Engine::Update7()
     _stateMode = STATEMD_MAINMENU;
     _mouseMove = Common::Point();
     
-    FUN_00429194(1);
+    ResetMouseItemHold();
     
     int32_t boxid = GetMouseOnScreenBox(_uiMousePos, _mainMenuBoxes);
     
@@ -2417,11 +2417,11 @@ void Engine::OnMovieEnd()
     }
 }
 
-void Engine::FUN_00429194(int32_t)
+void Engine::ResetMouseItemHold()
 {
-    if (DAT_00a3e790 != 4)
+    if (CursorAssume != 4)
     {
-        DAT_00a3e790 = 4;
+        CursorAssume = 4;
         
         if (InfTyp == 6)
             InfPchar->ArmorWeapons = InfSvArmrWpn;
@@ -2459,7 +2459,7 @@ void Engine::FUN_00429194(int32_t)
 
 bool Engine::FUN_0041e96c()
 {
-    if (DAT_00a3e790 == 4)
+    if (CursorAssume == 4)
     {
         if (DAT_00a3e7a0 == 0)
             return false;
@@ -2502,7 +2502,7 @@ bool Engine::FUN_0041e96c()
     }
     else
     {
-        DAT_00a3e790 = 4;
+        CursorAssume = 4;
         
         if (InfTyp == 6)
             InfPchar->ArmorWeapons = InfSvArmrWpn;
@@ -2960,12 +2960,12 @@ bool Engine::CheckTraceImage(GFX::PalImage *img, Common::Point drawPos)
 
 void Engine::UpdateCursor()
 {
-    int32_t newCursor = DAT_00a3e790;
+    int32_t newCursor = CursorAssume;
 
     if ( _stateMode == STATEMD_PLAY &&
         !_isPlayingVideo && 
          _playScreenID == PLSCREEN_0 &&
-         DAT_00a3e790 == 4 &&
+         CursorAssume == 4 &&
          MAPRECT.IsInIncl(_uiMousePos) )
     {
         if (!DisplayInvOfCharID == 0 || _uiMousePos.y < DAT_00a3e88c - 1)
@@ -2994,7 +2994,7 @@ void Engine::UpdateCursor()
                 }
             }
             
-            if (newCursor == DAT_00a3e790)
+            if (newCursor == CursorAssume)
             {
                 if (!MouseOnCharacter && _currentMap)
                 {
@@ -3004,7 +3004,7 @@ void Engine::UpdateCursor()
                          GetLootByTile(pnt)->unk2 < 0 )
                     {
                         if (cell.ID == 0)
-                            newCursor = DAT_00a3e790;
+                            newCursor = CursorAssume;
                         else
                             newCursor = 3;
                     }
@@ -3014,7 +3014,7 @@ void Engine::UpdateCursor()
                 else if (MouseOnCharacter->MapCharID == _mainCharacter->MapCharID)
                 {
                     if (_KeyState[KEYFN_CTRL] == 0)
-                        newCursor = DAT_00a3e790;
+                        newCursor = CursorAssume;
                     else
                         newCursor = 5;
                 }
@@ -3035,7 +3035,7 @@ void Engine::UpdateCursor()
                         }
                     }
                     
-                    if (newCursor == DAT_00a3e790)
+                    if (newCursor == CursorAssume)
                     {
                         if ( MouseOnCharacter->field96_0xd0 == -1 || 
                              _KeyState[KEYFN_SHIFT] || 
@@ -3048,10 +3048,10 @@ void Engine::UpdateCursor()
             }
         }
         else
-            newCursor = DAT_00a3e790;
+            newCursor = CursorAssume;
     }
     else
-        newCursor = DAT_00a3e790;
+        newCursor = CursorAssume;
     
     if (newCursor != _curCursor)
     {
