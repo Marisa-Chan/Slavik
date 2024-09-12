@@ -63,6 +63,70 @@ bool Engine::Update()
         _KeyPressed = _KeyQueue.front();
         _KeyQueue.pop_front();
     }
+
+
+    if (_KeyPressed == KEYFN_ESC)
+    {
+        _KeyPressed = -1;
+
+        switch(_stateMode)
+        {
+            case STATEMD_PLAY:
+                ResetMouseItemHold();
+
+                if (_playScreenID == PLSCREEN_0)
+                {
+                    _stateMode = STATEMD_MODE7;
+                    _isGameStarted = true;
+                    _nextStateMode = STATEMD_PLAY;
+                }
+                else if (_playScreenID != PLSCREEN_1)
+                {
+                    _playScreenID = STATEMD_PLAY;
+                    DWORD_00a3e7b4 = 0;
+                    FUN_004292e4();
+                }
+                break;
+
+            case STATEMD_MAINMENU:
+                if (_isGameStarted)
+                {
+                    _stateMode = STATEMD_PLAY;
+                    _imgQueue2Count = 0;
+                    LoadINTR();
+                    PlayChangeScreen(PLSCREEN_0);
+                    FUN_004292e4();
+                }
+                break;
+            
+            case STATEMD_NEWGAME:
+                _stateMode = STATEMD_MODE7;
+                _isGameStarted = false;
+                _nextStateMode = STATEMD_NEWGAME;
+                break;
+            
+            case STATEMD_MODE4:
+            case STATEMD_MODE5:
+                _stateMode = STATEMD_MODE7;
+                _nextStateMode = STATEMD_MODE5;
+                break;
+            
+            case STATEMD_SETTINGS:
+                _stateMode = STATEMD_MODE7;
+                _nextStateMode = STATEMD_SETTINGS;
+                _bConfTransparency = _svTransparency;
+                _bConfDayNight = _svDayNight;
+                _bConfLightEffects = _svLightEffects;
+                _bConfMusic = _svMusic;
+                _bConfShadows = _svShadows;
+                _bConfSound = _svSound;
+                break;
+            
+            default:
+                break;
+        }
+    }
+
     
     if (_mouseDownPrev == 0)
         _mouseDownPrev = _mousePress;
