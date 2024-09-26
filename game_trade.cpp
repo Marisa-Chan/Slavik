@@ -80,13 +80,13 @@ bool Engine::TradeComplete(bool p)
     
     if (numItem > INVSIZE)
     {
-        FUN_0042f9b8(Locale::GameMessages[Locale::GMSG_INV_FULL]);
+        SetHintText(Locale::GameMessages[Locale::GMSG_INV_FULL]);
         return false;
     }
     
     if ((CharInfoCharacter->CurrentVinoslivost * 1000) / 3 + 10000 < weight)
     {
-        FUN_0042f9b8(Locale::GameMessages[Locale::GMSG_INV_OVERLOAD]);
+        SetHintText(Locale::GameMessages[Locale::GMSG_INV_OVERLOAD]);
         return false;
     }
     
@@ -96,7 +96,7 @@ bool Engine::TradeComplete(bool p)
         {
             if (DAT_00a3e82c + FUN_0041aea0(DAT_00a3e850) < DAT_00a3e830 + FUN_0041b65c(DAT_00a3e854))
             {
-                FUN_0042f9b8(Locale::GameMessages[Locale::GMSM_NOMONEY]);
+                SetHintText(Locale::GameMessages[Locale::GMSM_NOMONEY]);
                 return 0;
             }
         }

@@ -626,7 +626,7 @@ bool Engine::FUN_0041e500(int32_t slot)
         
         if ( !FUN_00418364(CharInfoCharacter, &_state.Items.at(InfItemID)) )
         {
-            FUN_0042f9b8(Locale::GameMessages[Locale::GMSM_UNUSABLE]);
+            SetHintText(Locale::GameMessages[Locale::GMSM_UNUSABLE]);
             ResetMouseItemHold();
             return false;
         }

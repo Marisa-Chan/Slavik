@@ -655,7 +655,7 @@ bool Engine::FUN_00414e64(Character *pchar, ItemInfo *itm1, ItemInfo *itm2)
         if (pchar->Medicine > 500)
             pchar->Medicine = 500;
         
-        FUN_0042f9b8(Locale::GameMessages[Locale::GMSM_MEDICTEACH]);
+        SetHintText(Locale::GameMessages[Locale::GMSM_MEDICTEACH]);
         
         itm2->TypeID = -1;
         break;
@@ -663,14 +663,14 @@ bool Engine::FUN_00414e64(Character *pchar, ItemInfo *itm1, ItemInfo *itm2)
     case 2:
         pchar->PlotnickoeDelo += 5;
         
-        FUN_0042f9b8(Locale::GameMessages[Locale::GMSM_PLOTNTEACH]);
+        SetHintText(Locale::GameMessages[Locale::GMSM_PLOTNTEACH]);
         
         itm2->TypeID = -1;
         break;
         
     case 3:
         pchar->KuznechnoeDelo += 4;
-        FUN_0042f9b8(Locale::GameMessages[Locale::GMSM_BLKSMTHTEACH]);
+        SetHintText(Locale::GameMessages[Locale::GMSM_BLKSMTHTEACH]);
         itm2->TypeID = -1;
         break;
         
@@ -679,7 +679,7 @@ bool Engine::FUN_00414e64(Character *pchar, ItemInfo *itm1, ItemInfo *itm2)
         if (pchar->Trading > 100)
             pchar->Trading = 100;
         
-        FUN_0042f9b8(Locale::GameMessages[Locale::GMSM_TRADETEACH]);
+        SetHintText(Locale::GameMessages[Locale::GMSM_TRADETEACH]);
         itm2->TypeID = -1;
         break;
         
@@ -688,7 +688,7 @@ bool Engine::FUN_00414e64(Character *pchar, ItemInfo *itm1, ItemInfo *itm2)
         if (pchar->Identification > 100)
             pchar->Identification = 100;
         
-        FUN_0042f9b8(Locale::GameMessages[Locale::GMSM_IDENTIFYTEACH]);
+        SetHintText(Locale::GameMessages[Locale::GMSM_IDENTIFYTEACH]);
         itm2->TypeID = -1;
         break;
         
@@ -882,7 +882,7 @@ bool Engine::FUN_00414e64(Character *pchar, ItemInfo *itm1, ItemInfo *itm2)
         
     case 28:
         QuestsState[0].State |= 0x80;
-        FUN_0042f9b8(Locale::GameMessages[Locale::GMSM_READBIRCHBARK]);
+        SetHintText(Locale::GameMessages[Locale::GMSM_READBIRCHBARK]);
         itm2->TypeID = -1;
         break;
         
@@ -1066,7 +1066,7 @@ bool Engine::FUN_0042054c(Character *pchar)
         return true;
     }
     
-    FUN_0042f9b8(Locale::GameMessages[Locale::GMSM_UNUSABLE]);
+    SetHintText(Locale::GameMessages[Locale::GMSM_UNUSABLE]);
     ResetMouseItemHold();
     return false;
 }
@@ -1076,14 +1076,14 @@ bool Engine::FUN_004246f8(Character *pchar)
 {
     if ((pchar->CurrentVinoslivost * 1000) / 3 + 10000 < GetItemWeight(&_state.Items.at(InfItemID)) + GetCurrentWeight(pchar))
     {
-        FUN_0042f9b8(Locale::GameMessages[Locale::GMSG_INV_OVERLOAD]);
+        SetHintText(Locale::GameMessages[Locale::GMSG_INV_OVERLOAD]);
         ResetMouseItemHold();
         return false;
     }
     
     if (!FUN_00424918(pchar, InfItemID))
     {
-        FUN_0042f9b8(Locale::GameMessages[Locale::GMSG_INV_FULL]);
+        SetHintText(Locale::GameMessages[Locale::GMSG_INV_FULL]);
         ResetMouseItemHold();
         return false;
     }

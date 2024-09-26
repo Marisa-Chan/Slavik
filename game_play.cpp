@@ -680,9 +680,9 @@ void Engine::FUN_004110ec(Character *pchar)
             FUN_004170a0(loot);
             
             if (invUsed == pchar->Inventory.size())
-                FUN_0042f9b8(Locale::MiscItemsInfoNames[Locale::GMSG_INV_FULL]);
+                SetHintText(Locale::MiscItemsInfoNames[Locale::GMSG_INV_FULL]);
             else
-                FUN_0042f9b8(Locale::MiscItemsInfoNames[Locale::GMSG_INV_OVERLOAD]);
+                SetHintText(Locale::MiscItemsInfoNames[Locale::GMSG_INV_OVERLOAD]);
             
             return;
         }
@@ -1499,7 +1499,7 @@ int32_t Engine::FUN_0041b70c(Character *pchar)
     return val;
 }
 
-void Engine::FUN_0042f9b8(const std::string &txt)
+void Engine::SetHintText(const std::string &txt)
 {
     if (!txt.empty())
     {
@@ -1728,7 +1728,7 @@ void Engine::FUN_0041d0fc()
                     vlg.GoldTributeTimer = 0;
                     vlg.GoldTribute = 0;
                     
-                    FUN_0042f9b8(Locale::GameMessages[Locale::GMSG_VLG_GIVEUP]);
+                    SetHintText(Locale::GameMessages[Locale::GMSG_VLG_GIVEUP]);
                     
                     _nextStateMode = STATEMD_PLAY;
                     

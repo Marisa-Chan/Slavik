@@ -1066,7 +1066,7 @@ public:
     Common::Point FUN_00439bdc(Common::Point cam);
     Common::Point FUN_0043a000(Common::Point pos);
     
-    void FUN_0042f9b8(const std::string &txt);
+    void SetHintText(const std::string &txt);
     bool FUN_00416700(Village *vlg);
     
     void FUN_004292e4();

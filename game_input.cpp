@@ -539,7 +539,7 @@ void Engine::PlayProcessMouse()
                     CursorAssume = 4;
                 else
                 {
-                    FUN_0042f9b8(Locale::GameMessages[Locale::GMSM_UNUSABLE]);
+                    SetHintText(Locale::GameMessages[Locale::GMSM_UNUSABLE]);
                     ResetMouseItemHold();
                 }
             }
@@ -1110,7 +1110,7 @@ void Engine::PlayProcessMouse()
                 GS1* loot = GetLootByTile(tile);
                 if (loot && loot->unk2 > -1)
                 {
-                    FUN_0042f9b8(Locale::GameMessages[Locale::GMSM_SMTH_LOOT]); //"Что-то лежит на земле"
+                    SetHintText(Locale::GameMessages[Locale::GMSM_SMTH_LOOT]); //"Что-то лежит на земле"
                     return;
                 }
             }
@@ -1118,7 +1118,7 @@ void Engine::PlayProcessMouse()
             {
                 //printf("Mouse on 0x%X\n", MouseOnCharacter->ClassID);
                 //Character::PrintCharHint(MouseOnCharacter);
-                FUN_0042f9b8(MouseOnCharacter->GetCharHint());
+                SetHintText(MouseOnCharacter->GetCharHint());
                 return;
             }
         }
@@ -1127,39 +1127,39 @@ void Engine::PlayProcessMouse()
         switch(uVar11)
         {
             case 1:
-                FUN_0042f9b8(Locale::GameMessages[Locale::GMSM_CHANGE_WPN]);
+                SetHintText(Locale::GameMessages[Locale::GMSM_CHANGE_WPN]);
                 return;
             
             case 2:
-                FUN_0042f9b8(Locale::GameMessages[Locale::GMSM_DRAW_WEAPON]);
+                SetHintText(Locale::GameMessages[Locale::GMSM_DRAW_WEAPON]);
                 return;
                 
             case 3:
                 if (_playScreenID == PLSCREEN_MAP && retval >= 0x100)
-                    FUN_0042f9b8(Locale::MapNames[(retval >> 8) - 1]);
+                    SetHintText(Locale::MapNames[(retval >> 8) - 1]);
                 else
-                    FUN_0042f9b8(Locale::GameMessages[Locale::GMSM_MAP]);
+                    SetHintText(Locale::GameMessages[Locale::GMSM_MAP]);
                 return;
                 
             case 4:
-                FUN_0042f9b8(Locale::GameMessages[Locale::GMSM_ALL_TO_ME]);
+                SetHintText(Locale::GameMessages[Locale::GMSM_ALL_TO_ME]);
                 return;
                 
             case 5:
-                FUN_0042f9b8(Locale::GameMessages[Locale::GMSM_ATTACK]);
+                SetHintText(Locale::GameMessages[Locale::GMSM_ATTACK]);
                 return;
             
             case 6:
-                FUN_0042f9b8(Locale::GameMessages[Locale::GMSM_THINK_INFO]);
+                SetHintText(Locale::GameMessages[Locale::GMSM_THINK_INFO]);
                 return;
             
             case 7:
-                FUN_0042f9b8(Locale::GameMessages[Locale::GMSM_CHAR_PANEL]);
+                SetHintText(Locale::GameMessages[Locale::GMSM_CHAR_PANEL]);
                 return;
                 
             case 8:
                 if (CharInfoCharacter->ArmorWeapons[ESLT_4]) 
-                    FUN_0042f9b8(GetItemHint( &_state.Items.at(CharInfoCharacter->ArmorWeapons[ESLT_4]) ));
+                    SetHintText(GetItemHint( &_state.Items.at(CharInfoCharacter->ArmorWeapons[ESLT_4]) ));
                 return;
                 
             case 9:
@@ -1172,7 +1172,7 @@ void Engine::PlayProcessMouse()
                 if (id == 0 || id == DAT_00a3e7a0)
                     return;
                 
-                FUN_0042f9b8(GetItemHint( &_state.Items.at(id) ));
+                SetHintText(GetItemHint( &_state.Items.at(id) ));
                 return;
             }
             
@@ -1180,7 +1180,7 @@ void Engine::PlayProcessMouse()
             {
                 int32_t id = CharInfoCharacter->ArmorWeapons[ESLT_5];
                 if (id)
-                    FUN_0042f9b8(GetItemHint( &_state.Items.at(id) ));
+                    SetHintText(GetItemHint( &_state.Items.at(id) ));
                 return;
             }
             
@@ -1188,7 +1188,7 @@ void Engine::PlayProcessMouse()
             {
                 int32_t id = CharInfoCharacter->ArmorWeapons[ESLT_3];
                 if (id)
-                    FUN_0042f9b8(GetItemHint( &_state.Items.at(id) ));
+                    SetHintText(GetItemHint( &_state.Items.at(id) ));
                 return;
             }
             
@@ -1196,7 +1196,7 @@ void Engine::PlayProcessMouse()
             {
                 int32_t id = CharInfoCharacter->ArmorWeapons[ESLT_1];
                 if (id)
-                    FUN_0042f9b8(GetItemHint( &_state.Items.at(id) ));
+                    SetHintText(GetItemHint( &_state.Items.at(id) ));
                 return;
             }
             
@@ -1205,7 +1205,7 @@ void Engine::PlayProcessMouse()
                 int32_t id = CharInfoCharacter->Arrows;
                 if (id == 0 || id == DAT_00a3e7a0)
                     return;
-                FUN_0042f9b8(GetItemHint( &_state.Items.at(id) ));
+                SetHintText(GetItemHint( &_state.Items.at(id) ));
                 return;
             }
             
@@ -1217,14 +1217,14 @@ void Engine::PlayProcessMouse()
             {
                 int32_t id = CharInfoCharacter->Accessories[uVar11 - 14];
                 if (id)
-                    FUN_0042f9b8(GetItemHint( &_state.Items.at(id) ));
+                    SetHintText(GetItemHint( &_state.Items.at(id) ));
                 return;
             }
             
             case 19:
             {
                 if (DAT_00a3e7a0)
-                    FUN_0042f9b8(GetItemHint( &_state.Items.at(DAT_00a3e7a0) ));
+                    SetHintText(GetItemHint( &_state.Items.at(DAT_00a3e7a0) ));
                 return;
             }
             
@@ -1232,7 +1232,7 @@ void Engine::PlayProcessMouse()
             {
                 Character& chr = _state.Characters.at(_mainMapChar->CharacterIndex + (retval >> 8));
                 if ((chr.ClassID & CLASS_BIT80) == 0 && chr.State != CHSTATE_9 && chr.State != CHSTATE_3)
-                    FUN_0042f9b8(chr.GetCharHint());
+                    SetHintText(chr.GetCharHint());
                 
                 return;
             }
@@ -1245,7 +1245,7 @@ void Engine::PlayProcessMouse()
                     int32_t itmFromPos = (((retval >> 8) & 0xff) + int16_t_ARRAY_0083dd4c[fromPanel]) & 0x1f;
                     int32_t itmId = int16_t_ARRAY_0083dc4c[fromPanel].at(itmFromPos);
                     if (itmId)
-                        FUN_0042f9b8(GetItemHint( &_state.Items.at(itmId) ));
+                        SetHintText(GetItemHint( &_state.Items.at(itmId) ));
                     return;
                 }
                 
@@ -1257,7 +1257,7 @@ void Engine::PlayProcessMouse()
                 int32_t id = _state.Characters.at(DisplayInvOfCharID - 1).Inventory.at( (InvPos + (retval >> 8)) & 0x1f );
                 
                 if (id && id != DAT_00a3e7a0)                
-                    FUN_0042f9b8(GetItemHint( &_state.Items.at(id) ));
+                    SetHintText(GetItemHint( &_state.Items.at(id) ));
                 return;
             }
             
