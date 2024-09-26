@@ -246,13 +246,14 @@ void Resources::SimpleObject::Load(FSMgr::iFile *pfile, const SDL_Color *palette
 }
 
     
-bool Resources::Load()
+bool Resources::Load(Simix::Mixer *mx)
 {
     if ( LoadGraphRes() &&
          LoadLightsRes() &&
          LoadObjectsRes() &&
          LoadFlames() &&
-         LoadMask() )
+         LoadMask() &&
+         LoadSounds(mx) )
         return true;
     
     return false;
@@ -786,6 +787,95 @@ bool Resources::LoadMask()
         return false;
     
     return true;
+}
+
+bool Resources::LoadSounds(Simix::Mixer *mx)
+{
+    SoundResFile = FSMgr::Mgr::ReadFile("sounds.res");
+    
+    if (!SoundResFile)
+        return false;
+
+    SoundResFile->seek(8, 0);
+
+    for(size_t i = 0; i < 1000; ++i)
+    {
+        int32_t spos = SoundResFile->readS32L();
+        int32_t ssize = SoundResFile->readS32L();
+
+        if ( spos >= 0 && ssize > 1 )
+            SoundResEntries[i] = FileEntry(spos, ssize);
+    }
+
+    SoundResOffset = SoundResFile->tell();
+
+    // Load main sounds
+    for(int i = 0; i < 32; ++i)
+    {
+        auto it = SoundResEntries.find(i);
+        if (it != SoundResEntries.end())
+        {
+            FileEntry &entr = it->second;
+            SoundResFile->seek(SoundResOffset + entr.Offset, 0);
+
+            std::vector<uint8_t> buf(entr.Size);
+            SoundResFile->read(buf.data(), entr.Size);
+
+            Sounds[i] = mx->LoadSample(buf.data(), entr.Size, 22050, AUDIO_S16LSB, 1);
+        }
+    }
+
+    // Load char base models sound
+    for(int i = 0; i < 3; ++i)
+    {
+        for(int j = 0; j < 8; ++j)
+        {
+            const int32_t soundId = 32 + i * 8 + j;
+            auto it = SoundResEntries.find(soundId);
+            if (it != SoundResEntries.end())
+            {
+                FileEntry &entr = it->second;
+                SoundResFile->seek(SoundResOffset + entr.Offset, 0);
+
+                std::vector<uint8_t> buf(entr.Size);
+                SoundResFile->read(buf.data(), entr.Size);
+
+                Sounds[soundId] = mx->LoadSample(buf.data(), entr.Size, 22050, AUDIO_S16LSB, 1);
+            }
+        }
+    }
+
+    return true;   
+}
+
+void Resources::LoadDynSound(Simix::Mixer *mx, int32_t soundId)
+{
+    auto it = SoundResEntries.find(soundId);
+    if (it != SoundResEntries.end())
+    {
+        FileEntry &entr = it->second;
+        SoundResFile->seek(SoundResOffset + entr.Offset, 0);
+
+        std::vector<uint8_t> buf(entr.Size);
+        SoundResFile->read(buf.data(), entr.Size);
+
+        DynSounds[soundId] = mx->LoadSample(buf.data(), entr.Size, 22050, AUDIO_S16LSB, 1);
+    }
+}
+
+void Resources::UnloadDynSounds(Simix::Mixer *mx)
+{
+    for(auto it = DynSounds.begin(); it != DynSounds.end(); it = DynSounds.erase(it))
+        mx->UnloadSample(it->second);
+}
+
+void Resources::UnloadSounds(Simix::Mixer *mx)
+{
+    for(auto it = Sounds.begin(); it != Sounds.end(); it = Sounds.erase(it))
+        mx->UnloadSample(it->second);
+    
+    for(auto it = DynSounds.begin(); it != DynSounds.end(); it = DynSounds.erase(it))
+        mx->UnloadSample(it->second);
 }
 
 }

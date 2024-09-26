@@ -247,8 +247,10 @@ void Engine::Init(int gfxmode)
     _KeyState.fill(0);
     
     System::EventsAddHandler(EventsWatcher);
+
+    _mixer.Init(32);
     
-    Res.Load();
+    Res.Load(&_mixer);
     
     GFXDrawer.SetPalettes(Res.Palettes);
     
@@ -571,11 +573,17 @@ bool Engine::LoadMap(int32_t mapID, int32_t param)
     
     _camMax = Common::Point();
     
+    Res.UnloadDynSounds(&_mixer);
+
     _currentMap = LoadGameMap(mapID);
     if (!_currentMap)
         return false;
     
     _currentMapID = mapID;
+
+    //Load ambience sounds
+    for(int i = 0; i < SND_AMBIENCE_CNT; ++i)
+        Res.LoadDynSound(&_mixer, GetMapSoundId(mapID, i));
     
     _camMax.y = 0;
     for (int32_t i = 159; i > 0 && _camMax.y == 0; --i)
@@ -614,8 +622,8 @@ bool Engine::LoadMap(int32_t mapID, int32_t param)
             cnt = 0;
     }
     
-    std::array<bool, 256> classUse;
-    classUse.fill(false);
+    std::bitset<32> monstersInUse;
+    monstersInUse.reset();
     
     //int32_t local_1c = 0;
     
@@ -653,7 +661,7 @@ bool Engine::LoadMap(int32_t mapID, int32_t param)
                 
                 if (rchar.ClassID & CLASS_BIT40) 
                 {
-                    classUse[rchar.ClassID] = true;
+                    monstersInUse.set( rchar.GetMonsterId() );
                     
                     if (param == 0)
                         rchar.field2_0x2 = 0x40;
@@ -715,7 +723,7 @@ bool Engine::LoadMap(int32_t mapID, int32_t param)
                         
                         if (pCVar25->ClassID & CLASS_BIT40) 
                         {
-                            classUse[pCVar25->ClassID] = true;
+                            monstersInUse.set( pCVar25->GetMonsterId() );
                             
                             if (MapObjUseCount[pCVar25->CharacterBase] >= 0)
                                 MapObjUseCount[pCVar25->CharacterBase]++;
@@ -859,19 +867,15 @@ bool Engine::LoadMap(int32_t mapID, int32_t param)
         }
     }
     
-    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!! SOUND
-//    for (local_28 = 0; (int)local_28 < 30; local_28 += 1) {
-//        if (acStack_180[local_28] != 0) {
-//            for (local_20 = 0; iVar23 = DAT_00a3e814, local_20 < 8; local_20 += 1) {
-//                iVar28 = local_20 + local_28 * 8 + 0x38;
-//                if (1 < (int)System::SoundResFileEntries[iVar28].Size) {
-//                    DAT_00a3e814 += 1;
-//                    (&DAT_0083dabc)[iVar23] = iVar28;
-//                }
-//            }
-//        }
-//    }
-    
+    // Load monster sounds
+    for(int i = 0; i < monstersInUse.size(); ++i)
+    {
+        if (monstersInUse.test(i))
+        {
+            for(int j = 0; j < SND_PER_CHAR; j++)
+                Res.LoadDynSound(&_mixer, Character::GetMonsterSoundId(i, j));
+        }
+    }
     
     for (int32_t j = 0; j < _state.GS2ARRAYCount; ++j)
     {
@@ -2752,7 +2756,7 @@ void Engine::FUN_004143dc(Character *ch, int state)
             case CHSTATE_0:
             case CHSTATE_6:
                 if (System::rand() % 100 >= 96)
-                    soundId = ch->CharacterBase * 8 + 35;
+                    soundId = ch->GetSoundId(3);
                 break;
                 
             case CHSTATE_1:
@@ -2763,12 +2767,12 @@ void Engine::FUN_004143dc(Character *ch, int state)
                 
             case CHSTATE_2:
             case CHSTATE_8:
-                soundId = ch->CharacterBase * 8 + 36;
+                soundId = ch->GetSoundId(4);
                 break;
                 
             case CHSTATE_3:
             case CHSTATE_9:
-                soundId = ch->CharacterBase * 8 + 34;
+                soundId = ch->GetSoundId(2);
                 break;
                 
             case CHSTATE_4:
@@ -2808,27 +2812,27 @@ void Engine::FUN_004143dc(Character *ch, int state)
         {
             case CHSTATE_0:
                 if (System::rand() % 100 >= 96)
-                    soundId = ch->ClassID * 8 - 461;
+                    soundId = ch->GetSoundId(3);
                 break;
                 
             case CHSTATE_1:
                 if (System::rand() % 100 >= 76)
-                    soundId = ch->ClassID * 8 - 461;
+                    soundId = ch->GetSoundId(3);
                 break;
                 
             case CHSTATE_2:
-                soundId = ch->ClassID * 8 - 460;
+                soundId = ch->GetSoundId(4);
                 break;
                 
             case CHSTATE_3:
-                soundId = ch->ClassID * 8 - 462;
+                soundId = ch->GetSoundId(2);
                 break;
                 
             default:
                 break;
                 
             case CHSTATE_5:
-                soundId = ch->ClassID * 8 - 464;
+                soundId = ch->GetSoundId(0);
                 break;
         }
 

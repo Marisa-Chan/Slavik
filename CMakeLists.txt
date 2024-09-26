@@ -35,6 +35,9 @@ set(SOURCES
 	main.cpp
 	resources.cpp
 	system.cpp
+	simix/simix.cpp
+	simix/mixbuffer.cpp
+	simix/dcb.cpp
 )
 
 

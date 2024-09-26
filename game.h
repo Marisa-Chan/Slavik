@@ -4,14 +4,17 @@
 #include <map>
 #include <bitset>
 #include "common/common.h"
+#include "simix/simix.h"
 #include "resources.h"
 #include "font.h"
+#include "system.h"
 
 
 
 namespace Game
 {
-    
+constexpr const int32_t BASECHR_CNT = 3;
+
 constexpr const int32_t TileW = 116;
 constexpr const int32_t TileWh = TileW / 2;
 constexpr const int32_t TileWhh = TileW / 4;
@@ -54,6 +57,13 @@ constexpr const int32_t MAXPATHITER = 0x4000;
 constexpr const int32_t SCREENSHIFT = 16;
 
 constexpr const int32_t MAXSPEED = 5;
+
+constexpr const int32_t SND_PER_CHAR = 8;
+constexpr const int32_t SND_COMMON_CNT = 32;
+
+constexpr const int32_t SND_AMBIENCE_CNT = 8;
+constexpr const int32_t SND_AMBIENCE_FIRST = 0x100;
+
 
 class Engine
 {
@@ -287,6 +297,7 @@ public:
         
         CLASS_MASK = 7,
         
+        CLASS_MIDMASK = 0x3F,
         CLASS_BIT40 = 0x40,
         CLASS_BIT80 = 0x80,
         
@@ -524,6 +535,26 @@ public:
             { ViewPos = offset + POS + imgOffset; }
         
         void CopyDataFrom(const Character &chr);
+
+        inline int32_t GetSoundId(int8_t SndId) const
+        {
+            if (ClassID & CLASS_BIT40)
+                return ((ClassID & CLASS_MIDMASK) - 1) * SND_PER_CHAR + SndId + (SND_COMMON_CNT + BASECHR_CNT * SND_PER_CHAR);
+            else
+                return CharacterBase * SND_PER_CHAR + SndId + SND_COMMON_CNT;
+        }
+
+        inline static int32_t GetMonsterSoundId(uint8_t id, int8_t SndId)
+        {
+            return id * SND_PER_CHAR + SndId + (SND_COMMON_CNT + BASECHR_CNT * SND_PER_CHAR);
+        }
+
+        inline int32_t GetMonsterId() const
+        {
+            if (ClassID & CLASS_BIT40)
+                return (ClassID & CLASS_MIDMASK) - 1;
+            return -1;
+        }
     };
     
     struct MapChar
@@ -961,8 +992,7 @@ public:
 
     void FreeMenuImages();
     
-    void PlaySound(int, int, int, int) 
-    {printf("Incomplete %s\n", __PRETTY_FUNCTION__);};
+    
     
     bool LoadINTR();
     
@@ -985,7 +1015,7 @@ public:
         if (_mainCharacter->Tile.x == tilepos.x)
             return 0;
         else 
-            return (float)(tilepos.x - _mainCharacter->Tile.x) * 10000.0 * 0.00625;
+            return (float)(tilepos.x - _mainCharacter->Tile.x) * SDL_MIX_MAXVOLUME / 160;
     }
     
     int32_t ComputeVolume(Common::Point tilepos)
@@ -993,9 +1023,9 @@ public:
         Common::Point tmp = FUN_00439ba0( _mainCharacter->Tile ) - FUN_00439ba0(tilepos);
         int32_t dist = tmp.Length<int32_t>();
         if (dist < 2049)
-            return dist * -10000 / 2048;
+            return dist * -100 / 2048;
         else 
-            return -10000;
+            return -100;
     }
     
     void DrawCharacterSprite(Character &ch);
@@ -1352,10 +1382,15 @@ public:
     std::string FUN_004363e8(int32_t id);
     
     //Sound
+    void PlaySound(uint16_t SoundID, int Volume, int Pan, bool loop);
     void FUN_0043d1d0();
     void SoundPlaySpeech(int32_t id);
     bool FUN_00429c28(int32_t id);
 
+    inline static int32_t GetMapSoundId(uint8_t mapID, uint8_t sndId)
+    {
+        return SND_AMBIENCE_FIRST + (mapID - 1) * SND_AMBIENCE_CNT + sndId;
+    }
     
     void ChangeWeapon(int32_t wpnId);
     void FUN_0042179c();
@@ -1622,6 +1657,8 @@ public:
     
     std::array<GFX::Font *, 4> _Fonts;
     
+
+    Simix::Mixer _mixer;
     
     
     bool _doQuit = false;

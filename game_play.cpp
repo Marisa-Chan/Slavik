@@ -79,8 +79,7 @@ void Engine::UpdateGame()
     
     
     if ( (System::rand() % 100) > 98 )
-        PlaySound( 0x100 + (System::rand() % 8) + (_currentMapID - 1) * 8,
-                   0, 0, 0);
+        PlaySound( GetMapSoundId(_currentMapID, System::rand() % SND_AMBIENCE_CNT), 0, 0, 0 );
     
     ProcessCamera();
     
@@ -3559,7 +3558,7 @@ void Engine::FUN_004123bc(MapChar *mchr)
                     if (chr.Frame != 0)
                     {
                         if (chr.Frame == 1)
-                            PlaySound(chr.ClassID * 8 - 463, ComputeVolume(chr.Tile), ComputePan(chr.Tile), 0);
+                            PlaySound(chr.GetSoundId(1), ComputeVolume(chr.Tile), ComputePan(chr.Tile), 0);
                         
                         if (!FUN_00413de4(&chr))
                             FUN_00410450(&chr);
