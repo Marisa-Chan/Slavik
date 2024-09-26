@@ -1309,7 +1309,7 @@ public:
     
     void SelectCharacter(Character *pchar);
     
-    int32_t FUN_00417170(int val) { return 2 - ((rand() % 2 + val + 1) % 3); }
+    int32_t FUN_00417170(int val) { return 2 - ((System::rand() % 2 + val + 1) % 3); }
     
     int32_t FUN_004171d4(int val) 
     {

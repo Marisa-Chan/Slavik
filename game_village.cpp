@@ -8,7 +8,7 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
 {
     int iVar19 = (_state.MapChar_ARRAY.at(vlg->ChiefCharId).unk5 & 3);
     
-    int maxItm = (rand() % 3) + 1;
+    int maxItm = (System::rand() % 3) + 1;
     for (int i = 0; i < 2; ++i)
     {
         if (maxItm && vlg->MedicItems[i * 14] == 0) 
@@ -27,7 +27,7 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
     
     for (int i = 0; i < 3; ++i)
     {
-        if (vlg->TraderItems[i] == 0 && (rand() % 100) > 70 )
+        if (vlg->TraderItems[i] == 0 && (System::rand() % 100) > 70 )
         {
             ItemInfo *itm = AllocItem();
             if (!itm)
@@ -35,14 +35,14 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
             
             vlg->TraderItems[i] = itm->Index;
             
-            int rndval = rand();
+            int rndval = System::rand();
             if (rndval % 30 < 10) 
             {
                 itm->TypeID = 8;
                 if (_mainCharacter->Level / 5 < 2) 
                     itm->InfoID = 6;
                 else 
-                    itm->InfoID = 6 + (rand() % (_mainCharacter->Level / 5));
+                    itm->InfoID = 6 + (System::rand() % (_mainCharacter->Level / 5));
             }
             else if (rndval % 30 < 20) 
             {
@@ -50,7 +50,7 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
                 if (_mainCharacter->Level / 5 < 2)
                     itm->InfoID = 3;
                 else
-                    itm->InfoID = 3 + (rand() % (_mainCharacter->Level / 5));
+                    itm->InfoID = 3 + (System::rand() % (_mainCharacter->Level / 5));
             }
             else 
             {
@@ -58,19 +58,19 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
                 if (_mainCharacter->Level / 5 < 2)
                     itm->InfoID = 0;
                 else 
-                    itm->InfoID = rand() % (_mainCharacter->Level / 5);
+                    itm->InfoID = System::rand() % (_mainCharacter->Level / 5);
             }
             
             if ((_mainCharacter->Level / 8) + 1 < 2)  // CHECK
-                itm->BonusID = ((rand() % 4) + 1) * 10 + (rand() % 2);
+                itm->BonusID = ((System::rand() % 4) + 1) * 10 + (System::rand() % 2);
             else
-                itm->BonusID = ((rand() % 4) + 1) * 10 + (rand() % ((_mainCharacter->Level / 8) + 1)) * 3 + (rand() % 2);
+                itm->BonusID = ((System::rand() % 4) + 1) * 10 + (System::rand() % ((_mainCharacter->Level / 8) + 1)) * 3 + (System::rand() % 2);
         }
     }
     
     for (int i = 3; i < 5; ++i)
     {
-        if (vlg->TraderItems[i] == 0 && (rand() % 100) > 50)
+        if (vlg->TraderItems[i] == 0 && (System::rand() % 100) > 50)
         {
             ItemInfo *itm = AllocItem();
             if (!itm)
@@ -78,13 +78,13 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
             
             vlg->TraderItems[i] = itm->Index;
             itm->TypeID = 11;
-            itm->InfoID = rand() % 10;
+            itm->InfoID = System::rand() % 10;
         }
     }
     
     for (int i = 5; i < 8; ++i)
     {
-        if (vlg->TraderItems[i] == 0 && (rand() % 100) > 30) 
+        if (vlg->TraderItems[i] == 0 && (System::rand() % 100) > 30) 
         {
             ItemInfo *itm = AllocItem();
             if (!itm)
@@ -93,9 +93,9 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
             vlg->TraderItems[i] = itm->Index;
             
             if (_mainCharacter->Level / 5 + 1 < 2) 
-                itm->InfoID = (rand() % 2) * 3 + FUN_00417170(iVar19) * 9;
+                itm->InfoID = (System::rand() % 2) * 3 + FUN_00417170(iVar19) * 9;
             else
-                itm->InfoID = (rand() % 2) * 3 + (rand() % (_mainCharacter->Level / 5 + 1)) + FUN_00417170(iVar19) * 9;
+                itm->InfoID = (System::rand() % 2) * 3 + (System::rand() % (_mainCharacter->Level / 5 + 1)) + FUN_00417170(iVar19) * 9;
             
             itm->Weight = ArmorWeaponInfo[itm->InfoID].unk1;
             itm->Concentration = itm->Weight;
@@ -105,19 +105,19 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
             else
                 itm->TypeID = 0;
             
-            if (rand() % 101 < 10) 
+            if (System::rand() % 101 < 10) 
             {
                 if (FUN_004171d4(_mainCharacter->Level) < 2)
-                    itm->BonusID = (rand() % 5) * 10;
+                    itm->BonusID = (System::rand() % 5) * 10;
                 else 
-                    itm->BonusID = (rand() % FUN_004171d4(_mainCharacter->Level)) + (rand() % 5) * 10;
+                    itm->BonusID = (System::rand() % FUN_004171d4(_mainCharacter->Level)) + (System::rand() % 5) * 10;
             }
         }
     }
     
     for(int i = 8; i < 14; ++i)
     {
-        if (vlg->TraderItems[i] == 0 && (rand() % 100) > 50) 
+        if (vlg->TraderItems[i] == 0 && (System::rand() % 100) > 50) 
         {
             ItemInfo *itm = AllocItem();
             if (!itm)
@@ -125,13 +125,13 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
             
             vlg->TraderItems[i] = itm->Index;
             
-            int tmp = rand() % 3;
+            int tmp = System::rand() % 3;
             if (tmp == 0) 
             {
                 if (_mainCharacter->Level / 5 + 1 < 2)
                     itm->InfoID = 34 + FUN_00417170(iVar19) * 11;
                 else
-                    itm->InfoID = 34 + (rand() % (_mainCharacter->Level / 5 + 1)) + FUN_00417170(iVar19) * 11;
+                    itm->InfoID = 34 + (System::rand() % (_mainCharacter->Level / 5 + 1)) + FUN_00417170(iVar19) * 11;
                 itm->TypeID = 3;
             }
             else if (tmp < 2)
@@ -139,7 +139,7 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
                 if (_mainCharacter->Level / 4 + 1 < 2)
                     itm->InfoID = 37 + FUN_00417170(iVar19) * 11;
                 else
-                    itm->InfoID = 37 + (rand() % (_mainCharacter->Level / 4 + 1)) + FUN_00417170(iVar19) * 11;
+                    itm->InfoID = 37 + (System::rand() % (_mainCharacter->Level / 4 + 1)) + FUN_00417170(iVar19) * 11;
                 itm->TypeID = 5;
             }
             else if (tmp == 2) 
@@ -147,19 +147,19 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
                 if (_mainCharacter->Level / 4 + 1 < 2)
                     itm->InfoID = 41 + FUN_00417170(iVar19) * 11;
                 else 
-                    itm->InfoID = 41 + (rand() % (_mainCharacter->Level / 4 + 1)) + FUN_00417170(iVar19) * 11;                
+                    itm->InfoID = 41 + (System::rand() % (_mainCharacter->Level / 4 + 1)) + FUN_00417170(iVar19) * 11;                
                 itm->TypeID = 4;
             }
             itm->Weight = ArmorWeaponInfo[ itm->InfoID ].unk1;
             itm->Concentration = itm->Weight;
             
-            if (rand() % 100 < 7) 
+            if (System::rand() % 100 < 7) 
             {
                 int tmp2 = FUN_004171d4(_mainCharacter->Level);
                 if (tmp2 < 2) 
-                    itm->BonusID = (rand() % 5) * 10;
+                    itm->BonusID = (System::rand() % 5) * 10;
                 else 
-                    itm->BonusID = (rand() % tmp2) + (rand() % 5) * 10;
+                    itm->BonusID = (System::rand() % tmp2) + (System::rand() % 5) * 10;
             }
         }
     }
@@ -182,12 +182,12 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
     if (_mainCharacter->Level / 5 < 2)
         itm->InfoID = 3;
     else
-        itm->InfoID = (rand() % (_mainCharacter->Level / 5)) + 3;
+        itm->InfoID = (System::rand() % (_mainCharacter->Level / 5)) + 3;
     
     if (_mainCharacter->Level / 8 + 1 < 2)
-        itm->BonusID = (rand() % 2) + ((rand() % 4) + 1) * 10;
+        itm->BonusID = (System::rand() % 2) + ((System::rand() % 4) + 1) * 10;
     else
-        itm->BonusID = (rand() % 2) + (rand() % (_mainCharacter->Level / 8 + 1)) * 3 + ((rand() % 4) + 1) * 10;
+        itm->BonusID = (System::rand() % 2) + (System::rand() % (_mainCharacter->Level / 8 + 1)) * 3 + ((System::rand() % 4) + 1) * 10;
    
     
     
@@ -201,12 +201,12 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
     if (_mainCharacter->Level / 5 < 2)
         itm->InfoID = 0;
     else
-        itm->InfoID = (rand() % (_mainCharacter->Level / 5));
+        itm->InfoID = (System::rand() % (_mainCharacter->Level / 5));
     
     if (_mainCharacter->Level / 8 + 1 < 2)
-        itm->BonusID = (rand() % 2) + ((rand() % 4) + 1) * 10;
+        itm->BonusID = (System::rand() % 2) + ((System::rand() % 4) + 1) * 10;
     else 
-        itm->BonusID = (rand() % 2) + (rand() % (_mainCharacter->Level / 8 + 1)) * 3 + ((rand() % 4) + 1) * 10;
+        itm->BonusID = (System::rand() % 2) + (System::rand() % (_mainCharacter->Level / 8 + 1)) * 3 + ((System::rand() % 4) + 1) * 10;
     
     
     
@@ -220,12 +220,12 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
     if (_mainCharacter->Level / 5 < 2)
         itm->InfoID = 6;
     else
-        itm->InfoID = 6 + (rand() % (_mainCharacter->Level / 5));
+        itm->InfoID = 6 + (System::rand() % (_mainCharacter->Level / 5));
     
     if (_mainCharacter->Level / 8 + 1 < 2)
-        itm->BonusID = (rand() % 2) + ((rand() % 4) + 1) * 10;
+        itm->BonusID = (System::rand() % 2) + ((System::rand() % 4) + 1) * 10;
     else 
-        itm->BonusID = (rand() % 2) + (rand() % (_mainCharacter->Level / 8 + 1)) * 3 + ((rand() % 4) + 1) * 10;
+        itm->BonusID = (System::rand() % 2) + (System::rand() % (_mainCharacter->Level / 8 + 1)) * 3 + ((System::rand() % 4) + 1) * 10;
         
     
     
@@ -236,9 +236,9 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
     vlg->TraderItems[17] = itm->Index;
     
     if (_mainCharacter->Level / 5 + 1 < 2)
-        itm->InfoID = (rand() % 2) * 3 + FUN_00417220(iVar19) * 9;
+        itm->InfoID = (System::rand() % 2) * 3 + FUN_00417220(iVar19) * 9;
     else 
-        itm->InfoID = (rand() % 2) * 3 + (rand() % (_mainCharacter->Level / 5 + 1)) + FUN_00417220(iVar19) * 9;
+        itm->InfoID = (System::rand() % 2) * 3 + (System::rand() % (_mainCharacter->Level / 5 + 1)) + FUN_00417220(iVar19) * 9;
     
     if (itm->InfoID % 9 < 3)
         itm->TypeID = 2;
@@ -256,9 +256,9 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
     
     vlg->TraderItems[18] = itm->Index;
     if (_mainCharacter->Level / 5 + 1 < 2)
-        itm->InfoID = (rand() % 2) * 3 + FUN_00417220(iVar19 + 1) * 9;
+        itm->InfoID = (System::rand() % 2) * 3 + FUN_00417220(iVar19 + 1) * 9;
     else
-        itm->InfoID = (rand() % 2) * 3 + (rand() % (_mainCharacter->Level / 5 + 1)) + FUN_00417220(iVar19 + 1) * 9;
+        itm->InfoID = (System::rand() % 2) * 3 + (System::rand() % (_mainCharacter->Level / 5 + 1)) + FUN_00417220(iVar19 + 1) * 9;
 
     if (itm->InfoID % 9 < 3)
         itm->TypeID = 2;
@@ -279,7 +279,7 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
     if (_mainCharacter->Level / 5 + 1 < 2)
         itm->InfoID = 6 + FUN_00417220(iVar19) * 9;
     else
-        itm->InfoID = 6 + (rand() % (_mainCharacter->Level / 5 + 1)) + FUN_00417220(iVar19) * 9;
+        itm->InfoID = 6 + (System::rand() % (_mainCharacter->Level / 5 + 1)) + FUN_00417220(iVar19) * 9;
 
     itm->Weight = ArmorWeaponInfo[itm->InfoID].unk1;
     itm->Concentration = itm->Weight;
@@ -295,7 +295,7 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
     if (_mainCharacter->Level / 5 + 1 < 2)
         itm->InfoID = 6 + FUN_00417220(iVar19 + 1) * 9;
     else
-        itm->InfoID = 6 + (rand() % (_mainCharacter->Level / 5 + 1)) + FUN_00417220(iVar19 + 1) * 9;
+        itm->InfoID = 6 + (System::rand() % (_mainCharacter->Level / 5 + 1)) + FUN_00417220(iVar19 + 1) * 9;
 
     itm->Weight = ArmorWeaponInfo[itm->InfoID].unk1;
     itm->Concentration = itm->Weight;
@@ -311,7 +311,7 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
     if (_mainCharacter->Level / 5 + 1 < 2)
         itm->InfoID = 34 + FUN_00417220(iVar19) * 11;
     else
-        itm->InfoID = 34 + (rand() % (_mainCharacter->Level / 5 + 1)) + FUN_00417220(iVar19) * 11;
+        itm->InfoID = 34 + (System::rand() % (_mainCharacter->Level / 5 + 1)) + FUN_00417220(iVar19) * 11;
 
     itm->Weight = ArmorWeaponInfo[itm->InfoID].unk1;
     itm->Concentration = itm->Weight;
@@ -327,7 +327,7 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
     if (_mainCharacter->Level / 4 + 1 < 2)
         itm->InfoID = 37 + FUN_00417220(iVar19) * 11;
     else
-        itm->InfoID = 37 + (rand() % (_mainCharacter->Level / 4 + 1)) + FUN_00417220(iVar19) * 11;
+        itm->InfoID = 37 + (System::rand() % (_mainCharacter->Level / 4 + 1)) + FUN_00417220(iVar19) * 11;
 
     itm->Weight = ArmorWeaponInfo[itm->InfoID].unk1;
     itm->Concentration = itm->Weight;
@@ -343,7 +343,7 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
     if (_mainCharacter->Level / 4 + 1 < 2)
         itm->InfoID = 41 + FUN_00417220(iVar19) * 11;
     else
-        itm->InfoID = 41 + (rand() % (_mainCharacter->Level / 4 + 1)) + FUN_00417220(iVar19) * 11;
+        itm->InfoID = 41 + (System::rand() % (_mainCharacter->Level / 4 + 1)) + FUN_00417220(iVar19) * 11;
     
     itm->Weight = ArmorWeaponInfo[itm->InfoID].unk1;
     itm->Concentration = itm->Weight;
@@ -359,7 +359,7 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
     if (_mainCharacter->Level / 5 + 1 < 2)
         itm->InfoID = 34 + FUN_00417220(iVar19 + 1) * 11;
     else
-        itm->InfoID = 34 + (rand() % (_mainCharacter->Level / 5 + 1)) + FUN_00417220(iVar19 + 1) * 11;
+        itm->InfoID = 34 + (System::rand() % (_mainCharacter->Level / 5 + 1)) + FUN_00417220(iVar19 + 1) * 11;
     
     itm->Weight = ArmorWeaponInfo[itm->InfoID].unk1;
     itm->Concentration = itm->Weight;
@@ -375,7 +375,7 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
     if (_mainCharacter->Level / 4 + 1 < 2)
         itm->InfoID = 37 + FUN_00417220(iVar19 + 1) * 11;
     else 
-        itm->InfoID = 37 + (rand() % (_mainCharacter->Level / 4 + 1)) + FUN_00417220(iVar19 + 1) * 11;
+        itm->InfoID = 37 + (System::rand() % (_mainCharacter->Level / 4 + 1)) + FUN_00417220(iVar19 + 1) * 11;
    
     itm->Weight = ArmorWeaponInfo[itm->InfoID].unk1;
     itm->Concentration = itm->Weight;
@@ -391,7 +391,7 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
     if (_mainCharacter->Level / 4 + 1 < 2)
         itm->InfoID = 41 + FUN_00417220(iVar19 + 1) * 11;
     else
-        itm->InfoID = 41 + (rand() % (_mainCharacter->Level / 4 + 1)) + FUN_00417220(iVar19 + 1) * 11;
+        itm->InfoID = 41 + (System::rand() % (_mainCharacter->Level / 4 + 1)) + FUN_00417220(iVar19 + 1) * 11;
     
     itm->Weight = ArmorWeaponInfo[itm->InfoID].unk1;
     itm->Concentration = itm->Weight;
@@ -404,9 +404,9 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
     
     vlg->TraderItems[27] = itm->Index;
     if (_mainCharacter->Level / 5 + 1 < 2)
-        itm->InfoID = (rand() % 2) * 3 + (rand() % 3) * 9;
+        itm->InfoID = (System::rand() % 2) * 3 + (System::rand() % 3) * 9;
     else
-        itm->InfoID = (rand() % 2) * 3 + (rand() % (_mainCharacter->Level / 5 + 1)) + (rand() % 3) * 9;
+        itm->InfoID = (System::rand() % 2) * 3 + (System::rand() % (_mainCharacter->Level / 5 + 1)) + (System::rand() % 3) * 9;
 
     if (itm->InfoID % 9 < 3)
         itm->TypeID = 2;
@@ -417,9 +417,9 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
     itm->Concentration = itm->Weight;
     
     if (_mainCharacter->Level / 8 + 1 < 2)
-        itm->BonusID = (rand() % 2) + (rand() % 4) * 10;
+        itm->BonusID = (System::rand() % 2) + (System::rand() % 4) * 10;
     else
-        itm->BonusID = (rand() % 2) + (rand() % (_mainCharacter->Level / 8 + 1)) * 3 + (rand() % 4) * 10;
+        itm->BonusID = (System::rand() % 2) + (System::rand() % (_mainCharacter->Level / 8 + 1)) * 3 + (System::rand() % 4) * 10;
         
     
     
@@ -429,18 +429,18 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
     
     vlg->TraderItems[28] = itm->Index;
     if (_mainCharacter->Level / 5 + 1 < 2)
-        itm->InfoID = 6 + (rand() % 3) * 9;
+        itm->InfoID = 6 + (System::rand() % 3) * 9;
     else 
-        itm->InfoID = 6 + (rand() % 3) * 9 + (rand() % (_mainCharacter->Level / 5 + 1));
+        itm->InfoID = 6 + (System::rand() % 3) * 9 + (System::rand() % (_mainCharacter->Level / 5 + 1));
     
     itm->TypeID = 1;
     itm->Weight = ArmorWeaponInfo[itm->InfoID].unk1;
     itm->Concentration = itm->Weight;
     
     if (_mainCharacter->Level / 8 + 1 < 2)
-        itm->BonusID = (rand() % 2) + (rand() % 4) * 10;
+        itm->BonusID = (System::rand() % 2) + (System::rand() % 4) * 10;
     else
-        itm->BonusID = (rand() % 2) + (rand() % (_mainCharacter->Level / 8 + 1)) * 3 + (rand() % 4) * 10;
+        itm->BonusID = (System::rand() % 2) + (System::rand() % (_mainCharacter->Level / 8 + 1)) * 3 + (System::rand() % 4) * 10;
     
     
     
@@ -451,17 +451,17 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
     vlg->TraderItems[29] = itm->Index;
     itm->TypeID = 3;
     if (_mainCharacter->Level / 5 + 1 < 2)
-        itm->InfoID = 34 + (rand() % 3) * 11;
+        itm->InfoID = 34 + (System::rand() % 3) * 11;
     else
-        itm->InfoID = 34 + (rand() % 3) * 11 + (rand() % (_mainCharacter->Level / 5 + 1));
+        itm->InfoID = 34 + (System::rand() % 3) * 11 + (System::rand() % (_mainCharacter->Level / 5 + 1));
     
     itm->Weight = ArmorWeaponInfo[itm->InfoID].unk1;
     itm->Concentration = itm->Weight;
     
     if (_mainCharacter->Level / 8 + 1 < 2)
-        itm->BonusID = (rand() % 2) + ((rand() % 4) + 1) * 10;
+        itm->BonusID = (System::rand() % 2) + ((System::rand() % 4) + 1) * 10;
     else
-        itm->BonusID = (rand() % 2) + (rand() % (_mainCharacter->Level / 8 + 1)) * 3 + ((rand() % 4) + 1) * 10;
+        itm->BonusID = (System::rand() % 2) + (System::rand() % (_mainCharacter->Level / 8 + 1)) * 3 + ((System::rand() % 4) + 1) * 10;
    
     
     
@@ -472,17 +472,17 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
     vlg->TraderItems[30] = itm->Index;
     itm->TypeID = 5;
     if (_mainCharacter->Level / 4 + 1 < 2)
-        itm->InfoID = 37 + (rand() % 3) * 11;
+        itm->InfoID = 37 + (System::rand() % 3) * 11;
     else
-        itm->InfoID = 37 + (rand() % 3) * 11 + (rand() % (_mainCharacter->Level / 4 + 1));
+        itm->InfoID = 37 + (System::rand() % 3) * 11 + (System::rand() % (_mainCharacter->Level / 4 + 1));
 
     itm->Weight = ArmorWeaponInfo[itm->InfoID].unk1;
     itm->Concentration = itm->Weight;
     
     if (_mainCharacter->Level / 8 + 1 < 2)
-        itm->BonusID = (rand() % 2) + ((rand() % 4) + 1) * 10;
+        itm->BonusID = (System::rand() % 2) + ((System::rand() % 4) + 1) * 10;
     else
-        itm->BonusID = (rand() % 2) + (rand() % (_mainCharacter->Level / 8 + 1)) * 3 + ((rand() % 4) + 1) * 10;
+        itm->BonusID = (System::rand() % 2) + (System::rand() % (_mainCharacter->Level / 8 + 1)) * 3 + ((System::rand() % 4) + 1) * 10;
     
     
     
@@ -493,17 +493,17 @@ void Engine::OnEnterVillageUpdateTrader(Village *vlg)
     vlg->TraderItems[31] = itm->Index;
     itm->TypeID = 4;
     if (_mainCharacter->Level / 4 + 1 < 2) 
-        itm->InfoID = 41 + (rand() % 3) * 11;
+        itm->InfoID = 41 + (System::rand() % 3) * 11;
     else
-        itm->InfoID = 41 + (rand() % 3) * 11 + (rand() % (_mainCharacter->Level / 4 + 1));
+        itm->InfoID = 41 + (System::rand() % 3) * 11 + (System::rand() % (_mainCharacter->Level / 4 + 1));
 
     itm->Weight = ArmorWeaponInfo[itm->InfoID].unk1;
     itm->Concentration = itm->Weight;
 
     if (_mainCharacter->Level / 8 + 1 < 2)
-        itm->BonusID = ((rand() % 4) + 1) * 10 + (rand() % 2);
+        itm->BonusID = ((System::rand() % 4) + 1) * 10 + (System::rand() % 2);
     else
-        itm->BonusID = ((rand() % 4) + 1) * 10 + (rand() % (_mainCharacter->Level / 8 + 1)) * 3 + (rand() % 2);
+        itm->BonusID = ((System::rand() % 4) + 1) * 10 + (System::rand() % (_mainCharacter->Level / 8 + 1)) * 3 + (System::rand() % 2);
 }
 
 

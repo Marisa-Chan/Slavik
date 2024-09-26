@@ -801,7 +801,7 @@ bool Engine::LoadMap(int32_t mapID, int32_t param)
             if (rSimple.NumFrames < 2)
                 mObj.CurrentFrame = 0;
             else
-                mObj.CurrentFrame = rand() % rSimple.NumFrames;
+                mObj.CurrentFrame = System::rand() % rSimple.NumFrames;
 
             mObj.FrameTimeLeft = rSimple.FrameTime;
         }
@@ -815,7 +815,7 @@ bool Engine::LoadMap(int32_t mapID, int32_t param)
             if (FrmCnt < 2) 
                 mObj.Flames[i] = FlameAnims[FlameID][0];
             else
-                mObj.Flames[i] = FlameAnims[FlameID][0] + (rand() % FrmCnt);
+                mObj.Flames[i] = FlameAnims[FlameID][0] + (System::rand() % FrmCnt);
         }
         
         if (MapObjUseCount[puVar27] < 0)
@@ -904,7 +904,7 @@ void Engine::DrawGame()
     ViewTiles.x = _gameViewport.x / TileW + 3;
     
     _ambientColor = CalculateLight() / 100.0;
-    _lightColor = vec3f((rand() % 8) + 16, (rand() % 4) + 8, 0);
+    _lightColor = vec3f((System::rand() % 8) + 16, (System::rand() % 4) + 8, 0);
     
     _tracePos = _mouseMapPos;
     
@@ -2384,7 +2384,7 @@ void Engine::Update7()
             read(uVar7,(undefined *)MusicResDat1_ARRAY_006324b8,0x48);
             read(uVar7,MusicResData,System::RESHDR.EntriesSize);
             close(uVar7);
-            uVar7 = rand();
+            uVar7 = System::rand();
             PlayMusicId((int)uVar7 % 9);
         }
     }*/

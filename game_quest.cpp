@@ -212,7 +212,7 @@ int Engine::FUN_004364f0(Character *pchar)
     
     if ((pchar->ClassID & CLASS_BIT40) == 0)
     {
-        sndId = rand() % 4 + 12;
+        sndId = System::rand() % 4 + 12;
         
         static int32_t DWORD_00a3e7c0 = 0;
         
@@ -563,7 +563,7 @@ int32_t Engine::FUN_004358b4()
 
 int32_t Engine::FUN_0043512c()
 {
-    return (rand() % 100) < 50;
+    return (System::rand() % 100) < 50;
 }
 
 
@@ -772,7 +772,7 @@ int32_t Engine::FUN_00432820()
             
         }
         
-        int32_t local_18 = rand() % 9;
+        int32_t local_18 = System::rand() % 9;
         for(int32_t i = 0; i < 9; ++i)
         {
             if (local_34[local_18] == false)

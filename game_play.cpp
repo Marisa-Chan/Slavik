@@ -249,12 +249,12 @@ void Engine::FUN_004118dc()
             if (local_20 < 0)
                 local_20 = 7;
             
-            if (rand() % 2 != 0)
+            if (System::rand() % 2 != 0)
                 local_1c = local_20;
             
             for (int i = 0; i < 8; ++i) 
             {
-                int local_28 = rand() % 6;
+                int local_28 = System::rand() % 6;
                 for (int j = 0; j < 6; ++j) 
                 {
                     Common::Point ppos = spwnRect.Pos() + PlaceDOff[uVar5][local_1c][local_28];
@@ -447,7 +447,7 @@ void Engine::FUN_00421170()
                             Village::BldState &bst = CurrentVillage->BuildingState.at(k);
                             if (bst.ObjID == bldId)
                             {
-                                if (rand() % 100 <= 20)
+                                if (System::rand() % 100 <= 20)
                                 {
                                     bst.State = 3;
                                     bst.BldLeft = 1;
@@ -1070,7 +1070,7 @@ void Engine::FUN_00418510(Character *pchar, int32_t maxBonusGld, int32_t lvl)
             invCount++;
     }
     
-    if (invCount == 0 && pchar->Gold == 0 && (rand() % 101) > 30 && pchar->field62_0x52 == 0)
+    if (invCount == 0 && pchar->Gold == 0 && (System::rand() % 101) > 30 && pchar->field62_0x52 == 0)
         return;
 
     int32_t startSlot = 0;
@@ -1116,7 +1116,7 @@ void Engine::FUN_00418510(Character *pchar, int32_t maxBonusGld, int32_t lvl)
         return;
     
     if (maxBonusGld >= 2)
-        loot->unk2 += pchar->Gold + (rand() % maxBonusGld);
+        loot->unk2 += pchar->Gold + (System::rand() % maxBonusGld);
     
     int32_t invPos = 0;
     for (int32_t i = 0; i < invCount; ++i)
@@ -1136,7 +1136,7 @@ void Engine::FUN_00418510(Character *pchar, int32_t maxBonusGld, int32_t lvl)
     
     if (startSlot < loot->ItemID.size() && lvl != 0)
     {
-        int32_t randVal = rand() % 101;
+        int32_t randVal = System::rand() % 101;
         if (randVal > 85) 
         {
             ItemInfo *itm = AllocItem();
@@ -1149,9 +1149,9 @@ void Engine::FUN_00418510(Character *pchar, int32_t maxBonusGld, int32_t lvl)
                 {
                     int32_t tmp = 0;
                     if (lvl / 5 + 1 >= 2)
-                        tmp = rand() % (lvl / 5 + 1);
+                        tmp = System::rand() % (lvl / 5 + 1);
                     
-                    itm->InfoID = tmp + (rand() % 9) * 3;
+                    itm->InfoID = tmp + (System::rand() % 9) * 3;
                     itm->Weight = ArmorWeaponInfo[ itm->InfoID ].unk1;
                     itm->Concentration = itm->Weight;
                     
@@ -1163,9 +1163,9 @@ void Engine::FUN_00418510(Character *pchar, int32_t maxBonusGld, int32_t lvl)
                     else
                         itm->TypeID = 1;
                     
-                    if (rand() % 101 < 10)
+                    if (System::rand() % 101 < 10)
                     {
-                        if (_mainCharacter->Identification < rand() % 100)
+                        if (_mainCharacter->Identification < System::rand() % 100)
                             itm->Flags |= ItemInfo::FLAG_UNIDENTIFIED;
                         else
                         {
@@ -1177,56 +1177,56 @@ void Engine::FUN_00418510(Character *pchar, int32_t maxBonusGld, int32_t lvl)
                         tmp = 0;
                         
                         if (FUN_004171d4(lvl) >= 2)
-                            tmp = rand() % FUN_004171d4(lvl);
+                            tmp = System::rand() % FUN_004171d4(lvl);
                         
-                        itm->BonusID = tmp + (rand() % 5) * 10;
+                        itm->BonusID = tmp + (System::rand() % 5) * 10;
                     }
                 }
                 else if (randVal < 88)
                 {
-                    int32_t tmp = rand() % 3;
+                    int32_t tmp = System::rand() % 3;
                     if (tmp == 0)
                     {
                         tmp = 0;
                         if (lvl / 5 + 1 >= 2)
-                            tmp = rand() % (lvl / 5 + 1);
+                            tmp = System::rand() % (lvl / 5 + 1);
                         
-                        itm->InfoID = tmp + (rand() % 3) * 11 + 34;
+                        itm->InfoID = tmp + (System::rand() % 3) * 11 + 34;
                         itm->TypeID = 3;
                     }
                     else if (tmp == 1)
                     {
                         tmp = 0;
                         if (lvl / 4 + 1 >= 2)
-                            tmp = rand() % (lvl / 4 + 1);
+                            tmp = System::rand() % (lvl / 4 + 1);
                         
-                        itm->InfoID = tmp + (rand() % 3) * 11 + 37;
+                        itm->InfoID = tmp + (System::rand() % 3) * 11 + 37;
                         itm->TypeID = 5;
                     }
                     else if (tmp == 2)
                     {
                         tmp = 0;
                         if (lvl / 4 + 1 >= 2)
-                            tmp = rand() % (lvl / 4 + 1);
+                            tmp = System::rand() % (lvl / 4 + 1);
                         
-                        itm->InfoID = tmp + (rand() % 3) * 11 + 41;
+                        itm->InfoID = tmp + (System::rand() % 3) * 11 + 41;
                         itm->TypeID = 4;
                     }
                     
                     itm->Weight = ArmorWeaponInfo[itm->InfoID].unk1;
                     itm->Concentration = itm->Weight;
                     
-                    if (rand() % 100 < 7)
+                    if (System::rand() % 100 < 7)
                     {
-                        if (_mainCharacter->Identification < rand() % 100)
+                        if (_mainCharacter->Identification < System::rand() % 100)
                             itm->Flags |= ItemInfo::FLAG_UNIDENTIFIED;
                         
                         tmp = 0;
                         
                         if (FUN_004171d4(lvl) >= 2)
-                            tmp = rand() % FUN_004171d4(lvl);
+                            tmp = System::rand() % FUN_004171d4(lvl);
                         
-                        itm->BonusID = tmp + (rand() % 5) * 10;
+                        itm->BonusID = tmp + (System::rand() % 5) * 10;
                     }
                 }
                 else
@@ -1236,7 +1236,7 @@ void Engine::FUN_00418510(Character *pchar, int32_t maxBonusGld, int32_t lvl)
                         if (lvl / 5 + 1 < 2)
                             itm->InfoID = 6;
                         else
-                            itm->InfoID = 6 + rand() % (lvl / 5 + 1);
+                            itm->InfoID = 6 + System::rand() % (lvl / 5 + 1);
                         itm->TypeID = 8;
                     }
                     else if (randVal < 98) 
@@ -1244,7 +1244,7 @@ void Engine::FUN_00418510(Character *pchar, int32_t maxBonusGld, int32_t lvl)
                         if (lvl / 5 + 1 < 2)
                             itm->InfoID = 3;
                         else
-                            itm->InfoID = 3 + rand() % (lvl / 5 + 1);
+                            itm->InfoID = 3 + System::rand() % (lvl / 5 + 1);
                         itm->TypeID = 7;
                     }
                     else 
@@ -1252,19 +1252,19 @@ void Engine::FUN_00418510(Character *pchar, int32_t maxBonusGld, int32_t lvl)
                         if (lvl / 5 + 1 < 2)
                             itm->InfoID = 0;
                         else
-                            itm->InfoID = rand() % (lvl / 5 + 1);
+                            itm->InfoID = System::rand() % (lvl / 5 + 1);
                         itm->TypeID = 6;
                     }
                     
-                    if (_mainCharacter->Identification < rand() % 100)
+                    if (_mainCharacter->Identification < System::rand() % 100)
                         itm->Flags |= ItemInfo::FLAG_UNIDENTIFIED;
                     
                     int32_t tmp = 0;
                         
                     if (FUN_004171d4(lvl) >= 2)
-                        tmp = rand() % FUN_004171d4(lvl);
+                        tmp = System::rand() % FUN_004171d4(lvl);
                         
-                    itm->BonusID = tmp + (rand() % 5) * 10;
+                    itm->BonusID = tmp + (System::rand() % 5) * 10;
                 }
             }
         }
@@ -1854,12 +1854,12 @@ bool Engine::FUN_00413a84(Character *pchar)
         int32_t dx = 0;
         int32_t dy = 0;
         if (MoveBounds.x >= 2)
-            dx = rand() % MoveBounds.x;
+            dx = System::rand() % MoveBounds.x;
         
         if (MoveBounds.y >= 2)
-            dy = rand() % MoveBounds.y;
+            dy = System::rand() % MoveBounds.y;
         
-        switch(rand() % 4)
+        switch(System::rand() % 4)
         {
             default:
             case 0:
@@ -2242,7 +2242,7 @@ bool Engine::FUN_00416934(Character *pchar)
     {
         if ((pchar->ClassID == 0x51) || (pchar->ClassID == 0x52)) 
         {
-            if (rand() % 100 < 75)
+            if (System::rand() % 100 < 75)
                 return false;
             
             if (FUN_00413a84(pchar)) 
@@ -2288,7 +2288,7 @@ bool Engine::FUN_00416934(Character *pchar)
         int32_t vjob = GetVillageCharacterJob(pchar);
         if (vjob == 0)
         {
-            if (rand() % 100 < 50)
+            if (System::rand() % 100 < 50)
                 return false;
             
             if (FUN_00413a84(pchar)) 
@@ -2605,7 +2605,7 @@ int32_t Engine::FUN_0043976c(Common::Point m, Common::Point t)
 
 int32_t Engine::FUN_0041b100(Character *ch1, Character *ch2)
 {
-    if (rand() % 101 > FUN_0041b4cc(ch2, 0))
+    if (System::rand() % 101 > FUN_0041b4cc(ch2, 0))
         return 0;
     
     return FUN_0041af48(ch2, ch1->ClassID);
@@ -2633,7 +2633,7 @@ int32_t Engine::FUN_0041c480(Character *chr1, Character *chr2, int32_t param_3)
     
     if (Can[chr1->Direction][chr2->Direction])
     {
-        if (rand() % 101 <= (float)chr1->CurrentLovkost * 0.5)
+        if (System::rand() % 101 <= (float)chr1->CurrentLovkost * 0.5)
             return -2;
     }
     
@@ -3298,21 +3298,21 @@ bool Engine::FUN_00412e00(Character *pchar)
     const int32_t rh = (r.bottom - r.top) - 1;
     const int32_t rw = (r.right - r.left) - 1;
     
-    if (rand() % 2 == 0)
+    if (System::rand() % 2 == 0)
     {
         if (rh / 4 >= 2)
-            spos.y -= rand() % (rh / 4);
+            spos.y -= System::rand() % (rh / 4);
         
         if (rw / 4 >= 2)
-            spos.x -= rand() % (rw / 4);
+            spos.x -= System::rand() % (rw / 4);
     }
     else
     {
         if (rh / 4 >= 2)
-            spos.y += rand() % (rh / 4);
+            spos.y += System::rand() % (rh / 4);
         
         if (rw / 4 >= 2)
-            spos.x += rand() % (rw / 4);
+            spos.x += System::rand() % (rw / 4);
     }
     
     for(int32_t i = 0; i < rh * rw; ++i)
@@ -3341,7 +3341,7 @@ bool Engine::FUN_00412e00(Character *pchar)
 
 bool Engine::FUN_004101e4(Character *pchar, Common::Point *ot)
 {
-    switch(rand() % 4)
+    switch(System::rand() % 4)
     {
     case 0:
         (*ot).y = -(ViewTiles.y * 2);
@@ -3468,7 +3468,7 @@ void Engine::FUN_004123bc(MapChar *mchr)
                             if (chr.field_0x12 == ESLT_0)
                             {
                                 if (chr.FrameCount >= 2)
-                                    chr.field_0x12 = (rand() % 2) * (rand() % chr.FrameCount) + ESLT_1;
+                                    chr.field_0x12 = (System::rand() % 2) * (System::rand() % chr.FrameCount) + ESLT_1;
                                 else
                                     chr.field_0x12 = ESLT_1;
                                 
@@ -4332,7 +4332,7 @@ bool Engine::FUN_0041f5d8(MapChar *mchar, Character *pchar)
         
         for (int32_t k = 0; k < 4; ++k)
         {
-            int local_28 = rand() % 12;
+            int local_28 = System::rand() % 12;
             for (int32_t i = 0; i < 12; ++i)
             {
                 Common::Point tp = mpchar.Tile + PlaceDOff[uVar7][local_18][local_28];
@@ -4405,13 +4405,13 @@ bool Engine::FUN_0041f5d8(MapChar *mchar, Character *pchar)
     
     int32_t local_24 = (mchar->spwnTlRect.bottom - mchar->spwnTlRect.top) - 1;
     if (local_24 / 4 >= 2)
-        dy = rand() % (local_24 / 4);
+        dy = System::rand() % (local_24 / 4);
 
     int32_t local_20 = (mchar->spwnTlRect.right - mchar->spwnTlRect.left) - 1;
     if (local_20 / 4 >= 2)
-        dx = rand() % (local_20 / 4);
+        dx = System::rand() % (local_20 / 4);
     
-    if ( rand() % 2 == 0 )
+    if ( System::rand() % 2 == 0 )
     {
         dy = -dy;
         dx = -dx;

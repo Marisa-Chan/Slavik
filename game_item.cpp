@@ -291,12 +291,12 @@ bool Engine::FUN_00414b3c(Character *pchar)
                 rct = mchr.spwnTlRect;
             
             if (rct.Height() >= 2)
-                pt.y = rct.top + (rand() % rct.Height());
+                pt.y = rct.top + (System::rand() % rct.Height());
             else
                 pt.y = rct.top;
             
             if (rct.Width() >= 2)
-                pt.x = rct.left + (rand() % rct.Width());
+                pt.x = rct.left + (System::rand() % rct.Width());
             else
                 pt.x = rct.left;
             
@@ -330,7 +330,7 @@ bool Engine::FUN_00414b3c(Character *pchar)
     pchar->Otravlenie = 0;
     
     if (pchar->ClassID == 0x4c)
-        pchar->field_0x12 = (rand() % 5) + 1;
+        pchar->field_0x12 = (System::rand() % 5) + 1;
     
     pchar->ClassID &= ~CLASS_BIT80;
     
@@ -633,7 +633,7 @@ bool Engine::FUN_00414e64(Character *pchar, ItemInfo *itm1, ItemInfo *itm2)
     {
     case 0:
     {
-        int32_t mapid = rand() % 56;
+        int32_t mapid = System::rand() % 56;
 
         itm2->TypeID = -1;
 

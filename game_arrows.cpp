@@ -28,7 +28,7 @@ int32_t Engine::FUN_0041c29c(Character *pchr, int32_t arrowDmg)
 {
     FUN_0041c750(pchr);
     
-    if ((rand() % 101) <= pchr->CurrentLovkost * 0.5)
+    if ((System::rand() % 101) <= pchr->CurrentLovkost * 0.5)
         return -2;
     
     int32_t armr = GetArmor(pchr);
