@@ -9,6 +9,11 @@
 #include "font.h"
 #include "system.h"
 
+//Stupid winapi
+#ifdef PlaySound
+#undef PlaySound
+#endif
+
 
 
 namespace Game
