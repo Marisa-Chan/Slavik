@@ -17,6 +17,8 @@ namespace Game {
 class Resources
 {
 public:
+    constexpr static const int16_t MUSIC_NUM = 9;
+public:
 
     struct FileEntry
     {
@@ -120,6 +122,7 @@ public:
     bool LoadFlames();
     bool LoadMask();
     bool LoadSounds(Simix::Mixer *mx);
+    bool LoadMusicInfo();
 
     void LoadDynSound(Simix::Mixer *mx, int32_t soundId);
     void UnloadDynSounds(Simix::Mixer *mx);
@@ -132,9 +135,9 @@ public:
     static Common::PlaneVector<uint8_t> *LoadMask(FSMgr::File *pfile);
 
 
-
     void UnloadSounds(Simix::Mixer *mx);
-       
+
+    bool PlayMusic(Simix::Mixer *mx, int32_t id);
     
 public:
     Common::PlaneArray<SDL_Color, 256, 256> Palettes;
@@ -166,7 +169,9 @@ private:
     FSMgr::File SoundResFile;
     std::map<uint16_t, FileEntry> SoundResEntries;
     size_t SoundResOffset = 0;
-    
+
+    FSMgr::File MusicResFile;
+    std::array<FileEntry, MUSIC_NUM> MusicResEntries;    
     
 public:
     static Resources Res;

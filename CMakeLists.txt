@@ -36,8 +36,10 @@ set(SOURCES
 	resources.cpp
 	system.cpp
 	simix/simix.cpp
-	simix/mixbuffer.cpp
+	simix/mix.cpp
 	simix/dcb.cpp
+	simix/music.cpp
+	simix/music_ogg.cpp
 )
 
 
@@ -51,9 +53,23 @@ link_directories(${SDL2_IMAGE_LIBRARY_DIRS})
 
 find_package(OpenGL REQUIRED)
 
+pkg_search_module(VORBISFILE REQUIRED vorbisfile)
+link_directories(${VORBISFILE_LIBRARY_DIRS})
+
+
 add_executable(slavik ${SOURCES})
-target_link_libraries(slavik ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} ${OPENGL_LIBRARIES})
-target_include_directories(slavik PUBLIC ${PROJECT_SOURCE_DIR} ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS} ${OpenGL_INCLUDE_DIR})
+
+target_link_libraries(slavik ${SDL2_LIBRARIES}
+							 ${SDL2_IMAGE_LIBRARIES}
+							 ${OPENGL_LIBRARIES}
+							 ${VORBISFILE_LIBRARIES})
+
+target_include_directories(slavik PUBLIC
+										${PROJECT_SOURCE_DIR} 
+										${SDL2_INCLUDE_DIRS} 
+										${SDL2_IMAGE_INCLUDE_DIRS} 
+										${OpenGL_INCLUDE_DIR}
+										${VORBISFILE_INCLUDE_DIRS})
 
 
 if(CMAKE_BUILD_TYPE MATCHES [dD][eE][bB][uU][gG])
@@ -64,6 +80,7 @@ if(CMAKE_BUILD_TYPE MATCHES [dD][eE][bB][uU][gG])
       target_link_libraries(slavik "-fsanitize=address")
    endif()
 else()
-	target_compile_options(slavik PUBLIC "-O2" "-s")
+	target_compile_options(slavik PUBLIC "-g" "-O0")
+	#target_compile_options(slavik PUBLIC "-O2" "-s")
 endif()
 

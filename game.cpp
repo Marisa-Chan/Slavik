@@ -37,6 +37,8 @@ bool Engine::Process()
     if (Update())
         return true;
     
+    UpdateMusic();
+    
     Draw();
     
     UpdateCursor();
@@ -249,6 +251,7 @@ void Engine::Init(int gfxmode)
     System::EventsAddHandler(EventsWatcher);
 
     _mixer.Init(32);
+    _mixer.VolumeMusic(90); // 90db volume
     
     Res.Load(&_mixer);
     
@@ -272,6 +275,8 @@ void Engine::Init(int gfxmode)
     _stateMode = STATEMD_MODE9;
     
     CursorAssume = 4;
+
+    _musicId = -1;
     
     _mainMapChar = &_state.MapChar_ARRAY[0];
     _mainCharacter = & _state.Characters.at(_state.MapChar_ARRAY[0].CharacterIndex);
@@ -394,9 +399,6 @@ void Engine::Draw()
 {
     MouseOnCharacter = nullptr;
     MouseOnObject = nullptr;
-    
-    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
-    //FUN_00429a94();
     
     GFXDrawer.Begin();
     
@@ -1908,7 +1910,28 @@ bool Engine::StartPlayMovie(const std::string &movie)
 
 void Engine::SetMusicOn(bool en)
 {
-    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
+    _mixer.StopMusic(!en);
+}
+
+void Engine::PlayMusicId(int32_t id)
+{
+    _musicId = id;
+    Res.PlayMusic(&_mixer, _musicId);
+}
+
+void Engine::UpdateMusic()
+{
+    if (_musicId == -1)
+        return;
+
+    if (_mixer.IsMusicEnd())
+    {
+        int32_t id = System::rand() % Res.MUSIC_NUM;
+        if (id == _musicId)
+            id = (id + 1) % Res.MUSIC_NUM;
+        
+        PlayMusicId(id);
+    }
 }
   
 void Engine::PlayChangeScreen(int32_t screen)
@@ -2372,22 +2395,7 @@ void Engine::Update7()
     
     MainMenuDraw(boxid);
     
-    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
-    
-    /*if ((MusicResData != NULL) && (MusicResDat1_ARRAY_006324b8[0].Size == 0)) 
-    {
-        strcpy(&System::TempString,WrkDir);
-        strcat(&System::TempString,"MUSICS.RES");
-        uVar7 = open(&System::TempString,O_BINARY,in_stack_fffffea8);
-        if (uVar7 != 0xffffffff) {
-            read(uVar7,(undefined *)&System::RESHDR,8);
-            read(uVar7,(undefined *)MusicResDat1_ARRAY_006324b8,0x48);
-            read(uVar7,MusicResData,System::RESHDR.EntriesSize);
-            close(uVar7);
-            uVar7 = System::rand();
-            PlayMusicId((int)uVar7 % 9);
-        }
-    }*/
+    PlayMusicId(System::rand() % Resources::MUSIC_NUM);
 }
 
 void Engine::Update8()

@@ -961,6 +961,9 @@ public:
     bool StartPlayMovie(const std::string &movie);
     
     void SetMusicOn(bool en);
+
+    void PlayMusicId(int32_t id);
+    void UpdateMusic();
     
     void PlayChangeScreen(int32_t screen);
     
@@ -1664,6 +1667,8 @@ public:
     
 
     Simix::Mixer _mixer;
+
+    int32_t _musicId = -1;
     
     
     bool _doQuit = false;

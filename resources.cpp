@@ -253,7 +253,8 @@ bool Resources::Load(Simix::Mixer *mx)
          LoadObjectsRes() &&
          LoadFlames() &&
          LoadMask() &&
-         LoadSounds(mx) )
+         LoadSounds(mx) &&
+         LoadMusicInfo() )
         return true;
     
     return false;
@@ -848,6 +849,30 @@ bool Resources::LoadSounds(Simix::Mixer *mx)
     return true;   
 }
 
+bool Resources::LoadMusicInfo()
+{
+    MusicResFile = FSMgr::Mgr::ReadFile("musics.res");
+
+    if (!MusicResFile)
+        return false;
+
+    MusicResFile->seek(8, 0);
+
+    size_t MusicResOffset = MusicResFile->tell() + MUSIC_NUM * 8;
+
+    for(size_t i = 0; i < MUSIC_NUM; ++i)
+    {
+        int32_t spos = MusicResFile->readS32L() + MusicResOffset;
+        int32_t ssize = MusicResFile->readS32L();
+
+        if ( spos >= 0 && ssize > 1 )
+            MusicResEntries[i] = FileEntry(spos, ssize);
+    }
+
+    return true;
+}
+
+
 void Resources::LoadDynSound(Simix::Mixer *mx, int32_t soundId)
 {
     auto it = SoundResEntries.find(soundId);
@@ -876,6 +901,19 @@ void Resources::UnloadSounds(Simix::Mixer *mx)
     
     for(auto it = DynSounds.begin(); it != DynSounds.end(); it = DynSounds.erase(it))
         mx->UnloadSample(it->second);
+}
+
+
+bool Resources::PlayMusic(Simix::Mixer *mx, int32_t id)
+{
+    mx->FreeMusic();
+
+    if (id < 0 || id > MUSIC_NUM)
+        return false;
+    
+    FileEntry &entry = MusicResEntries.at(id);
+    mx->PlayMusic(Simix::MUSICTYPE_OGG, &MusicResFile, entry.Offset, entry.Size);
+    return true;
 }
 
 }

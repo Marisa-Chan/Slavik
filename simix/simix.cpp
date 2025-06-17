@@ -4,6 +4,12 @@
 namespace Simix
 {
 
+Mixer::~Mixer()
+{
+    if (!_closing)
+        Close();    
+}
+
 bool Mixer::Init(int32_t channels, int32_t freq, int32_t buffsz)
 {
     if (!SDL_WasInit(SDL_INIT_AUDIO)) {
@@ -30,8 +36,26 @@ bool Mixer::Init(int32_t channels, int32_t freq, int32_t buffsz)
 
     SDL_PauseAudioDevice(_devid, 0);
 
+    _updateThread = SDL_CreateThread(_UpdateThread, "", this);
+
     _opened = true;
+    _closing = false;
     return true;
+}
+
+void Mixer::Close()
+{
+    if (_opened)
+    {
+        _closing = true;
+
+        SDL_CloseAudioDevice(_devid);
+
+        SDL_WaitThread(_updateThread, NULL);
+
+        if (_music)
+            FreeMusic();
+    }
 }
 
 MixBuffer *Mixer::LoadSample(void *samples, uint32_t len, uint32_t freq, uint16_t format, uint32_t channels)
@@ -118,6 +142,9 @@ void SDLCALL Mixer::CB_MixChannels(void *udata, Uint8 *stream, int len)
     Mixer *mx = (Mixer *)udata;
 
     memset(stream, 0, len);
+
+    if (mx->_music)
+        mx->MixingMusic(stream, len);
     
     for(int32_t i = 0; i < mx->_channels.size(); ++i)
     {
@@ -143,6 +170,31 @@ int32_t Mixer::AllocChannel()
     return -1;
 }
 
+bool Mixer::Update()
+{
+    if (_music)
+        QueueMusic();
+    
+    return _closing;
+}
 
+
+int Mixer::_UpdateThread(void *data)
+{
+    Mixer* mx = (Mixer *)data;
+
+    if (!mx)
+        return 0;
+
+    for (;;)
+    {
+        if (mx->Update())
+            break;
+
+        SDL_Delay(10);
+    }
+
+    return 0;
+}
 
 }
