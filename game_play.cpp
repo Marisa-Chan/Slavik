@@ -3576,7 +3576,7 @@ void Engine::FUN_004123bc(MapChar *mchr)
                         }
                     }
                     
-                    if ((chr.Frame == chr.FrameCount - 6) & FUN_0041bff8(&chr))
+                    if ((chr.Frame == chr.FrameCount - 6) && FUN_0041bff8(&chr))
                     {
                         ItemInfo &arrow = _state.Items.at(chr.Arrows);
                         arrow.Concentration--;
