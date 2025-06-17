@@ -112,7 +112,7 @@ void Engine::UpdateGame()
             LoadUsedObjects();
         }
         
-        FUN_00428f90( _mainCharacter->ViewPos );
+        SetCamPos( _mainCharacter->ViewPos );
         FUN_004290d8();
         //PlayChangeScreen(PLSCREEN_0);
     }
@@ -435,7 +435,7 @@ void Engine::FUN_00421170()
             for (int32_t j = 0; j < 8; ++j)
             {
                 _tracePos = arrow.p2 + Common::Point(0, 30);
-                Common::Point pt = FUN_00439bdc(_tracePos); //(int *)&local_38,&local_34,
+                Common::Point pt = CalcLootLTTile(_tracePos); //(int *)&local_38,&local_34,
                 GameMap::Cell &cell = _currentMap->FootMap.At(pt);
                 if (cell.Flags & 0xC)
                 {
@@ -4122,7 +4122,7 @@ int32_t Engine::FUN_0041130c(Character *pchar, Common::Point t, int32_t chIndex)
         for(int32_t j = 0; j < 8; ++j)
         {
             _tracePos = stpt + Common::Point(0, 30);
-            Common::Point cpt = FUN_00439bdc(_tracePos);
+            Common::Point cpt = CalcLootLTTile(_tracePos);
             
             if (cpt == t)
                 return 1;

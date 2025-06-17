@@ -385,7 +385,7 @@ void Engine::PlayProcessMouse()
                     if (CursorAssume == 7)
                         CursorAssume = 4;
 
-                    Common::Point tile = FUN_00439bdc(_mouseMapPos + _camera);
+                    Common::Point tile = CalcLootLTTile(_mouseMapPos + _camera);
                     if (CursorAssume == 4)
                     {
                         for (int32_t i = 0; i < 10 && SelectedCharacters[i]; ++i)
@@ -906,7 +906,7 @@ void Engine::PlayProcessMouse()
             {
                 if (_playScreenID == PLSCREEN_0)
                 {
-                    Common::Point pnt = FUN_00439bdc(_mouseMapPos + _camera);
+                    Common::Point pnt = CalcLootLTTile(_mouseMapPos + _camera);
                     
                     if (!MouseOnCharacter && !MouseOnObject)
                     {
@@ -1104,7 +1104,7 @@ void Engine::PlayProcessMouse()
     {
         if (_playScreenID == PLSCREEN_0)
         {
-            Common::Point tile = FUN_00439bdc(_mouseMapPos + _camera);
+            Common::Point tile = CalcLootLTTile(_mouseMapPos + _camera);
             if (_currentMap->FootMap.At(tile).Flags & 0x2)
             {
                 GS1* loot = GetLootByTile(tile);

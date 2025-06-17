@@ -1961,7 +1961,7 @@ void Engine::LoadUsedObjects()
     printf("Incomplete %s\n", __PRETTY_FUNCTION__);
 }
 
-void Engine::FUN_00428f90(Common::Point pos)
+void Engine::SetCamPos(Common::Point pos)
 {
     _camera = pos - _gameViewport / 2;
     
@@ -1975,8 +1975,8 @@ void Engine::FUN_00428f90(Common::Point pos)
     else if (_camera.y + _gameViewport.y > _camMax.y)
         _camera.y = _camMax.y - _gameViewport.y;
     
-    _some = FUN_00439bdc(_camera);
-    _viewStartPos = FUN_0043a000(_camera);
+    _some = CalcLootLTTile(_camera);
+    _viewStartPos = CalcViewLTTile(_camera);
     
     if (_viewStartPos.y != 0)
         _viewStartPos.y -= 1;
@@ -2070,8 +2070,8 @@ void Engine::ProcessCamera()
         
         //printf("%d %d %d %d\n", _camMax.y, _gameViewport.y, _camera.y, _camera.y + _gameViewport.y);
         
-        _some = FUN_00439bdc(_camera);
-        _viewStartPos = FUN_0043a000(_camera);
+        _some = CalcLootLTTile(_camera);
+        _viewStartPos = CalcViewLTTile(_camera);
         
         if (_viewStartPos.y != 0)
             _viewStartPos.y--;
@@ -2082,7 +2082,7 @@ void Engine::ProcessCamera()
 }
 
 
-Common::Point Engine::FUN_00439bdc(Common::Point pos)
+Common::Point Engine::CalcLootLTTile(Common::Point pos)
 {
     Common::Point out;
     Common::Point cpos;
@@ -2135,7 +2135,7 @@ Common::Point Engine::FUN_00439bdc(Common::Point pos)
 }
 
 
-Common::Point Engine::FUN_0043a000(Common::Point pos)
+Common::Point Engine::CalcViewLTTile(Common::Point pos)
 {
     Common::Point out;
     
@@ -2456,7 +2456,7 @@ void Engine::Update8()
     {
         LoadUsedObjects();
 
-        FUN_00428f90(_mainCharacter->ViewPos);
+        SetCamPos(_mainCharacter->ViewPos);
         
         _stateMode = STATEMD_PLAY;
         
@@ -3074,7 +3074,7 @@ void Engine::UpdateCursor()
             {
                 if (!MouseOnCharacter && _currentMap)
                 {
-                    Common::Point pnt = FUN_00439bdc(_mouseMapPos + _camera);
+                    Common::Point pnt = CalcLootLTTile(_mouseMapPos + _camera);
                     GameMap::Cell &cell = _currentMap->FootMap.At(pnt);
                     if ( (cell.Flags & 2) == 0 || cell.ID ||
                          GetLootByTile(pnt)->unk2 < 0 )

@@ -1070,9 +1070,9 @@ public:
     
     void FUN_004290d8();
     
-    void FUN_00428f90(Common::Point pos);
-    Common::Point FUN_00439bdc(Common::Point cam);
-    Common::Point FUN_0043a000(Common::Point pos);
+    void SetCamPos(Common::Point pos);
+    Common::Point CalcLootLTTile(Common::Point cam);
+    Common::Point CalcViewLTTile(Common::Point pos);
     
     void SetHintText(const std::string &txt);
     bool FUN_00416700(Village *vlg);
