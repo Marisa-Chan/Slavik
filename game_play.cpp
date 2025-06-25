@@ -497,17 +497,17 @@ void Engine::FUN_00421170()
                             FUN_0041079c(&pCVar16, local_1c / 4);
                             
                             pCVar16.Metkost += local_1c;
-                            FUN_00418510(&pCVar16, local_1c, pCVar16.Level);
+                            FUN_00418510(&cchr, local_1c, pCVar16.Level);
                         }
                         else if (retres == 0)
                         {
                             if ((cchr.field_0x3 & 4) == 0)
-                                FUN_004143dc(&pCVar16, CHSTATE_8);
+                                FUN_004143dc(&cchr, CHSTATE_8);
                             else 
-                                FUN_004143dc(&pCVar16, CHSTATE_2);
+                                FUN_004143dc(&cchr, CHSTATE_2);
                         }
                         //if (cchr.MapCharID == _mainCharacter->MapCharID)
-                        //    FUN_0042d574(&pCVar16);
+                        //    FUN_0042d574(&cchr);
                         
                         MapObjects2Count--;
                         for(int32_t k = i; k < MapObjects2Count; ++k)
