@@ -1564,7 +1564,60 @@ bool Engine::FUN_00416700(Village *vlg)
 
 void Engine::FUN_0041733c(Village::BldState *state)
 {
-    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
+    GameMap::Object &pObj = _currentMap->MapObjects.at(state->ObjID);
+    int32_t objId = pObj.ObjId + 30;
+
+    if (MapObjUseCount[objId] > 0)
+        MapObjUseCount[objId]--;
+    
+    int32_t newSObjId = BuildingInfo.at(state->BuildInfoID).GraphObjectOffset + state->State;
+    objId = newSObjId + 30;
+
+    pObj.ObjId = newSObjId;
+
+    Resources::SimpleObject &simpObj = Res.SimpleObjects.at(newSObjId);
+    
+    //pObj.PaletteIndex = simpObj.PaletteIndex;
+
+    if (simpObj.FrameTime < 1)
+    {
+        pObj.FrameTimeLeft = 0;
+        pObj.CurrentFrame = 0;
+    }
+    else
+    {
+        if (simpObj.NumFrames < 2)
+            pObj.CurrentFrame = 0;
+        else
+            pObj.CurrentFrame = System::rand() % simpObj.NumFrames;
+
+        pObj.FrameTimeLeft = simpObj.FrameTime;
+    }
+
+    for (int i = 0; i < simpObj.Flames.size(); ++i)
+    {
+        const auto &fpos = simpObj.Flames.at(i);
+        int32_t sframe = FlameAnims.at(fpos.FlameID).first;
+        int32_t eframe = FlameAnims.at(fpos.FlameID).second;
+        int32_t frames = eframe - sframe + 1;
+
+        if (frames < 2)
+            pObj.Flames.at(i) = sframe;
+        else
+            pObj.Flames.at(i) = sframe + System::rand() % frames;
+    }
+
+    if (MapObjUseCount[objId] >= 0)
+        MapObjUseCount[objId]++;
+    else if ( MapObjUseCount[objId] == -1 )
+    {
+        MapObjUseCount[objId] = -2;
+        _objectsToLoad[ _objectsToLoadCount ] = objId;
+        _objectsToLoadCount++;
+        simpObj.Flags |= Resources::SimpleObject::FLAG_LOADING;
+    }
+
+    pObj.ObjectFlags = simpObj.Flags;
 }
 
 void Engine::FUN_0041d0fc()
