@@ -105,7 +105,7 @@ bool Engine::LoadNEWH()
         f->seek(4, 1);
         entrySize = f->readU32L();
         pos = f->tell();
-        _menuImages.push_back( Resources::LoadRL16BitImage(f.get()) );
+        _menuImages.push_back( Resources::LoadRL16BitImage(&f) );
         f->seek(pos + entrySize, 0);
     }
 

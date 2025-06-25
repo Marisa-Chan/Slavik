@@ -286,6 +286,8 @@ void Engine::Init(int gfxmode)
     GFXDrawer.SetBufferSize(GFX::BUF_0, bufsz);
     GFXDrawer.SetBufferSize(GFX::BUF_1, bufsz);
     GFXDrawer.SetBufferSize(GFX::BUF_2, bufsz);
+
+    MapObjUseCount.fill(-1);
 }
 
 int Engine::EventsWatcher(void *, SDL_Event *event)
@@ -813,11 +815,12 @@ bool Engine::LoadMap(int32_t mapID, int32_t param)
         for (int i = 0; i < rSimple.Flames.size(); ++i) 
         {
             int FlameID = rSimple.Flames[i].FlameID;
-            int FrmCnt = FlameAnims[FlameID][1] - FlameAnims[FlameID][0] + 1;
+
+            int FrmCnt = FlameAnims.at(FlameID).second - FlameAnims.at(FlameID).first + 1;
             if (FrmCnt < 2) 
-                mObj.Flames[i] = FlameAnims[FlameID][0];
+                mObj.Flames[i] = FlameAnims.at(FlameID).first;
             else
-                mObj.Flames[i] = FlameAnims[FlameID][0] + (System::rand() % FrmCnt);
+                mObj.Flames[i] = FlameAnims.at(FlameID).first + (System::rand() % FrmCnt);
         }
         
         if (MapObjUseCount[puVar27] < 0)
@@ -831,13 +834,13 @@ bool Engine::LoadMap(int32_t mapID, int32_t param)
                 _objectsToLoad[ _objectsToLoadCount ] = puVar27;
                 _objectsToLoadCount++;
                 
-                rSimple.fld1 |= 0x80;
+                rSimple.Flags |= Resources::SimpleObject::FLAG_LOADING;
             }
         }
         else 
             MapObjUseCount[puVar27]++;
 
-        mObj.unk3 = rSimple.fld1;
+        mObj.ObjectFlags = rSimple.Flags;
         //MapObjectsCount ++;
     }
     
@@ -891,8 +894,21 @@ bool Engine::LoadMap(int32_t mapID, int32_t param)
             }
         }
     }
+
+    LoadUsedObjects();
     
     return true;
+}
+
+void Engine::LoadUsedObjects()
+{
+    for (int32_t i = 0; i < _objectsToLoadCount; ++i)
+    {
+        MapObjUseCount[ _objectsToLoad[i] ] = 0;
+        Res.LoadObjectData( _objectsToLoad[i] );
+    }
+    
+    _objectsToLoadCount = 0;
 }
 
 
@@ -1022,10 +1038,10 @@ void Engine::DrawGroundAndObj()
                     if (MapObjUseCount[charObj.CharacterBase] < 0) 
                         continue;
 
-                        MapObjUseCount[charObj.CharacterBase] += 1;
-                        charObj.field_0x3 ^= 0x80;
-                        
-                        FUN_00414078(&charObj);
+                    MapObjUseCount[charObj.CharacterBase] += 1;
+                    charObj.field_0x3 ^= 0x80;
+                    
+                    FUN_00414078(&charObj);
                 }
                     
                 if (charObj.ClassID & CLASS_BIT80) 
@@ -1302,13 +1318,13 @@ void Engine::DrawObjects()
 
                 GFX::PalImage *shdw = nullptr;
 
-                if ((obj.unk3 & 0x80) == 0) 
+                if ((obj.ObjectFlags & Resources::SimpleObject::FLAG_LOADING) == 0) 
                 {
                     shdw = pSimple.Shadows.at(obj.CurrentFrame);
                 }
-                else if ((pSimple.fld1 & 0x80) == 0) 
+                else if ((pSimple.Flags & Resources::SimpleObject::FLAG_LOADING) == 0) 
                 {
-                    obj.unk3 ^= 0x80;
+                    obj.ObjectFlags &= ~Resources::SimpleObject::FLAG_LOADING;
                     MapObjUseCount[obj.ObjId + 30]++;
 
                     shdw = pSimple.Shadows.at(obj.CurrentFrame);
@@ -1347,13 +1363,13 @@ void Engine::DrawObjects()
             Resources::SimpleObject &pSimple = Res.SimpleObjects.at(obj.ObjId);
             GFX::Image *img = nullptr;
             
-            if ((obj.unk3 & 0x80) == 0) 
+            if ((obj.ObjectFlags & Resources::SimpleObject::FLAG_LOADING) == 0) 
             {
                 img = pSimple.Images.at(obj.CurrentFrame);
             }
-            else if ((pSimple.fld1 & 0x80) == 0) 
+            else if ((pSimple.Flags & Resources::SimpleObject::FLAG_LOADING) == 0) 
             {
-                obj.unk3 ^= 0x80;
+                obj.ObjectFlags &= ~Resources::SimpleObject::FLAG_LOADING;
                 MapObjUseCount[obj.ObjId + 30]++;
                 img = pSimple.Images.at(obj.CurrentFrame);
             }
@@ -1370,7 +1386,7 @@ void Engine::DrawObjects()
 //                GFXDrawer.DrawText(fmt::sprintf("%d %d", obj.ObjId, obj.Index),_Fonts[3], pt);
                 if (pt.x <= _gameViewport.x && pt.y <= _gameViewport.y && refid >= GScrOff.y)
                 {
-                    if (obj.unk3 & 8)
+                    if (obj.ObjectFlags & 8)
                     {
                         refid -= img->GetSize().y / 4;
                         if (refid < 0)
@@ -1549,7 +1565,7 @@ void Engine::DrawObjects()
                     {
                         GFXDrawer.SetFade(true, _ambientColor);
                         GFXDrawer.Draw(img, ref->Pos);
-                        if ((obj->unk3 & 1) && CheckTraceImage(img, ref->Pos) )
+                        if ((obj->ObjectFlags & 1) && CheckTraceImage(img, ref->Pos) )
                             MouseOnObject = obj;
                     }
                     else
@@ -1565,7 +1581,7 @@ void Engine::DrawObjects()
                             GFXDrawer.Draw(img, ref->Pos);
                         }
                         
-                        if ((obj->unk3 & 1) && CheckTraceImage(img, ref->Pos) )
+                        if ((obj->ObjectFlags & 1) && CheckTraceImage(img, ref->Pos) )
                             MouseOnObject = obj;
                         
                         for(Resources::SimpleObject::FlamePos &flame : pSimple.Flames)
@@ -1577,8 +1593,8 @@ void Engine::DrawObjects()
                             GFXDrawer.DrawFlame(Res.Flames.at(frame), pt);
                             
                             frame++;
-                            if (frame >= FlameAnims[flame.FlameID][1])
-                                frame = FlameAnims[flame.FlameID][0];
+                            if (frame >= FlameAnims.at(flame.FlameID).second)
+                                frame = FlameAnims.at(flame.FlameID).first;
                         }                        
                     }
                 }
@@ -1710,7 +1726,7 @@ Engine::GameMap *Engine::LoadGameMap(int32_t mapID)
             obj.FrameTimeLeft = f->readS16L();
             obj.Pos.x = f->readS16L();
             obj.Pos.y = f->readS16L();
-            obj.unk3 = f->readU8();
+            obj.ObjectFlags = f->readU8();
             obj.CurrentFrame = f->readU8();
         }
         else
@@ -1954,11 +1970,6 @@ void Engine::FUN_004292e4()
         CharInfoCharacter = &_state.Characters.at(DisplayInvOfCharID2 - 1);
         FUN_0042f50c(CharInfoCharacter, 0);
     }
-}
-
-void Engine::LoadUsedObjects()
-{
-    printf("Incomplete %s\n", __PRETTY_FUNCTION__);
 }
 
 void Engine::SetCamPos(Common::Point pos)
@@ -3048,7 +3059,7 @@ void Engine::UpdateCursor()
         {
             if (MouseOnObject != nullptr && 
                 CurrentVillage != nullptr &&
-                (MouseOnObject->unk3 & 1) != 0)
+                (MouseOnObject->ObjectFlags & 1) != 0)
             {
                 for (Character *chr : SelectedCharacters)
                 {

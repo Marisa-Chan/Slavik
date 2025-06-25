@@ -51,14 +51,17 @@ public:
         
         SeqInfo Seq[10][8];  //state dir
         
-        void Load(FSMgr::iFile *pfile);
+        void Load(FSMgr::File *pfile);
     };
     
     struct DynamicObject
     {
-        std::array<GFX::PalImage *, 512> Images;
-        std::array<GFX::PalImage *, 512> Shadows;
-        
+        enum
+        {
+            FLAG_INFO_LOADED = (1 << 8),
+            FLAG_DATA_LOADED = (1 << 9)
+        };
+
         struct FrameInfo
         {
             int16_t FrameID;
@@ -71,14 +74,37 @@ public:
             int16_t FrmCount;
             std::array<FrameInfo, 18> FrameData;
         };
+
+        uint16_t Flags = 0;
+        
+        bool Loaded = false;
+        
+        int32_t Size = 0;
+
+        std::array<GFX::PalImage *, 512> Images;
+        std::array<GFX::PalImage *, 512> Shadows;
         
         SeqInfo Seq[6][8];  //state dir
+
+        // Where All data placed
+        int32_t DataOffset = -1;
+
+        std::array<int32_t, 512> ShdOffsets;
+        std::array<int32_t, 512> ImgOffsets;
         
-        void Load(FSMgr::iFile *pfile);
+        void LoadInfo(FSMgr::File *pfile);
+        void LoadData(FSMgr::File *pfile);
     };
     
     struct SimpleObject
     {
+        enum 
+        {
+            FLAG_LOADING = (1 << 7),
+            FLAG_INFO_LOADED = (1 << 8),
+            FLAG_DATA_LOADED = (1 << 9),
+        };
+
         struct FlamePos
         {
             int32_t Index = -1;
@@ -92,8 +118,14 @@ public:
             Common::Point ShdOffset;
             Common::Point Offset;
         };
+
+        struct ImgShdOffset
+        {
+            int32_t ImgOffset = -1;
+            int32_t ShdOffset = -1;
+        };
         
-        int32_t fld1 = 0;
+        uint32_t Flags = 0;
         
         std::array<GFX::Image *,8> Images;
         std::array<GFX::PalImage *,8> Shadows;
@@ -101,12 +133,22 @@ public:
         //int32_t NumFlames;
         std::vector<FlamePos> Flames;
         
-        int32_t NumFrames;
-        int32_t FrameTime;
+        int32_t NumFrames = 0;
+        int32_t FrameTime = 0;
+
+        int32_t PaletteOffset = 0;
         
         std::array<FrameInfo, 8> Offsets;
+
+        // Where All data placed
+        int32_t DataOffset = -1;
+
+        std::array<ImgShdOffset, 8> DataImgOffsets;
         
-        void Load(FSMgr::iFile *pfile, const SDL_Color *palettes);
+        void LoadInfo(FSMgr::File *pfile);
+        void LoadData(FSMgr::File *pfile, const SDL_Color *palettes);
+
+        bool IsDataLoaded() const { return (Flags & FLAG_DATA_LOADED) != 0; }
     };
     
     
@@ -127,17 +169,19 @@ public:
     void LoadDynSound(Simix::Mixer *mx, int32_t soundId);
     void UnloadDynSounds(Simix::Mixer *mx);
     
-    static GFX::Image *LoadRL8BitImage(FSMgr::iFile *pfile, const SDL_Color *pal);
-    static GFX::PalImage *LoadRL8BitImage(FSMgr::iFile *pfile);
-    static GFX::PalImage *LoadRL8BitShadow(FSMgr::iFile *pfile);
-    static GFX::Image *LoadRL16BitImage(FSMgr::iFile *pfile);
-    static GFX::Image *LoadFlameImage(FSMgr::iFile *pfile);
+    static GFX::Image *LoadRL8BitImage(FSMgr::File *pfile, const SDL_Color *pal);
+    static GFX::PalImage *LoadRL8BitImage(FSMgr::File *pfile);
+    static GFX::PalImage *LoadRL8BitShadow(FSMgr::File *pfile);
+    static GFX::Image *LoadRL16BitImage(FSMgr::File *pfile);
+    static GFX::Image *LoadFlameImage(FSMgr::File *pfile);
     static Common::PlaneVector<uint8_t> *LoadMask(FSMgr::File *pfile);
 
 
     void UnloadSounds(Simix::Mixer *mx);
 
     bool PlayMusic(Simix::Mixer *mx, int32_t id);
+
+    bool LoadObjectData(uint32_t id);
     
 public:
     Common::PlaneArray<SDL_Color, 256, 256> Palettes;
@@ -171,8 +215,10 @@ private:
     size_t SoundResOffset = 0;
 
     FSMgr::File MusicResFile;
-    std::array<FileEntry, MUSIC_NUM> MusicResEntries;    
+    std::array<FileEntry, MUSIC_NUM> MusicResEntries;   
     
+    FSMgr::File ObjectsResFile;
+
 public:
     static Resources Res;
     

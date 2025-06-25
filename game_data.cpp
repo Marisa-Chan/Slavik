@@ -476,14 +476,14 @@ const std::array<Engine::BldInfo, 42> Engine::BuildingInfo {{
 {41,	1,	387,	6,	6,	0,	0,	-1}}};
 
 
-const int Engine::FlameAnims[7][2] = 
-{ {0, 10},
+const std::array<std::pair<int, int>, 7> Engine::FlameAnims = 
+{{ {0, 10},
   {11, 21},
   {22, 32},
   {33, 43},
   {44, 54},
   {55, 59},
-  {60, 73} };
+  {60, 73} }};
 
 const std::array<Common::Point, 8> Engine::O45ad30 = 
 //{{ 
@@ -567,7 +567,7 @@ bool Engine::LoadMainMenuImages()
     uint32_t entrySize = f->readU32L();
     size_t pos = f->tell();
     
-    _bkgImage = Resources::LoadRL16BitImage(f.get());
+    _bkgImage = Resources::LoadRL16BitImage(&f);
     
     ImgQueue1(_bkgImage, Common::Point(), Common::Rect(_screenSize));
 
@@ -577,7 +577,7 @@ bool Engine::LoadMainMenuImages()
         f->seek(4, 1);
         entrySize = f->readU32L();
         pos = f->tell();
-        _menuImages.push_back( Resources::LoadRL16BitImage(f.get()) );
+        _menuImages.push_back( Resources::LoadRL16BitImage(&f) );
         f->seek(pos + entrySize, 0);
     }
 

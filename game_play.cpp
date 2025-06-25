@@ -51,7 +51,7 @@ bool Engine::LoadINTR()
             break;
         
         f->seek(pos + sprHdr[i * 2], 0);
-        _menuImages.push_back( Resources::LoadRL8BitImage(f.get(), Res.Palettes.data() + sprHdr[i * 2 + 1]) );
+        _menuImages.push_back( Resources::LoadRL8BitImage(&f, Res.Palettes.data() + sprHdr[i * 2 + 1]) );
     }
     
     ItemInvSlotWidth = _menuImages[17]->SW->w - 1;
@@ -418,7 +418,7 @@ void Engine::FUN_00421170()
             if (pCVar16.EnemyCharID < 0)
             {
                 bldId = -pCVar16.EnemyCharID - 1;
-                if (!CurrentVillage || (_currentMap->MapObjects.at(bldId).unk3 & 1) == 0)
+                if (!CurrentVillage || (_currentMap->MapObjects.at(bldId).ObjectFlags & 1) == 0)
                 {
                     pCVar16.EnemyCharID = 0;
                 }
@@ -3934,7 +3934,7 @@ void Engine::FUN_0041ed8c(Character *pchar)
                 }
 
                 GameMap::Object &obj = _currentMap->MapObjects.at(-pchar->EnemyCharID - 1);
-                if ((obj.unk3 & 1) != 0)
+                if ((obj.ObjectFlags & 1) != 0)
                 {
                     int32_t tp = FUN_0041130c(pchar, pchar->MoveTile, pchar->EnemyCharID);
                     if (0 < tp)

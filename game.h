@@ -389,7 +389,7 @@ public:
             std::array<int16_t, 20> Flames; // Flame frame id
             int16_t FrameTimeLeft = 0;
             Common::Point Pos;
-            uint8_t unk3 = 0;
+            uint8_t ObjectFlags = 0;
             uint8_t CurrentFrame = 0;
         };
         
@@ -984,10 +984,7 @@ public:
     void Update9();
     
     void UpdateGame();
-    
-    void LoadUsedObjects();
-    
-    
+        
     
     void ProcessCamera();
     
@@ -1015,8 +1012,8 @@ public:
     
     void SaveLoadMenuDraw(bool isSave)
     {printf("Incomplete %s\n", __PRETTY_FUNCTION__);};
-    
-    
+
+    void LoadUsedObjects();   
     
     int32_t ComputePan(Common::Point tilepos)
     {
@@ -1643,7 +1640,7 @@ public:
     
     static const Common::Point PlaceDOff[2][8][12];
     
-    static const int FlameAnims[7][2];    
+    static const std::array<std::pair<int, int>, 7> FlameAnims;
     static const std::array<Common::Point, 8> O45ad30;
     
     static const std::array<SpecialDmg, 18> SpecialDamages;
